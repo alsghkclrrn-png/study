@@ -209,6 +209,15 @@
   .tone-choice-btn.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
 
   /* CONVERSATION */
+  .conv-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .conv-layout { grid-template-columns: 1fr; }
+  }
   .conv-list { display: flex; flex-direction: column; gap: 10px; }
   .conv-item {
     background: var(--card2); border: 1px solid var(--border);
@@ -217,12 +226,72 @@
   }
   .conv-item:hover { border-color: var(--border2); }
   .conv-item.expanded { border-color: var(--orange); }
+  .conv-item.active-grammar { border-color: var(--blue); background: var(--blue-bg); }
   .conv-zh { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
   .conv-pinyin { font-size: 0.88rem; color: var(--text2); }
   .conv-ko { font-size: 0.88rem; color: var(--orange); margin-top: 6px; display: none; }
   .conv-item.expanded .conv-ko { display: block; }
+  .conv-item.active-grammar .conv-ko { display: block; }
   .conv-expand { font-size: 0.72rem; color: var(--text3); margin-top: 4px; }
   .conv-item.expanded .conv-expand { display: none; }
+  .conv-item.active-grammar .conv-expand { display: none; }
+
+  /* GRAMMAR PANEL */
+  .grammar-panel {
+    background: var(--card2);
+    border: 1px solid var(--border-accent, var(--blue));
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    position: sticky;
+    top: 76px;
+  }
+  .grammar-panel-empty {
+    text-align: center;
+    color: var(--text3);
+    font-size: 0.82rem;
+    padding: 2rem 1rem;
+  }
+  .grammar-panel-title {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--blue);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .grammar-sentence {
+    font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 4px; line-height: 1.5;
+  }
+  .grammar-pinyin {
+    font-size: 0.82rem; color: var(--text2); margin-bottom: 12px;
+  }
+  .grammar-ko {
+    font-size: 0.88rem; color: var(--orange);
+    margin-bottom: 14px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .grammar-points { display: flex; flex-direction: column; gap: 10px; }
+  .grammar-point {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--blue);
+  }
+  .gp-label {
+    font-size: 0.7rem; font-weight: 700; color: var(--blue);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .gp-pattern {
+    font-size: 0.92rem; font-weight: 600;
+    color: var(--text); margin-bottom: 3px;
+  }
+  .gp-desc {
+    font-size: 0.8rem; color: var(--text2); line-height: 1.55;
+  }
+  .gp-example {
+    font-size: 0.78rem; color: var(--text3);
+    margin-top: 4px; font-style: italic;
+  }
 
   /* GAMES */
   .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -465,10 +534,24 @@
 
     <!-- 3. CONVERSATION -->
     <div class="section" id="sec-conv">
-      <div class="card">
+      <div class="card" style="margin-bottom:0">
         <div class="card-title">회화 문장 학습 <span id="conv-level-badge"></span></div>
-        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;">문장을 눌러 한국어 해석을 확인하세요</p>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;">문장을 눌러 번역과 문법 설명을 확인하세요</p>
+      </div>
+      <div class="conv-layout">
         <div class="conv-list" id="conv-list"></div>
+        <div class="grammar-panel" id="grammar-panel">
+          <div class="grammar-panel-empty" id="grammar-empty">
+            ← 문장을 클릭하면<br>문법 설명이 나타납니다
+          </div>
+          <div id="grammar-content" style="display:none">
+            <div class="grammar-panel-title">📖 문법 설명</div>
+            <div class="grammar-sentence" id="gp-zh"></div>
+            <div class="grammar-pinyin" id="gp-py"></div>
+            <div class="grammar-ko" id="gp-ko"></div>
+            <div class="grammar-points" id="gp-points"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -562,13 +645,40 @@ const DATA = {
       { zh:'是',   py:'shì',      ko:'이다/맞다',   tones:[4] },
     ],
     conv: [
-      { zh:'你好吗？',     py:'Nǐ hǎo ma?',         ko:'잘 지내세요?' },
-      { zh:'我很好，谢谢。', py:'Wǒ hěn hǎo, xiè xie.', ko:'저 잘 지내요, 감사합니다.' },
-      { zh:'你叫什么名字？', py:'Nǐ jiào shénme míngzi?', ko:'이름이 뭐예요?' },
-      { zh:'我叫金太贤。',  py:'Wǒ jiào Jīn Tàixián.',  ko:'저는 김태현이에요.' },
-      { zh:'请问，厕所在哪里？', py:'Qǐngwèn, cèsuǒ zài nǎlǐ?', ko:'실례지만, 화장실이 어디예요?' },
-      { zh:'多少钱？',    py:'Duōshǎo qián?',       ko:'얼마예요?' },
-      { zh:'我不会说中文。', py:'Wǒ bù huì shuō Zhōngwén.', ko:'저는 중국어를 못해요.' },
+      { zh:'你好吗？', py:'Nǐ hǎo ma?', ko:'잘 지내세요?',
+        grammar:[
+          { label:'의문조사', pattern:'…吗？(ma)', desc:'평서문 끝에 吗를 붙이면 의문문이 됩니다.', example:'你好吗？ / 你是学生吗？' },
+          { label:'인사표현', pattern:'你好 (nǐ hǎo)', desc:'가장 기본적인 인사말. 상대가 한 명이면 你好, 여러 명이면 你们好.', example:'老师好！선생님 안녕하세요!' },
+        ]},
+      { zh:'我很好，谢谢。', py:'Wǒ hěn hǎo, xiè xie.', ko:'저 잘 지내요, 감사합니다.',
+        grammar:[
+          { label:'부사', pattern:'很 (hěn) — 매우', desc:'형용사 앞에 很을 붙여 서술어로 씁니다. 단독 형용사는 비교의 뉘앙스가 있어 보통 很를 넣습니다.', example:'我很好。/ 她很漂亮。' },
+          { label:'감사표현', pattern:'谢谢 (xiè xie)', desc:'감사합니다. 谢谢你 / 谢谢您(존댓말)으로 확장 가능.', example:'谢谢你的帮助。도와줘서 감사해요.' },
+        ]},
+      { zh:'你叫什么名字？', py:'Nǐ jiào shénme míngzi?', ko:'이름이 뭐예요?',
+        grammar:[
+          { label:'의문대명사', pattern:'什么 (shénme) — 무엇', desc:'의문사는 문장 중간에 위치합니다. 영어처럼 앞으로 이동하지 않아요.', example:'这是什么？이게 뭐예요?' },
+          { label:'동사', pattern:'叫 (jiào) — ~라고 불리다', desc:'이름을 말할 때 쓰는 동사. 我叫+이름 패턴으로 자기소개에 활용.', example:'我叫小明。저는 샤오밍이라고 해요.' },
+        ]},
+      { zh:'我叫金太贤。', py:'Wǒ jiào Jīn Tàixián.', ko:'저는 김태현이에요.',
+        grammar:[
+          { label:'어순', pattern:'주어 + 叫 + 이름', desc:'중국어는 SVO(주어-동사-목적어) 어순입니다. 자기소개 시 我叫+이름 패턴을 그대로 외우세요.', example:'她叫李梅。그녀는 리메이예요.' },
+        ]},
+      { zh:'请问，厕所在哪里？', py:'Qǐngwèn, cèsuǒ zài nǎlǐ?', ko:'실례지만, 화장실이 어디예요?',
+        grammar:[
+          { label:'공손표현', pattern:'请问 (qǐngwèn)', desc:'말을 꺼낼 때 쓰는 공손한 표현. 문장 맨 앞에 독립적으로 씁니다.', example:'请问，你是哪国人？실례지만 어느 나라 분이세요?' },
+          { label:'위치표현', pattern:'在哪里 / 在哪儿', desc:'~이 어디에 있어요? 라는 위치 질문 패턴. 在+장소로 대답합니다.', example:'银行在哪里？은행이 어디예요?' },
+        ]},
+      { zh:'多少钱？', py:'Duōshǎo qián?', ko:'얼마예요?',
+        grammar:[
+          { label:'가격묻기', pattern:'多少钱？(duōshǎo qián)', desc:'가격을 물을 때 쓰는 표현. 多少는 "얼마나 많이"라는 뜻으로 수량을 물을 때 씁니다.', example:'这个多少钱？이거 얼마예요?' },
+          { label:'화폐단위', pattern:'元(yuán)/块(kuài) — 위안', desc:'공식 화폐단위는 元, 구어체에서는 块을 씁니다. 十块钱 = 10위안.', example:'五十块钱。50위안입니다.' },
+        ]},
+      { zh:'我不会说中文。', py:'Wǒ bù huì shuō Zhōngwén.', ko:'저는 중국어를 못해요.',
+        grammar:[
+          { label:'부정문', pattern:'不 (bù) — ~않다', desc:'동사·형용사 앞에 不를 붙여 부정합니다. 有의 부정은 예외적으로 没有.', example:'我不是老师。저는 선생님이 아니에요.' },
+          { label:'조동사', pattern:'会 (huì) — ~할 줄 알다', desc:'학습으로 습득한 능력을 표현. 能(체력적 가능)과 구분해서 씁니다.', example:'你会开车吗？운전할 줄 아세요?' },
+        ]},
     ],
     match: [
       { zh:'你好', ko:'안녕하세요' }, { zh:'谢谢', ko:'감사합니다' },
@@ -606,13 +716,39 @@ const DATA = {
       { zh:'努力',   py:'nǔ lì',      ko:'노력하다',   tones:[3,4] },
     ],
     conv: [
-      { zh:'你是做什么工作的？', py:'Nǐ shì zuò shénme gōngzuò de?', ko:'무슨 일 하세요?' },
-      { zh:'我在一家公司上班。', py:'Wǒ zài yī jiā gōngsī shàngbān.', ko:'저는 회사에 다녀요.' },
-      { zh:'你有什么爱好？', py:'Nǐ yǒu shénme àihào?', ko:'취미가 뭐예요?' },
-      { zh:'我喜欢听音乐和旅游。', py:'Wǒ xǐhuān tīng yīnyuè hé lǚyóu.', ko:'저는 음악 듣기와 여행을 좋아해요.' },
-      { zh:'你学中文多长时间了？', py:'Nǐ xué Zhōngwén duō cháng shíjiān le?', ko:'중국어 공부한 지 얼마나 됐어요?' },
-      { zh:'我学了两年了。', py:'Wǒ xué le liǎng nián le.', ko:'2년 됐어요.' },
-      { zh:'能帮我推荐一家餐厅吗？', py:'Néng bāng wǒ tuījiàn yī jiā cāntīng ma?', ko:'식당 좀 추천해 주시겠어요?' },
+      { zh:'你是做什么工作的？', py:'Nǐ shì zuò shénme gōngzuò de?', ko:'무슨 일 하세요?',
+        grammar:[
+          { label:'구조조사', pattern:'的 (de) — 문장 끝 강조', desc:'문장 끝의 的는 강조·확인의 어기를 나타냅니다. "하는 것이다"처럼 상황을 강조해요.', example:'他是坐飞机来的。그는 비행기로 온 거예요.' },
+          { label:'의문사+동사', pattern:'做什么 (zuò shénme)', desc:'做+什么로 "무엇을 하다"를 묻습니다. 직업·행동 모두 물을 수 있어요.', example:'你在做什么？지금 뭐 하고 있어요?' },
+        ]},
+      { zh:'我在一家公司上班。', py:'Wǒ zài yī jiā gōngsī shàngbān.', ko:'저는 회사에 다녀요.',
+        grammar:[
+          { label:'양사', pattern:'一家 (yī jiā)', desc:'家는 가게·회사·식당 등 장소를 세는 양사입니다. 중국어는 명사마다 양사가 달라요.', example:'一家餐厅 식당 한 곳 / 一家医院 병원 하나' },
+          { label:'장소전치사', pattern:'在+장소+동사', desc:'在는 "~에서"라는 장소 전치사. 동사 앞에 위치합니다.', example:'我在家工作。저는 집에서 일해요.' },
+        ]},
+      { zh:'你有什么爱好？', py:'Nǐ yǒu shénme àihào?', ko:'취미가 뭐예요?',
+        grammar:[
+          { label:'有+什么', pattern:'有什么…？', desc:'有什么+명사로 "어떤 ~이 있나요?"를 묻는 패턴. 취미·의견·계획 등에 활용.', example:'你有什么计划？어떤 계획이 있어요?' },
+        ]},
+      { zh:'我喜欢听音乐和旅游。', py:'Wǒ xǐhuān tīng yīnyuè hé lǚyóu.', ko:'저는 음악 듣기와 여행을 좋아해요.',
+        grammar:[
+          { label:'동사+목적어', pattern:'听音乐 — 음악을 듣다', desc:'중국어는 동사+목적어가 명사처럼 쓰입니다. 听音乐, 看书, 打篮球처럼 씁니다.', example:'我喜欢看电影。저는 영화 보기를 좋아해요.' },
+          { label:'접속사', pattern:'和 (hé) — 그리고/와', desc:'명사·명사구를 연결합니다. 절(문장)을 연결할 때는 和 대신 而且·并且를 씁니다.', example:'苹果和香蕉。사과와 바나나.' },
+        ]},
+      { zh:'你学中文多长时间了？', py:'Nǐ xué Zhōngwén duō cháng shíjiān le?', ko:'중국어 공부한 지 얼마나 됐어요?',
+        grammar:[
+          { label:'기간묻기', pattern:'多长时间 (duō cháng shíjiān)', desc:'"얼마나 오래"를 묻는 표현. 了와 함께 써서 경과 시간을 나타냅니다.', example:'你在这儿住了多长时间了？여기 산 지 얼마나 됐어요?' },
+          { label:'완료·경과조사', pattern:'了 (le)', desc:'동작의 완료 또는 상태 변화를 나타냅니다. 문장 끝에 쓰면 경과 시간 표현에 사용.', example:'我来了三年了。온 지 3년 됐어요.' },
+        ]},
+      { zh:'我学了两年了。', py:'Wǒ xué le liǎng nián le.', ko:'2년 됐어요.',
+        grammar:[
+          { label:'숫자+기간', pattern:'两年 (liǎng nián)', desc:'2를 표현할 때 두 가지 방법이 있어요. 숫자만 셀 때는 二, 양사 앞에서는 两을 씁니다.', example:'两个月 두 달 / 两年 2년 / 二十 20' },
+        ]},
+      { zh:'能帮我推荐一家餐厅吗？', py:'Néng bāng wǒ tuījiàn yī jiā cāntīng ma?', ko:'식당 좀 추천해 주시겠어요?',
+        grammar:[
+          { label:'조동사', pattern:'能 (néng) — ~할 수 있다', desc:'상황·조건상 가능을 나타냅니다. 会(실력), 可以(허가)와 구분해서 사용.', example:'你能帮我吗？도와줄 수 있어요?' },
+          { label:'겸어문', pattern:'帮+사람+동사', desc:'帮(~를 위해)는 겸어문 구조를 만듭니다. 帮我+동사 = "나를 위해 ~해주다".', example:'帮我拿一下。좀 집어주세요.' },
+        ]},
     ],
     match: [
       { zh:'旅游', ko:'여행' }, { zh:'朋友', ko:'친구' },
@@ -649,12 +785,35 @@ const DATA = {
       { zh:'尽管如此',py:'jǐn guǎn rú cǐ',ko:'그렇더라도',tones:[3,3,2,3] },
     ],
     conv: [
-      { zh:'您对中韩关系有什么看法？', py:'Nín duì Zhōng-Hán guānxi yǒu shénme kànfǎ?', ko:'중한 관계에 대해 어떻게 생각하세요?' },
-      { zh:'这个问题很复杂，需要多方面考虑。', py:'Zhège wèntí hěn fùzá, xūyào duō fāngmiàn kǎolǜ.', ko:'이 문제는 복잡해서 여러 면을 고려해야 해요.' },
-      { zh:'人工智能会影响就业市场吗？', py:'Réngōng zhìnéng huì yǐngxiǎng jiùyè shìchǎng ma?', ko:'인공지능이 취업 시장에 영향을 줄까요?' },
-      { zh:'毋庸置疑，科技革新带来机遇也带来挑战。', py:'Wú yōng zhì yí, kējì gēxīn dài lái jīyù yě dài lái tiǎozhàn.', ko:'의심할 여지 없이, 기술 혁신은 기회와 도전을 모두 가져옵니다.' },
-      { zh:'请问这份报告的论点是什么？', py:'Qǐngwèn zhè fèn bàogào de lùndiǎn shì shénme?', ko:'이 보고서의 논점이 무엇인가요?' },
-      { zh:'在全球化背景下，文化多元化显得尤为重要。', py:'Zài quánqiúhuà bèijǐng xià, wénhuà duōyuán huà xiǎn de yóu wéi zhòngyào.', ko:'세계화 배경 속에서 문화 다양성이 특히 중요합니다.' },
+      { zh:'您对中韩关系有什么看法？', py:'Nín duì Zhōng-Hán guānxi yǒu shénme kànfǎ?', ko:'중한 관계에 대해 어떻게 생각하세요?',
+        grammar:[
+          { label:'전치사', pattern:'对 (duì) — ~에 대해', desc:'주제·대상을 도입하는 전치사. 对+명사+동사 구조로 의견·태도를 표현합니다.', example:'我对这件事有意见。이 일에 대해 의견이 있어요.' },
+          { label:'존칭', pattern:'您 (nín)', desc:'你의 존칭 형태. 어른·처음 만나는 분·격식 상황에서 사용합니다.', example:'您好！안녕하세요!(존댓말)' },
+        ]},
+      { zh:'这个问题很复杂，需要多方面考虑。', py:'Zhège wèntí hěn fùzá, xūyào duō fāngmiàn kǎolǜ.', ko:'이 문제는 복잡해서 여러 면을 고려해야 해요.',
+        grammar:[
+          { label:'조동사', pattern:'需要 (xūyào) — ~가 필요하다/해야 한다', desc:'필요성을 나타내는 조동사. 명사·동사 모두 목적어로 취합니다.', example:'你需要休息。당신은 휴식이 필요해요.' },
+          { label:'다면적표현', pattern:'多方面 (duō fāngmiàn)', desc:'여러 방면에서. 多+명사 구조로 수량·정도의 다양성을 표현합니다.', example:'多角度思考。다각도로 생각하다.' },
+        ]},
+      { zh:'人工智能会影响就业市场吗？', py:'Réngōng zhìnéng huì yǐngxiǎng jiùyè shìchǎng ma?', ko:'인공지능이 취업 시장에 영향을 줄까요?',
+        grammar:[
+          { label:'미래조동사', pattern:'会 (huì) — ~할 것이다', desc:'미래의 가능성·예측을 나타냅니다. 习得(학습) 능력과 맥락으로 구분.', example:'明天会下雨。내일 비가 올 거예요.' },
+          { label:'전문용어', pattern:'人工智能 AI / 就业市场 취업시장', desc:'复合名词(복합명사)는 각 한자의 의미를 조합해 읽으면 됩니다.', example:'人工=인공, 智能=지능 → 인공지능' },
+        ]},
+      { zh:'毋庸置疑，科技革新带来机遇也带来挑战。', py:'Wú yōng zhì yí, kējì gēxīn dài lái jīyù yě dài lái tiǎozhàn.', ko:'의심할 여지 없이, 기술 혁신은 기회와 도전을 모두 가져옵니다.',
+        grammar:[
+          { label:'사자성어', pattern:'毋庸置疑 (wú yōng zhì yí)', desc:'"의심할 필요가 없다"는 뜻의 四字成语. 논설·연설에서 강조할 때 사용.', example:'毋庸置疑，健康最重要。건강이 최우선임은 두말할 나위가 없다.' },
+          { label:'병렬구조', pattern:'…也… — ~도 ~도', desc:'也로 두 가지를 병렬 연결. 既…也…(~이기도 하고 ~이기도 하다) 패턴도 활용.', example:'他既聪明也努力。그는 똑똑하기도 하고 부지런하기도 해요.' },
+        ]},
+      { zh:'请问这份报告的论点是什么？', py:'Qǐngwèn zhè fèn bàogào de lùndiǎn shì shénme?', ko:'이 보고서의 논점이 무엇인가요?',
+        grammar:[
+          { label:'양사', pattern:'份 (fèn) — 문서·신문을 세는 단위', desc:'文件·报告·报纸처럼 인쇄·문서류를 세는 양사입니다.', example:'一份简历 이력서 한 장 / 两份报告 보고서 두 개' },
+        ]},
+      { zh:'在全球化背景下，文化多元化显得尤为重要。', py:'Zài quánqiúhuà bèijǐng xià, wénhuà duōyuán huà xiǎn de yóu wéi zhòngyào.', ko:'세계화 배경 속에서 문화 다양성이 특히 중요합니다.',
+        grammar:[
+          { label:'배경표현', pattern:'在…背景下 — ~배경 하에서', desc:'격식체 문어에서 자주 쓰는 상황·배경 도입 패턴.', example:'在经济危机背景下。경제 위기의 배경 하에서.' },
+          { label:'부사강조', pattern:'尤为 (yóu wéi) — 특히/더욱', desc:'尤其·格外와 유사. 문어·격식체에서 형용사 앞에 써 강조합니다.', example:'这一点尤为关键。이 점이 특히 중요합니다.' },
+        ]},
     ],
     match: [
       { zh:'经济', ko:'경제' }, { zh:'文化', ko:'문화' },
@@ -828,14 +987,43 @@ function initConv() {
   const badge = document.getElementById('conv-level-badge');
   badge.className = `level-badge badge-${currentLevel}`;
   badge.textContent = currentLevel === 'beginner' ? '초급' : currentLevel === 'intermediate' ? '중급' : '고급';
+  // reset grammar panel
+  document.getElementById('grammar-empty').style.display = '';
+  document.getElementById('grammar-content').style.display = 'none';
   const list = document.getElementById('conv-list');
   list.innerHTML = d.conv.map((c,i) => `
-    <div class="conv-item" onclick="this.classList.toggle('expanded')" id="ci-${i}">
+    <div class="conv-item" onclick="showGrammar(${i})" id="ci-${i}">
       <div class="conv-zh">${c.zh}</div>
       <div class="conv-pinyin">${c.py}</div>
       <div class="conv-ko">${c.ko}</div>
-      <div class="conv-expand">눌러서 번역 보기 ▼</div>
+      <div class="conv-expand">눌러서 번역·문법 보기 ▼</div>
     </div>`).join('');
+}
+
+function showGrammar(i) {
+  const d = DATA[currentLevel].conv[i];
+  // toggle active state on list items
+  document.querySelectorAll('.conv-item').forEach((el, idx) => {
+    el.classList.toggle('active-grammar', idx === i);
+  });
+  // show grammar panel
+  document.getElementById('grammar-empty').style.display = 'none';
+  document.getElementById('grammar-content').style.display = '';
+  document.getElementById('gp-zh').textContent = d.zh;
+  document.getElementById('gp-py').textContent = d.py;
+  document.getElementById('gp-ko').textContent = d.ko;
+  const pts = d.grammar || [];
+  document.getElementById('gp-points').innerHTML = pts.map(p => `
+    <div class="grammar-point">
+      <div class="gp-label">${p.label}</div>
+      <div class="gp-pattern">${p.pattern}</div>
+      <div class="gp-desc">${p.desc}</div>
+      ${p.example ? `<div class="gp-example">예) ${p.example}</div>` : ''}
+    </div>`).join('');
+  // on mobile, scroll grammar panel into view
+  if (window.innerWidth < 720) {
+    document.getElementById('grammar-panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
 }
 
 /* ---- GAMES ---- */
