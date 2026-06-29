@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중국어 학습 — 汉语学习</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #181c27;
+    --card: #1e2334;
+    --card2: #252a3a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f0;
+    --text2: #a8afc4;
+    --text3: #6b7494;
+    --red: #e05c5c;
+    --red-bg: rgba(224,92,92,0.12);
+    --orange: #f4875a;
+    --orange-bg: rgba(244,135,90,0.12);
+    --blue: #5b8ef4;
+    --blue-bg: rgba(91,142,244,0.12);
+    --green: #4ecba4;
+    --green-bg: rgba(78,203,164,0.12);
+    --purple: #a07bf5;
+    --purple-bg: rgba(160,123,245,0.12);
+    --yellow: #f4c94a;
+    --yellow-bg: rgba(244,201,74,0.12);
+    --radius: 12px;
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  /* NAV */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    height: 60px;
+  }
+  .nav-logo {
+    font-size: 1.2rem; font-weight: 700;
+    background: linear-gradient(135deg, #e05c5c, #a07bf5);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-right: auto;
+  }
+  .nav-logo span { font-size: 0.75rem; font-weight: 400; display: block; color: var(--text3); -webkit-text-fill-color: var(--text3); }
+  .level-tabs {
+    display: flex; gap: 4px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .level-tab {
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; border: none;
+    background: transparent; color: var(--text2);
+    transition: var(--transition);
+  }
+  .level-tab.active { background: var(--card2); color: var(--text); }
+  .level-tab[data-lv="beginner"].active { color: var(--green); }
+  .level-tab[data-lv="intermediate"].active { color: var(--blue); }
+  .level-tab[data-lv="advanced"].active { color: var(--purple); }
+
+  /* MAIN */
+  .main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* MODULE GRID */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .module-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative; overflow: hidden;
+  }
+  .module-btn:hover { border-color: var(--border2); background: var(--card2); }
+  .module-btn.active { border-color: var(--module-color); background: var(--module-bg); }
+  .module-icon { font-size: 1.5rem; }
+  .module-name { font-size: 0.82rem; font-weight: 600; color: var(--text2); }
+  .module-btn.active .module-name { color: var(--module-color); }
+  .module-sub { font-size: 0.72rem; color: var(--text3); }
+
+  /* CONTENT AREA */
+  .content-area { min-height: 460px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text3);
+    margin-bottom: 1rem;
+  }
+
+  /* FLASHCARD */
+  .flashcard-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+  }
+  .flashcard {
+    width: 100%; max-width: 420px;
+    min-height: 220px;
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px;
+    transition: transform 0.15s ease;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    perspective: 600px;
+  }
+  .flashcard:hover { transform: scale(1.01); }
+  .fc-char { font-size: 3.5rem; line-height: 1; }
+  .fc-pinyin { font-size: 1.1rem; color: var(--text2); display: none; }
+  .fc-meaning { font-size: 1.2rem; font-weight: 600; display: none; }
+  .fc-hint { font-size: 0.75rem; color: var(--text3); margin-top: 8px; }
+  .flashcard.revealed .fc-pinyin,
+  .flashcard.revealed .fc-meaning { display: block; }
+  .flashcard.revealed .fc-hint { display: none; }
+  .fc-tone-bar {
+    display: flex; gap: 6px; margin-bottom: 4px;
+  }
+  .tone-badge {
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
+    background: var(--blue-bg); color: var(--blue);
+    font-weight: 600;
+  }
+  .fc-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    padding: 10px 22px; border-radius: 8px; font-size: 0.88rem;
+    font-weight: 600; cursor: pointer; border: 1px solid var(--border2);
+    background: var(--card2); color: var(--text);
+    transition: var(--transition);
+  }
+  .btn:hover { background: var(--card); border-color: var(--border2); }
+  .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-success { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .btn-danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+  /* FLASHCARD PROGRESS */
+  .fc-progress {
+    display: flex; align-items: center; gap: 12px; font-size: 0.82rem; color: var(--text3);
+    width: 100%; max-width: 420px;
+  }
+  .progress-bar { flex: 1; height: 4px; background: var(--card2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; background: var(--blue); transition: width 0.3s ease; }
+
+  /* TONES */
+  .tones-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .tone-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer;
+    transition: var(--transition);
+  }
+  .tone-card:hover { border-color: var(--border2); }
+  .tone-card.selected { border-color: var(--module-color, var(--blue)); }
+  .tone-mark { font-size: 1.8rem; margin-bottom: 4px; }
+  .tone-number { font-size: 0.75rem; font-weight: 700; color: var(--text3); }
+  .tone-desc { font-size: 0.72rem; color: var(--text2); margin-top: 4px; }
+
+  .practice-word {
+    font-size: 3rem; text-align: center; padding: 1.5rem;
+    background: var(--card2); border-radius: 12px;
+    border: 1px solid var(--border); margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+  }
+  .tone-quiz { text-align: center; }
+  .tone-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 380px; margin: 0 auto; }
+  .tone-choice-btn {
+    padding: 14px; border-radius: 10px;
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); cursor: pointer; font-size: 0.95rem; font-weight: 600;
+    transition: var(--transition);
+  }
+  .tone-choice-btn:hover { border-color: var(--border2); }
+  .tone-choice-btn.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .tone-choice-btn.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+  /* CONVERSATION */
+  .conv-list { display: flex; flex-direction: column; gap: 10px; }
+  .conv-item {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.2rem;
+    cursor: pointer; transition: var(--transition);
+  }
+  .conv-item:hover { border-color: var(--border2); }
+  .conv-item.expanded { border-color: var(--orange); }
+  .conv-zh { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
+  .conv-pinyin { font-size: 0.88rem; color: var(--text2); }
+  .conv-ko { font-size: 0.88rem; color: var(--orange); margin-top: 6px; display: none; }
+  .conv-item.expanded .conv-ko { display: block; }
+  .conv-expand { font-size: 0.72rem; color: var(--text3); margin-top: 4px; }
+  .conv-item.expanded .conv-expand { display: none; }
+
+  /* GAMES */
+  .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .game-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+    cursor: pointer; transition: var(--transition);
+    text-align: center;
+  }
+  .game-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .game-emoji { font-size: 2rem; margin-bottom: 8px; }
+  .game-name { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+  .game-desc { font-size: 0.77rem; color: var(--text2); }
+
+  /* MATCHING GAME */
+  .match-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .match-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 0.5rem;
+    text-align: center; cursor: pointer; transition: var(--transition);
+    min-height: 70px; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 600;
+  }
+  .match-card:hover { border-color: var(--border2); }
+  .match-card.selected { border-color: var(--blue); background: var(--blue-bg); }
+  .match-card.matched { border-color: var(--green); background: var(--green-bg); color: var(--green); pointer-events: none; }
+  .match-card.wrong { border-color: var(--red); background: var(--red-bg); }
+
+  /* CHAT */
+  .chat-container {
+    display: flex; flex-direction: column; gap: 0;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    height: 480px;
+  }
+  .chat-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card2);
+  }
+  .chat-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 700;
+  }
+  .chat-info .chat-name { font-size: 0.9rem; font-weight: 600; }
+  .chat-info .chat-status { font-size: 0.72rem; color: var(--green); }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 1rem;
+    display: flex; flex-direction: column; gap: 10px;
+    scroll-behavior: smooth;
+  }
+  .msg {
+    max-width: 78%; padding: 10px 14px;
+    border-radius: 14px; font-size: 0.9rem; line-height: 1.55;
+  }
+  .msg.ai {
+    align-self: flex-start;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 4px 14px 14px 14px;
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: var(--blue); color: #fff;
+    border-radius: 14px 4px 14px 14px;
+  }
+  .msg-zh { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+  .msg-pinyin { font-size: 0.78rem; color: var(--text3); }
+  .msg-ko { font-size: 0.82rem; color: var(--text2); margin-top: 2px; }
+  .chat-input-row {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+    background: var(--card2);
+  }
+  .chat-input {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; font-size: 0.9rem;
+    color: var(--text); outline: none;
+    transition: var(--transition);
+  }
+  .chat-input:focus { border-color: var(--blue); }
+  .chat-send {
+    background: var(--blue); border: none;
+    border-radius: 10px; padding: 10px 18px;
+    color: #fff; font-weight: 700; cursor: pointer;
+    transition: var(--transition); font-size: 0.88rem;
+  }
+  .chat-send:hover { opacity: 0.85; }
+  .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  .quick-replies {
+    padding: 8px 10px 0;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .qr-btn {
+    font-size: 0.77rem; padding: 5px 12px; border-radius: 20px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text2); cursor: pointer; transition: var(--transition);
+  }
+  .qr-btn:hover { border-color: var(--border2); color: var(--text); }
+  .typing { display: none; font-size: 0.82rem; color: var(--text3); padding: 6px 0; }
+  .typing.active { display: block; }
+  .level-badge {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px; margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-beginner { background: var(--green-bg); color: var(--green); }
+  .badge-intermediate { background: var(--blue-bg); color: var(--blue); }
+  .badge-advanced { background: var(--purple-bg); color: var(--purple); }
+
+  /* FILL BLANK */
+  .fill-sentence {
+    font-size: 1.4rem; text-align: center; padding: 1.5rem;
+    line-height: 2.2;
+  }
+  .blank-input {
+    display: inline-block;
+    width: 80px; height: 36px;
+    background: var(--card2);
+    border: 2px solid var(--border2);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text);
+    outline: none;
+    vertical-align: middle;
+    transition: var(--transition);
+  }
+  .blank-input:focus { border-color: var(--blue); }
+  .blank-input.correct { border-color: var(--green); background: var(--green-bg); }
+  .blank-input.wrong { border-color: var(--red); background: var(--red-bg); }
+  .result-msg { text-align: center; font-size: 0.9rem; margin-top: 1rem; min-height: 24px; }
+  .result-msg.ok { color: var(--green); }
+  .result-msg.fail { color: var(--red); }
+
+  /* SCORE */
+  .score-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; color: var(--text3);
+    margin-bottom: 1rem;
+  }
+  .score-num { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .tones-grid { grid-template-columns: repeat(2,1fr); }
+    .games-grid { grid-template-columns: 1fr; }
+    .match-grid { grid-template-columns: repeat(3,1fr); }
+    .module-grid { grid-template-columns: repeat(3,1fr); }
+    .nav { padding: 0 1rem; gap: 0.5rem; }
+    .level-tab { padding: 5px 8px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">汉语学习 <span>Chinese Learning</span></div>
+  <div class="level-tabs">
+    <button class="level-tab active" data-lv="beginner" onclick="setLevel('beginner')">初级</button>
+    <button class="level-tab" data-lv="intermediate" onclick="setLevel('intermediate')">中级</button>
+    <button class="level-tab" data-lv="advanced" onclick="setLevel('advanced')">高级</button>
+  </div>
+</nav>
+
+<main class="main">
+  <!-- MODULE TABS -->
+  <div class="module-grid" id="moduleGrid"></div>
+
+  <!-- CONTENT SECTIONS -->
+  <div class="content-area">
+
+    <!-- 1. VOCABULARY FLASHCARDS -->
+    <div class="section" id="sec-vocab">
+      <div class="card">
+        <div class="card-title">단어 학습 <span id="vocab-level-badge"></span></div>
+        <div class="flashcard-wrap">
+          <div class="fc-progress">
+            <span id="fc-count">1 / 10</span>
+            <div class="progress-bar"><div class="progress-fill" id="fc-bar" style="width:10%"></div></div>
+            <span id="fc-score">✓ 0</span>
+          </div>
+          <div class="flashcard" id="flashcard" onclick="revealCard()">
+            <div class="fc-tone-bar" id="fc-tone-bar"></div>
+            <div class="fc-char" id="fc-char">你好</div>
+            <div class="fc-pinyin" id="fc-pinyin">nǐ hǎo</div>
+            <div class="fc-meaning" id="fc-meaning">안녕하세요</div>
+            <div class="fc-hint">눌러서 확인</div>
+          </div>
+          <div class="fc-controls">
+            <button class="btn btn-danger" id="btn-wrong" onclick="nextCard(false)" style="display:none">몰라요 ✗</button>
+            <button class="btn btn-success" id="btn-correct" onclick="nextCard(true)" style="display:none">알아요 ✓</button>
+            <button class="btn" onclick="revealCard()" id="btn-reveal">뒤집기 👁</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TONES -->
+    <div class="section" id="sec-tones">
+      <div class="card">
+        <div class="card-title">성조 학습</div>
+        <div class="tones-grid">
+          <div class="tone-card" onclick="playTone(1)">
+            <div class="tone-mark">ā</div>
+            <div class="tone-number">1성</div>
+            <div class="tone-desc">높고 평평하게 →</div>
+          </div>
+          <div class="tone-card" onclick="playTone(2)">
+            <div class="tone-mark">á</div>
+            <div class="tone-number">2성</div>
+            <div class="tone-desc">올라가듯 ↗</div>
+          </div>
+          <div class="tone-card" onclick="playTone(3)">
+            <div class="tone-mark">ǎ</div>
+            <div class="tone-number">3성</div>
+            <div class="tone-desc">내렸다 올라가듯 ↘↗</div>
+          </div>
+          <div class="tone-card" onclick="playTone(4)">
+            <div class="tone-mark">à</div>
+            <div class="tone-number">4성</div>
+            <div class="tone-desc">강하게 내려가듯 ↘</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">성조 퀴즈</div>
+        <div class="tone-quiz">
+          <div class="practice-word" id="tone-word">妈</div>
+          <p style="color:var(--text2);font-size:0.88rem;margin-bottom:1rem;" id="tone-meaning-q">이 글자의 성조는?</p>
+          <div class="tone-choices" id="tone-choices"></div>
+          <div class="result-msg" id="tone-result"></div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="nextToneQ()">다음 ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CONVERSATION -->
+    <div class="section" id="sec-conv">
+      <div class="card">
+        <div class="card-title">회화 문장 학습 <span id="conv-level-badge"></span></div>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;">문장을 눌러 한국어 해석을 확인하세요</p>
+        <div class="conv-list" id="conv-list"></div>
+      </div>
+    </div>
+
+    <!-- 4. GAMES -->
+    <div class="section" id="sec-games">
+      <div id="games-menu">
+        <div class="card">
+          <div class="card-title">학습 놀이</div>
+          <div class="games-grid">
+            <div class="game-card" onclick="startGame('match')">
+              <div class="game-emoji">🎴</div>
+              <div class="game-name">매칭 게임</div>
+              <div class="game-desc">한자와 뜻을 연결하세요</div>
+            </div>
+            <div class="game-card" onclick="startGame('fill')">
+              <div class="game-emoji">✏️</div>
+              <div class="game-name">빈칸 채우기</div>
+              <div class="game-desc">문장의 빈칸을 완성하세요</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="game-match" style="display:none">
+        <div class="card">
+          <div class="card-title">매칭 게임 — 한자와 뜻을 연결하세요</div>
+          <div class="score-row"><span class="score-num" id="match-score">0</span> 점 &nbsp;|&nbsp; <span id="match-pairs">0</span> / <span id="match-total">6</span> 쌍 완성</div>
+          <div class="match-grid" id="match-grid"></div>
+          <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
+        </div>
+      </div>
+      <div id="game-fill" style="display:none">
+        <div class="card">
+          <div class="card-title">빈칸 채우기</div>
+          <div class="score-row"><span class="score-num" id="fill-score">0</span> 점</div>
+          <div class="fill-sentence" id="fill-sentence"></div>
+          <div class="result-msg" id="fill-result"></div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="checkFill()">확인</button>
+            <button class="btn" onclick="nextFill()">다음 ›</button>
+            <button class="btn" onclick="showGamesMenu()">← 돌아가기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. AI CHAT -->
+    <div class="section" id="sec-chat">
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-avatar">李</div>
+          <div class="chat-info">
+            <div class="chat-name">AI 중국어 선생님</div>
+            <div class="chat-status">● 온라인</div>
+          </div>
+          <span style="margin-left:auto;font-size:0.75rem;color:var(--text3)" id="chat-level-tag"></span>
+        </div>
+        <div class="quick-replies" id="quick-replies"></div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="typing" id="typing">선생님이 입력 중...</div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="한국어 또는 중국어로 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()" />
+          <button class="chat-send" id="chat-send-btn" onclick="sendChat()">전송</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const MODULES = [
+  { id:'vocab',  icon:'📖', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
+  { id:'tones',  icon:'🎵', name:'발음·성조',   sub:'성조 퀴즈',      color:'var(--orange)', bg:'var(--orange-bg)' },
+  { id:'conv',   icon:'💬', name:'회화 문장',   sub:'실생활 표현',    color:'var(--orange)', bg:'var(--orange-bg)' },
+  { id:'games',  icon:'🎮', name:'학습 놀이',   sub:'게임으로 복습',  color:'var(--yellow)', bg:'var(--yellow-bg)' },
+  { id:'chat',   icon:'🤖', name:'AI 채팅',     sub:'대화 연습',      color:'var(--purple)', bg:'var(--purple-bg)' },
+];
+
+const DATA = {
+  beginner: {
+    vocab: [
+      { zh:'你好', py:'nǐ hǎo',   ko:'안녕하세요',  tones:[2,3] },
+      { zh:'谢谢', py:'xiè xie',  ko:'감사합니다',  tones:[4,0] },
+      { zh:'再见', py:'zài jiàn', ko:'잘가요/안녕히',tones:[4,4] },
+      { zh:'对不起',py:'duì bu qǐ',ko:'미안합니다',  tones:[4,0,3] },
+      { zh:'没关系',py:'méi guān xi',ko:'괜찮아요',  tones:[2,1,0] },
+      { zh:'我',   py:'wǒ',       ko:'나/저',       tones:[3] },
+      { zh:'你',   py:'nǐ',       ko:'너/당신',     tones:[3] },
+      { zh:'他',   py:'tā',       ko:'그/그사람',   tones:[1] },
+      { zh:'好',   py:'hǎo',      ko:'좋다/좋아요', tones:[3] },
+      { zh:'是',   py:'shì',      ko:'이다/맞다',   tones:[4] },
+    ],
+    conv: [
+      { zh:'你好吗？',     py:'Nǐ hǎo ma?',         ko:'잘 지내세요?' },
+      { zh:'我很好，谢谢。', py:'Wǒ hěn hǎo, xiè xie.', ko:'저 잘 지내요, 감사합니다.' },
+      { zh:'你叫什么名字？', py:'Nǐ jiào shénme míngzi?', ko:'이름이 뭐예요?' },
+      { zh:'我叫金太贤。',  py:'Wǒ jiào Jīn Tàixián.',  ko:'저는 김태현이에요.' },
+      { zh:'请问，厕所在哪里？', py:'Qǐngwèn, cèsuǒ zài nǎlǐ?', ko:'실례지만, 화장실이 어디예요?' },
+      { zh:'多少钱？',    py:'Duōshǎo qián?',       ko:'얼마예요?' },
+      { zh:'我不会说中文。', py:'Wǒ bù huì shuō Zhōngwén.', ko:'저는 중국어를 못해요.' },
+    ],
+    match: [
+      { zh:'你好', ko:'안녕하세요' }, { zh:'谢谢', ko:'감사합니다' },
+      { zh:'我', ko:'나/저' },       { zh:'好', ko:'좋다' },
+      { zh:'是', ko:'이다' },        { zh:'不', ko:'아니다' },
+    ],
+    fill: [
+      { sentence:'___好，我是老师。', blank:'你', hint:'상대방을 가리키는 말' },
+      { sentence:'谢_，我很好。', blank:'谢', hint:'감사합니다' },
+      { sentence:'我___中国人。', blank:'是', hint:'be동사' },
+      { sentence:'再___，明天见！', blank:'见', hint:'잘가요' },
+    ],
+    tones: [
+      { zh:'妈', py:'mā', tone:1 }, { zh:'麻', py:'má', tone:2 },
+      { zh:'马', py:'mǎ', tone:3 }, { zh:'骂', py:'mà', tone:4 },
+      { zh:'八', py:'bā', tone:1 }, { zh:'白', py:'bái', tone:2 },
+      { zh:'把', py:'bǎ', tone:3 }, { zh:'爸', py:'bà', tone:4 },
+    ],
+    quickReplies: ['你好！', '我不明白', '请再说一遍', '谢谢你'],
+    systemPrompt: `당신은 친절한 초급 중국어 선생님입니다. 학생은 중국어를 막 시작한 초보자입니다.
+규칙: 1) 간단한 중국어로 대화하고 반드시 한국어 번역을 제공하세요. 2) 새로운 단어나 표현은 병음(pinyin)과 함께 설명하세요. 3) 학생이 실수해도 격려해주세요. 4) 각 메시지는 짧고 명확하게 해주세요.
+형식: 중국어 문장 (pinyin) — 한국어 번역 순서로 작성하세요.`,
+  },
+  intermediate: {
+    vocab: [
+      { zh:'旅游',   py:'lǚ yóu',     ko:'여행',       tones:[3,2] },
+      { zh:'美丽',   py:'měi lì',     ko:'아름답다',   tones:[3,4] },
+      { zh:'工作',   py:'gōng zuò',   ko:'일/직업',    tones:[1,4] },
+      { zh:'朋友',   py:'péng yǒu',   ko:'친구',       tones:[2,3] },
+      { zh:'喜欢',   py:'xǐ huān',    ko:'좋아하다',   tones:[3,1] },
+      { zh:'一起',   py:'yī qǐ',      ko:'함께/같이',  tones:[1,3] },
+      { zh:'学习',   py:'xué xí',     ko:'공부하다',   tones:[2,2] },
+      { zh:'认识',   py:'rèn shí',    ko:'알다/아는 사이',tones:[4,2] },
+      { zh:'有意思', py:'yǒu yì si',  ko:'재미있다',   tones:[3,4,0] },
+      { zh:'努力',   py:'nǔ lì',      ko:'노력하다',   tones:[3,4] },
+    ],
+    conv: [
+      { zh:'你是做什么工作的？', py:'Nǐ shì zuò shénme gōngzuò de?', ko:'무슨 일 하세요?' },
+      { zh:'我在一家公司上班。', py:'Wǒ zài yī jiā gōngsī shàngbān.', ko:'저는 회사에 다녀요.' },
+      { zh:'你有什么爱好？', py:'Nǐ yǒu shénme àihào?', ko:'취미가 뭐예요?' },
+      { zh:'我喜欢听音乐和旅游。', py:'Wǒ xǐhuān tīng yīnyuè hé lǚyóu.', ko:'저는 음악 듣기와 여행을 좋아해요.' },
+      { zh:'你学中文多长时间了？', py:'Nǐ xué Zhōngwén duō cháng shíjiān le?', ko:'중국어 공부한 지 얼마나 됐어요?' },
+      { zh:'我学了两年了。', py:'Wǒ xué le liǎng nián le.', ko:'2년 됐어요.' },
+      { zh:'能帮我推荐一家餐厅吗？', py:'Néng bāng wǒ tuījiàn yī jiā cāntīng ma?', ko:'식당 좀 추천해 주시겠어요?' },
+    ],
+    match: [
+      { zh:'旅游', ko:'여행' }, { zh:'朋友', ko:'친구' },
+      { zh:'工作', ko:'직업/일' }, { zh:'喜欢', ko:'좋아하다' },
+      { zh:'学习', ko:'공부하다' }, { zh:'努力', ko:'노력하다' },
+    ],
+    fill: [
+      { sentence:'我___去旅游了。', blank:'想', hint:'~하고 싶다' },
+      { sentence:'你有___朋友吗？', blank:'好', hint:'좋은' },
+      { sentence:'我们一___去吃饭吧。', blank:'起', hint:'함께' },
+      { sentence:'她非常努___。', blank:'力', hint:'노력' },
+    ],
+    tones: [
+      { zh:'旅游', py:'lǚ yóu', tone:3 }, { zh:'工作', py:'gōng zuò', tone:1 },
+      { zh:'朋友', py:'péng yǒu', tone:2 }, { zh:'喜欢', py:'xǐ huān', tone:3 },
+      { zh:'学习', py:'xué xí', tone:2 }, { zh:'努力', py:'nǔ lì', tone:3 },
+    ],
+    quickReplies: ['请解释一下', '用法是什么？', '可以举个例子吗？', '这个怎么说？'],
+    systemPrompt: `당신은 중급 중국어 선생님입니다. 학생은 기초를 알고 있고 더 자연스러운 표현을 배우고 싶어합니다.
+규칙: 1) 자연스럽고 일상적인 중국어 표현을 가르쳐주세요. 2) 문법 설명을 간결하게 해주세요. 3) 유용한 예문을 제공하세요. 4) 학생이 중국어로 말하도록 격려하세요.
+형식: 중국어 문장 (pinyin) — 한국어 번역. 문법 포인트는 따로 설명해주세요.`,
+  },
+  advanced: {
+    vocab: [
+      { zh:'影响',   py:'yǐng xiǎng', ko:'영향을 끼치다', tones:[3,3] },
+      { zh:'经济',   py:'jīng jì',    ko:'경제',         tones:[1,4] },
+      { zh:'发展',   py:'fā zhǎn',    ko:'발전',         tones:[1,3] },
+      { zh:'文化',   py:'wén huà',    ko:'문화',         tones:[2,4] },
+      { zh:'传统',   py:'chuán tǒng', ko:'전통',         tones:[2,3] },
+      { zh:'社会',   py:'shè huì',    ko:'사회',         tones:[4,4] },
+      { zh:'科技',   py:'kē jì',      ko:'과학기술',     tones:[1,4] },
+      { zh:'环境',   py:'huán jìng',  ko:'환경',         tones:[2,4] },
+      { zh:'改变',   py:'gǎi biàn',   ko:'바꾸다/변화',  tones:[3,4] },
+      { zh:'尽管如此',py:'jǐn guǎn rú cǐ',ko:'그렇더라도',tones:[3,3,2,3] },
+    ],
+    conv: [
+      { zh:'您对中韩关系有什么看法？', py:'Nín duì Zhōng-Hán guānxi yǒu shénme kànfǎ?', ko:'중한 관계에 대해 어떻게 생각하세요?' },
+      { zh:'这个问题很复杂，需要多方面考虑。', py:'Zhège wèntí hěn fùzá, xūyào duō fāngmiàn kǎolǜ.', ko:'이 문제는 복잡해서 여러 면을 고려해야 해요.' },
+      { zh:'人工智能会影响就业市场吗？', py:'Réngōng zhìnéng huì yǐngxiǎng jiùyè shìchǎng ma?', ko:'인공지능이 취업 시장에 영향을 줄까요?' },
+      { zh:'毋庸置疑，科技革新带来机遇也带来挑战。', py:'Wú yōng zhì yí, kējì gēxīn dài lái jīyù yě dài lái tiǎozhàn.', ko:'의심할 여지 없이, 기술 혁신은 기회와 도전을 모두 가져옵니다.' },
+      { zh:'请问这份报告的论点是什么？', py:'Qǐngwèn zhè fèn bàogào de lùndiǎn shì shénme?', ko:'이 보고서의 논점이 무엇인가요?' },
+      { zh:'在全球化背景下，文化多元化显得尤为重要。', py:'Zài quánqiúhuà bèijǐng xià, wénhuà duōyuán huà xiǎn de yóu wéi zhòngyào.', ko:'세계화 배경 속에서 문화 다양성이 특히 중요합니다.' },
+    ],
+    match: [
+      { zh:'经济', ko:'경제' }, { zh:'文化', ko:'문화' },
+      { zh:'科技', ko:'과학기술' }, { zh:'社会', ko:'사회' },
+      { zh:'环境', ko:'환경' }, { zh:'传统', ko:'전통' },
+    ],
+    fill: [
+      { sentence:'经济的___展需要科技创新。', blank:'发', hint:'발전' },
+      { sentence:'文化___统应该被保护。', blank:'传', hint:'전통' },
+      { sentence:'这个___境问题很严重。', blank:'环', hint:'환경' },
+      { sentence:'人工智___影响了社会。', blank:'能', hint:'능력/지능' },
+    ],
+    tones: [
+      { zh:'影响', py:'yǐng xiǎng', tone:3 }, { zh:'经济', py:'jīng jì', tone:1 },
+      { zh:'文化', py:'wén huà', tone:2 }, { zh:'科技', py:'kē jì', tone:1 },
+      { zh:'社会', py:'shè huì', tone:4 }, { zh:'环境', py:'huán jìng', tone:2 },
+    ],
+    quickReplies: ['请分析一下', '有更高级的表达吗？', '这在正式场合怎么说？', '请举一个实例'],
+    systemPrompt: `당신은 고급 중국어 선생님입니다. 학생은 중국어를 유창하게 하며 고급 표현, 사자성어, 격식체 등을 배우고 싶어합니다.
+규칙: 1) 복잡한 문법과 고급 어휘를 사용하세요. 2) 사자성어(成语) 설명을 포함하면 좋습니다. 3) 사회, 문화, 시사 주제로 토론하세요. 4) 학생의 표현을 더 자연스럽게 교정해주세요.
+형식: 자연스러운 중국어로 대화하되, 어려운 표현은 괄호로 한국어 설명을 넣어주세요.`,
+  }
+};
+
+let currentLevel = 'beginner';
+let currentModule = 'vocab';
+let fcIndex = 0, fcScore = 0;
+let toneQIndex = 0;
+let matchSelected = null, matchMatched = 0, matchScore = 0;
+let fillIndex = 0, fillScore = 0;
+let chatHistory = [];
+
+/* ---- INIT ---- */
+function init() {
+  renderModules();
+  setModule('vocab');
+}
+
+function renderModules() {
+  const g = document.getElementById('moduleGrid');
+  g.innerHTML = MODULES.map(m => `
+    <button class="module-btn" id="mbtn-${m.id}" 
+      style="--module-color:${m.color};--module-bg:${m.bg};"
+      onclick="setModule('${m.id}')">
+      <div class="module-icon">${m.icon}</div>
+      <div class="module-name">${m.name}</div>
+      <div class="module-sub">${m.sub}</div>
+    </button>`).join('');
+}
+
+function setLevel(lv) {
+  currentLevel = lv;
+  document.querySelectorAll('.level-tab').forEach(t => t.classList.toggle('active', t.dataset.lv === lv));
+  setModule(currentModule);
+}
+
+function setModule(mod) {
+  currentModule = mod;
+  document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const btn = document.getElementById(`mbtn-${mod}`);
+  if (btn) btn.classList.add('active');
+  const sec = document.getElementById(`sec-${mod}`);
+  if (sec) sec.classList.add('active');
+
+  if (mod === 'vocab') initVocab();
+  else if (mod === 'tones') initTones();
+  else if (mod === 'conv') initConv();
+  else if (mod === 'games') { showGamesMenu(); }
+  else if (mod === 'chat') initChat();
+}
+
+/* ---- VOCAB ---- */
+function initVocab() {
+  fcIndex = 0; fcScore = 0;
+  const d = DATA[currentLevel];
+  const badge = document.getElementById('vocab-level-badge');
+  badge.className = `level-badge badge-${currentLevel}`;
+  badge.textContent = currentLevel === 'beginner' ? '초급' : currentLevel === 'intermediate' ? '중급' : '고급';
+  loadCard();
+}
+
+function loadCard() {
+  const cards = DATA[currentLevel].vocab;
+  const c = cards[fcIndex];
+  document.getElementById('flashcard').classList.remove('revealed');
+  document.getElementById('fc-char').textContent = c.zh;
+  document.getElementById('fc-pinyin').textContent = c.py;
+  document.getElementById('fc-meaning').textContent = c.ko;
+  const toneNames = ['경성','1성','2성','3성','4성'];
+  document.getElementById('fc-tone-bar').innerHTML =
+    c.tones.map(t => `<span class="tone-badge">${toneNames[t]}</span>`).join('');
+  document.getElementById('fc-count').textContent = `${fcIndex+1} / ${cards.length}`;
+  document.getElementById('fc-bar').style.width = `${((fcIndex+1)/cards.length)*100}%`;
+  document.getElementById('fc-score').textContent = `✓ ${fcScore}`;
+  document.getElementById('btn-wrong').style.display = 'none';
+  document.getElementById('btn-correct').style.display = 'none';
+  document.getElementById('btn-reveal').style.display = '';
+}
+
+function revealCard() {
+  document.getElementById('flashcard').classList.add('revealed');
+  document.getElementById('btn-wrong').style.display = '';
+  document.getElementById('btn-correct').style.display = '';
+  document.getElementById('btn-reveal').style.display = 'none';
+}
+
+function nextCard(correct) {
+  if (correct) fcScore++;
+  fcIndex++;
+  const cards = DATA[currentLevel].vocab;
+  if (fcIndex >= cards.length) {
+    document.getElementById('fc-char').textContent = '🎉';
+    document.getElementById('fc-pinyin').textContent = '';
+    document.getElementById('fc-meaning').textContent = `${fcScore} / ${cards.length} 정답!`;
+    document.getElementById('flashcard').classList.add('revealed');
+    document.getElementById('btn-wrong').style.display = 'none';
+    document.getElementById('btn-correct').style.display = 'none';
+    document.getElementById('fc-tone-bar').innerHTML = '';
+    const btn = document.getElementById('btn-reveal');
+    btn.textContent = '다시 시작';
+    btn.style.display = '';
+    btn.onclick = initVocab;
+    return;
+  }
+  loadCard();
+}
+
+/* ---- TONES ---- */
+function initTones() { toneQIndex = 0; loadToneQ(); }
+
+function loadToneQ() {
+  const tones = DATA[currentLevel].tones;
+  const q = tones[toneQIndex % tones.length];
+  document.getElementById('tone-word').textContent = q.zh;
+  document.getElementById('tone-meaning-q').textContent = `"${q.py}" — 이 글자의 성조는?`;
+  document.getElementById('tone-result').textContent = '';
+  const choices = [1,2,3,4].sort(() => Math.random()-0.5);
+  document.getElementById('tone-choices').innerHTML = choices.map(n =>
+    `<button class="tone-choice-btn" onclick="checkTone(${n},${q.tone})">${n}성</button>`).join('');
+}
+
+function checkTone(chosen, correct) {
+  const btns = document.querySelectorAll('.tone-choice-btn');
+  btns.forEach(b => {
+    const n = parseInt(b.textContent);
+    if (n === correct) b.classList.add('correct');
+    else if (n === chosen && chosen !== correct) b.classList.add('wrong');
+    b.disabled = true;
+  });
+  const res = document.getElementById('tone-result');
+  if (chosen === correct) {
+    res.className = 'result-msg ok'; res.textContent = '✓ 정확합니다!';
+  } else {
+    res.className = 'result-msg fail'; res.textContent = `✗ 정답은 ${correct}성입니다.`;
+  }
+}
+
+function nextToneQ() { toneQIndex++; loadToneQ(); }
+
+function playTone(n) {
+  const names = ['','평평하게→','올라가듯↗','내렸다 올라↘↗','강하게 내려↘'];
+  const el = document.querySelectorAll('.tone-card')[n-1];
+  el.style.borderColor = 'var(--blue)';
+  setTimeout(() => el.style.borderColor = '', 600);
+}
+
+/* ---- CONV ---- */
+function initConv() {
+  const d = DATA[currentLevel];
+  const badge = document.getElementById('conv-level-badge');
+  badge.className = `level-badge badge-${currentLevel}`;
+  badge.textContent = currentLevel === 'beginner' ? '초급' : currentLevel === 'intermediate' ? '중급' : '고급';
+  const list = document.getElementById('conv-list');
+  list.innerHTML = d.conv.map((c,i) => `
+    <div class="conv-item" onclick="this.classList.toggle('expanded')" id="ci-${i}">
+      <div class="conv-zh">${c.zh}</div>
+      <div class="conv-pinyin">${c.py}</div>
+      <div class="conv-ko">${c.ko}</div>
+      <div class="conv-expand">눌러서 번역 보기 ▼</div>
+    </div>`).join('');
+}
+
+/* ---- GAMES ---- */
+function showGamesMenu() {
+  document.getElementById('games-menu').style.display = '';
+  document.getElementById('game-match').style.display = 'none';
+  document.getElementById('game-fill').style.display = 'none';
+}
+
+function startGame(type) {
+  document.getElementById('games-menu').style.display = 'none';
+  if (type === 'match') initMatch();
+  else if (type === 'fill') initFill();
+}
+
+function initMatch() {
+  document.getElementById('game-match').style.display = '';
+  matchSelected = null; matchMatched = 0; matchScore = 0;
+  const items = DATA[currentLevel].match;
+  document.getElementById('match-total').textContent = items.length;
+  document.getElementById('match-pairs').textContent = 0;
+  document.getElementById('match-score').textContent = 0;
+  // Shuffle zh and ko separately
+  const zhArr = items.map((x,i)=>({...x, idx:i, type:'zh'}));
+  const koArr = items.map((x,i)=>({...x, idx:i, type:'ko'}));
+  const all = [...zhArr,...koArr].sort(()=>Math.random()-0.5);
+  const grid = document.getElementById('match-grid');
+  grid.innerHTML = all.map((x,i)=>`
+    <div class="match-card" id="mc-${i}" data-idx="${x.idx}" data-type="${x.type}"
+      onclick="selectMatch(this)">
+      ${x.type==='zh'?x.zh:x.ko}
+    </div>`).join('');
+}
+
+function selectMatch(el) {
+  if (el.classList.contains('matched')) return;
+  if (matchSelected === null) {
+    matchSelected = el;
+    el.classList.add('selected');
+  } else {
+    if (matchSelected === el) { el.classList.remove('selected'); matchSelected=null; return; }
+    const a = matchSelected, b = el;
+    const sameIdx = a.dataset.idx === b.dataset.idx;
+    const diffType = a.dataset.type !== b.dataset.type;
+    if (sameIdx && diffType) {
+      a.classList.remove('selected'); a.classList.add('matched');
+      b.classList.add('matched');
+      matchMatched++;
+      matchScore += 10;
+      document.getElementById('match-pairs').textContent = matchMatched;
+      document.getElementById('match-score').textContent = matchScore;
+    } else {
+      a.classList.add('wrong'); b.classList.add('wrong');
+      setTimeout(()=>{ a.classList.remove('wrong','selected'); b.classList.remove('wrong'); },700);
+    }
+    matchSelected = null;
+  }
+}
+
+function initFill() {
+  document.getElementById('game-fill').style.display = '';
+  fillIndex = 0; fillScore = 0;
+  document.getElementById('fill-score').textContent = 0;
+  loadFill();
+}
+
+function loadFill() {
+  const fills = DATA[currentLevel].fill;
+  const f = fills[fillIndex % fills.length];
+  document.getElementById('fill-result').textContent = '';
+  const parts = f.sentence.split('___');
+  document.getElementById('fill-sentence').innerHTML =
+    parts[0] + `<input class="blank-input" id="fill-input" placeholder="?">` + (parts[1]||'');
+  document.getElementById('fill-input').focus();
+}
+
+function checkFill() {
+  const fills = DATA[currentLevel].fill;
+  const f = fills[fillIndex % fills.length];
+  const val = document.getElementById('fill-input').value.trim();
+  const inp = document.getElementById('fill-input');
+  const res = document.getElementById('fill-result');
+  if (val === f.blank) {
+    inp.classList.add('correct'); inp.classList.remove('wrong');
+    res.className = 'result-msg ok'; res.textContent = `✓ 정답! (힌트: ${f.hint})`;
+    fillScore += 10;
+    document.getElementById('fill-score').textContent = fillScore;
+  } else {
+    inp.classList.add('wrong'); inp.classList.remove('correct');
+    res.className = 'result-msg fail'; res.textContent = `✗ 정답은 "${f.blank}" 입니다.`;
+  }
+}
+
+function nextFill() { fillIndex++; loadFill(); }
+
+/* ---- CHAT ---- */
+function initChat() {
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML = '';
+  const tag = document.getElementById('chat-level-tag');
+  tag.textContent = currentLevel === 'beginner' ? '초급 모드' : currentLevel === 'intermediate' ? '중급 모드' : '고급 모드';
+
+  const qr = document.getElementById('quick-replies');
+  const replies = DATA[currentLevel].quickReplies;
+  qr.innerHTML = replies.map(r =>
+    `<button class="qr-btn" onclick="sendQuick('${r}')">${r}</button>`).join('');
+
+  const greetings = {
+    beginner: { zh:'你好！我是你的中文老师。', py:'Nǐ hǎo! Wǒ shì nǐ de Zhōngwén lǎoshī.', ko:'안녕하세요! 저는 당신의 중국어 선생님이에요.' },
+    intermediate: { zh:'你好！今天想练习什么内容呢？', py:'Nǐ hǎo! Jīntiān xiǎng liànxí shénme nèiróng ne?', ko:'안녕하세요! 오늘은 무엇을 연습하고 싶으신가요?' },
+    advanced: { zh:'您好！今天想讨论什么话题？可以谈文化、社会、科技等各种主题。', py:'Nín hǎo! Jīntiān xiǎng tǎolùn shénme huàtí?', ko:'안녕하세요! 오늘은 어떤 주제를 이야기할까요? 문화, 사회, 기술 등 다양한 주제를 다룰 수 있습니다.' },
+  };
+  const g = greetings[currentLevel];
+  addAiMsg(`<div class="msg-zh">${g.zh}</div><div class="msg-pinyin">${g.py}</div><div class="msg-ko">${g.ko}</div>`);
+  chatHistory.push({ role:'assistant', content: `${g.zh} (${g.ko})` });
+}
+
+function addAiMsg(html) {
+  const m = document.createElement('div');
+  m.className = 'msg ai';
+  m.innerHTML = html;
+  document.getElementById('chat-messages').appendChild(m);
+  m.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function addUserMsg(text) {
+  const m = document.createElement('div');
+  m.className = 'msg user';
+  m.textContent = text;
+  document.getElementById('chat-messages').appendChild(m);
+  m.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function sendQuick(text) {
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addUserMsg(text);
+  chatHistory.push({ role:'user', content: text });
+
+  const btn = document.getElementById('chat-send-btn');
+  btn.disabled = true;
+  const typing = document.getElementById('typing');
+  typing.classList.add('active');
+  typing.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: DATA[currentLevel].systemPrompt,
+        messages: chatHistory.slice(-10),
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.map(b=>b.text||'').join('') || '응답을 받지 못했습니다.';
+    chatHistory.push({ role:'assistant', content: reply });
+    typing.classList.remove('active');
+    // Parse for Chinese/pinyin/Korean format
+    const lines = reply.split('\n').filter(l=>l.trim());
+    const html = lines.map(l=>`<div style="margin-bottom:4px">${l}</div>`).join('');
+    addAiMsg(html);
+  } catch(e) {
+    typing.classList.remove('active');
+    addAiMsg('<div class="msg-ko" style="color:var(--red)">연결 오류가 발생했습니다. 다시 시도해주세요.</div>');
+  }
+  btn.disabled = false;
+}
+
+init();
+</script>
+</body>
+</html>
