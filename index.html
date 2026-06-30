@@ -467,6 +467,40 @@
   .game-name { font-family: var(--font-display); font-size: 1rem; font-weight: 400; margin-bottom: 4px; }
   .game-desc { font-size: 0.77rem; color: var(--text2); }
 
+  /* NEW GAMES */
+  .quiz-q { text-align:center; margin-bottom: 1.2rem; }
+  .quiz-zh { font-family: var(--font-display); font-size: 2.6rem; color: var(--text); margin-bottom: 4px; }
+  .quiz-py { font-size: 1rem; color: var(--text2); }
+  .quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quiz-opt {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 0.9rem 0.6rem; cursor: pointer;
+    text-align: center; font-size: 0.92rem; color: var(--text);
+    transition: var(--transition); line-height: 1.4;
+  }
+  .quiz-opt:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .quiz-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .quiz-opt.disabled { pointer-events: none; }
+  .timer-bar-wrap { height: 8px; background: var(--card2); border-radius: 4px; overflow: hidden; margin: 0.6rem 0 1rem; }
+  .timer-bar { height: 100%; background: var(--orange); width: 100%; transition: width 1s linear; }
+  .mem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mem-card {
+    aspect-ratio: 1 / 1; display:flex; align-items:center; justify-content:center;
+    background: var(--purple-bg); border: 1px solid var(--border);
+    border-radius: 12px; cursor: pointer; font-size: 0.92rem; color: var(--text);
+    transition: var(--transition); text-align:center; padding: 4px;
+    font-family: var(--font-display); line-height: 1.2;
+  }
+  .mem-card:hover { border-color: var(--border2); }
+  .mem-card.flipped { background: var(--card2); border-color: var(--border2); }
+  .mem-card.matched { background: var(--green-bg); border-color: var(--green); color: var(--green); pointer-events: none; }
+  .mem-card .mem-back { color: var(--purple); font-size: 1.5rem; }
+  @media (max-width: 600px) {
+    .mem-grid { grid-template-columns: repeat(3,1fr); }
+    .quiz-opts { grid-template-columns: 1fr; }
+  }
+
   /* MATCHING GAME */
   .match-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .match-card {
@@ -977,6 +1011,31 @@
               <div class="game-name">빈칸 채우기</div>
               <div class="game-desc">문장의 빈칸을 완성하세요</div>
             </div>
+            <div class="game-card" onclick="startGame('quiz')">
+              <div class="game-emoji">🎯</div>
+              <div class="game-name">뜻 맞히기</div>
+              <div class="game-desc">4개 중 알맞은 뜻을 고르세요</div>
+            </div>
+            <div class="game-card" onclick="startGame('listen')">
+              <div class="game-emoji">🔊</div>
+              <div class="game-name">듣기 퀴즈</div>
+              <div class="game-desc">발음을 듣고 한자를 고르세요</div>
+            </div>
+            <div class="game-card" onclick="startGame('tonematch')">
+              <div class="game-emoji">🎵</div>
+              <div class="game-name">성조 맞히기</div>
+              <div class="game-desc">단어의 성조를 맞혀보세요</div>
+            </div>
+            <div class="game-card" onclick="startGame('memory')">
+              <div class="game-emoji">🧠</div>
+              <div class="game-name">카드 뒤집기</div>
+              <div class="game-desc">짝을 찾는 기억력 게임</div>
+            </div>
+            <div class="game-card" onclick="startGame('speed')">
+              <div class="game-emoji">⚡</div>
+              <div class="game-name">스피드 퀴즈</div>
+              <div class="game-desc">60초 안에 최대한 많이!</div>
+            </div>
           </div>
         </div>
       </div>
@@ -985,13 +1044,14 @@
           <div class="card-title">매칭 게임 — 한자와 뜻을 연결하세요</div>
           <div class="score-row"><span class="score-num" id="match-score">0</span> 점 &nbsp;|&nbsp; <span id="match-pairs">0</span> / <span id="match-total">6</span> 쌍 완성</div>
           <div class="match-grid" id="match-grid"></div>
+          <div class="result-msg" id="match-result"></div>
           <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
         </div>
       </div>
       <div id="game-fill" style="display:none">
         <div class="card">
           <div class="card-title">빈칸 채우기</div>
-          <div class="score-row"><span class="score-num" id="fill-score">0</span> 점</div>
+          <div class="score-row"><span class="score-num" id="fill-score">0</span> 점 &nbsp;|&nbsp; <span id="fill-prog">1</span>/<span id="fill-total">4</span> 문제</div>
           <div class="fill-sentence" id="fill-sentence"></div>
           <div class="result-msg" id="fill-result"></div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
@@ -999,6 +1059,65 @@
             <button class="btn" onclick="nextFill()">다음 ›</button>
             <button class="btn" onclick="showGamesMenu()">← 돌아가기</button>
           </div>
+        </div>
+      </div>
+      <div id="game-quiz" style="display:none">
+        <div class="card">
+          <div class="card-title">뜻 맞히기 — 알맞은 뜻을 고르세요</div>
+          <div class="score-row"><span class="score-num" id="quiz-score">0</span> 점 &nbsp;|&nbsp; <span id="quiz-streak">0</span> 연속 &nbsp;|&nbsp; <span id="quiz-prog">1</span>/5 문제</div>
+          <div class="quiz-q"><div class="quiz-zh" id="quiz-zh"></div><div class="quiz-py" id="quiz-py"></div></div>
+          <div class="quiz-opts" id="quiz-opts"></div>
+          <div class="result-msg" id="quiz-result"></div>
+          <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
+        </div>
+      </div>
+      <div id="game-listen" style="display:none">
+        <div class="card">
+          <div class="card-title">듣기 퀴즈 — 발음을 듣고 한자를 고르세요</div>
+          <div class="score-row"><span class="score-num" id="listen-score">0</span> 점 &nbsp;|&nbsp; <span id="listen-prog">1</span>/5 문제</div>
+          <div style="text-align:center;margin-bottom:1.2rem;">
+            <button class="btn btn-primary" id="listen-play" onclick="playListen()">🔊 다시 듣기</button>
+            <div class="quiz-py" id="listen-py" style="margin-top:8px;min-height:20px;"></div>
+          </div>
+          <div class="quiz-opts" id="listen-opts"></div>
+          <div class="result-msg" id="listen-result"></div>
+          <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
+        </div>
+      </div>
+      <div id="game-tone2" style="display:none">
+        <div class="card">
+          <div class="card-title">성조 맞히기 — 단어의 성조를 고르세요</div>
+          <div class="score-row"><span class="score-num" id="tone2-score">0</span> 점 &nbsp;|&nbsp; <span id="tone2-prog">1</span>/5 문제</div>
+          <div class="quiz-q">
+            <div class="quiz-zh" id="tone2-zh"></div>
+            <button class="btn" style="margin-top:6px;" onclick="speak(document.getElementById('tone2-zh').textContent, this)">🔊 발음 듣기</button>
+          </div>
+          <div class="quiz-opts" id="tone2-opts"></div>
+          <div class="result-msg" id="tone2-result"></div>
+          <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
+        </div>
+      </div>
+      <div id="game-memory" style="display:none">
+        <div class="card">
+          <div class="card-title">카드 뒤집기 — 한자와 뜻의 짝을 찾으세요</div>
+          <div class="score-row"><span id="mem-found">0</span> / <span id="mem-total">6</span> 쌍 &nbsp;|&nbsp; 시도 <span id="mem-tries">0</span>회</div>
+          <div class="mem-grid" id="mem-grid"></div>
+          <div class="result-msg" id="mem-result"></div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="startGame('memory')">↻ 새 게임</button>
+            <button class="btn" onclick="showGamesMenu()">← 돌아가기</button>
+          </div>
+        </div>
+      </div>
+      <div id="game-speed" style="display:none">
+        <div class="card">
+          <div class="card-title">스피드 퀴즈 ⚡ — 60초 도전</div>
+          <div class="score-row">⏱ <span class="score-num" id="speed-time">60</span>초 &nbsp;|&nbsp; <span class="score-num" id="speed-score">0</span> 점</div>
+          <div class="timer-bar-wrap"><div class="timer-bar" id="speed-bar"></div></div>
+          <div class="quiz-q"><div class="quiz-zh" id="speed-zh"></div><div class="quiz-py" id="speed-py"></div></div>
+          <div class="quiz-opts" id="speed-opts"></div>
+          <div class="result-msg" id="speed-result"></div>
+          <button class="btn" style="margin-top:1rem;" onclick="stopSpeed();showGamesMenu()">← 돌아가기</button>
         </div>
       </div>
     </div>
@@ -4910,9 +5029,10 @@ let currentLevel = 'beginner';
 let currentModule = 'vocab';
 let fcIndex = 0, fcScore = 0;
 let toneQIndex = 0;
-let matchSelected = null, matchMatched = 0, matchScore = 0;
+let matchSelected = null, matchMatched = 0, matchScore = 0, matchTotal = 0;
 let fillIndex = 0, fillScore = 0;
 let chatHistory = [];
+let quizState = {}, listenState = {}, tone2State = {}, memState = {}, speedState = {};
 
 /* ---- TEXT-TO-SPEECH (발음 듣기) ---- */
 let zhVoice = null;
@@ -4990,6 +5110,7 @@ function renderModules() {
 }
 
 function setLevel(lv) {
+  if (typeof stopSpeed === 'function') stopSpeed();
   currentLevel = lv;
   document.querySelectorAll('.level-tab').forEach(t => t.classList.toggle('active', t.dataset.lv === lv));
   setModule(currentModule);
@@ -5520,24 +5641,34 @@ function showStoryLine(idx) {
 }
 
 function showGamesMenu() {
+  stopSpeed();
   document.getElementById('games-menu').style.display = '';
-  document.getElementById('game-match').style.display = 'none';
-  document.getElementById('game-fill').style.display = 'none';
+  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 }
 
 function startGame(type) {
   document.getElementById('games-menu').style.display = 'none';
+  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   if (type === 'match') initMatch();
   else if (type === 'fill') initFill();
+  else if (type === 'quiz') initQuiz();
+  else if (type === 'listen') initListen();
+  else if (type === 'tonematch') initTone2();
+  else if (type === 'memory') initMemory();
+  else if (type === 'speed') initSpeed();
 }
 
 function initMatch() {
   document.getElementById('game-match').style.display = '';
   matchSelected = null; matchMatched = 0; matchScore = 0;
   const items = DATA[currentLevel].match;
+  matchTotal = items.length;
   document.getElementById('match-total').textContent = items.length;
   document.getElementById('match-pairs').textContent = 0;
   document.getElementById('match-score').textContent = 0;
+  const mr = document.getElementById('match-result'); if (mr) mr.textContent = '';
   // Shuffle zh and ko separately
   const zhArr = items.map((x,i)=>({...x, idx:i, type:'zh'}));
   const koArr = items.map((x,i)=>({...x, idx:i, type:'ko'}));
@@ -5567,6 +5698,9 @@ function selectMatch(el) {
       matchScore += 10;
       document.getElementById('match-pairs').textContent = matchMatched;
       document.getElementById('match-score').textContent = matchScore;
+      if (matchMatched === matchTotal) {
+        setTimeout(() => showGameComplete('match-result', 'match', '🎉 매칭 완료! ' + matchScore + '점'), 400);
+      }
     } else {
       a.classList.add('wrong'); b.classList.add('wrong');
       setTimeout(()=>{ a.classList.remove('wrong','selected'); b.classList.remove('wrong'); },700);
@@ -5586,6 +5720,8 @@ function loadFill() {
   const fills = DATA[currentLevel].fill;
   const f = fills[fillIndex % fills.length];
   document.getElementById('fill-result').textContent = '';
+  const ft = document.getElementById('fill-total'); if (ft) ft.textContent = fills.length;
+  const fp = document.getElementById('fill-prog'); if (fp) fp.textContent = (fillIndex % fills.length) + 1;
   const parts = f.sentence.split('___');
   document.getElementById('fill-sentence').innerHTML =
     parts[0] + `<input class="blank-input" id="fill-input" placeholder="?">` + (parts[1]||'');
@@ -5609,7 +5745,273 @@ function checkFill() {
   }
 }
 
-function nextFill() { fillIndex++; loadFill(); }
+function nextFill() {
+  const fills = DATA[currentLevel].fill;
+  if (fillIndex >= fills.length - 1) {
+    showGameComplete('fill-result', 'fill', '🎉 빈칸 채우기 완료! ' + fillScore + '점');
+    return;
+  }
+  fillIndex++; loadFill();
+}
+
+/* ===================== NEW GAMES ===================== */
+/* 현재 레벨의 모든 단어를 모아 게임에 사용 */
+function getLevelWords() {
+  const themes = (DATA[currentLevel] && DATA[currentLevel].vocabThemes) || [];
+  const all = [];
+  themes.forEach(t => (t.words || []).forEach(w => { if (w && w.zh && w.ko) all.push(w); }));
+  return all;
+}
+function gShuffle(a) { return a.slice().sort(() => Math.random() - 0.5); }
+function sampleWords(n, exclude) {
+  const pool = getLevelWords().filter(w => !exclude || w.zh !== exclude.zh);
+  return gShuffle(pool).slice(0, n);
+}
+const TONE_MARKS = { 0:'·', 1:'ˉ', 2:'ˊ', 3:'ˇ', 4:'ˋ' };
+function toneLabel(tones) {
+  return tones.map(t => (t === 0 ? '0' : t)).join('-') + '  (' + tones.map(t => TONE_MARKS[t] !== undefined ? TONE_MARKS[t] : t).join('') + ')';
+}
+
+/* ---- 놀이 진행(다음 놀이로 연결) ---- */
+const GAME_ORDER = ['match','fill','quiz','listen','tonematch','memory','speed'];
+const GAME_NAMES = { match:'매칭 게임', fill:'빈칸 채우기', quiz:'뜻 맞히기', listen:'듣기 퀴즈', tonematch:'성조 맞히기', memory:'카드 뒤집기', speed:'스피드 퀴즈' };
+function nextGameType(t) { const i = GAME_ORDER.indexOf(t); return GAME_ORDER[(i + 1) % GAME_ORDER.length]; }
+function showGameComplete(resultElId, curType, summary) {
+  const nt = nextGameType(curType);
+  const el = document.getElementById(resultElId);
+  if (!el) return;
+  el.className = 'result-msg ok';
+  el.innerHTML =
+    (summary ? '<div style="margin-bottom:10px;">' + summary + '</div>' : '') +
+    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="startGame(\'' + nt + '\')">다음 놀이: ' + GAME_NAMES[nt] + ' ›</button>' +
+    '<button class="btn" onclick="showGamesMenu()">놀이 메뉴</button>' +
+    '</div>';
+}
+
+/* ---- 뜻 맞히기 (4지선다) ---- */
+function initQuiz() {
+  document.getElementById('game-quiz').style.display = '';
+  quizState = { score: 0, streak: 0, round: 0, total: 5 };
+  document.getElementById('quiz-score').textContent = 0;
+  document.getElementById('quiz-streak').textContent = 0;
+  loadQuiz();
+}
+function loadQuiz() {
+  const words = getLevelWords();
+  if (words.length < 4) { document.getElementById('quiz-opts').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text2)">단어가 부족합니다.</div>'; return; }
+  const ans = words[Math.floor(Math.random() * words.length)];
+  quizState.answer = ans;
+  const qp = document.getElementById('quiz-prog'); if (qp) qp.textContent = (quizState.round || 0) + 1;
+  document.getElementById('quiz-zh').textContent = ans.zh;
+  document.getElementById('quiz-py').textContent = ans.py;
+  document.getElementById('quiz-result').textContent = '';
+  const opts = gShuffle([ans, ...sampleWords(3, ans)]);
+  document.getElementById('quiz-opts').innerHTML = opts.map(w =>
+    `<div class="quiz-opt" onclick="answerQuiz(this, ${w.zh === ans.zh})">${escapeHtml(w.ko)}</div>`).join('');
+}
+function answerQuiz(el, correct) {
+  document.querySelectorAll('#quiz-opts .quiz-opt').forEach(o => o.classList.add('disabled'));
+  const res = document.getElementById('quiz-result');
+  if (correct) {
+    el.classList.add('correct'); quizState.score += 10; quizState.streak++;
+    res.className = 'result-msg ok'; res.textContent = quizState.streak >= 3 ? `✓ 정답! 🔥 ${quizState.streak}연속!` : '✓ 정답!';
+  } else {
+    el.classList.add('wrong'); quizState.streak = 0;
+    res.className = 'result-msg fail'; res.textContent = '✗ 정답: ' + quizState.answer.ko;
+    document.querySelectorAll('#quiz-opts .quiz-opt').forEach(o => { if (o.textContent === quizState.answer.ko) o.classList.add('correct'); });
+  }
+  document.getElementById('quiz-score').textContent = quizState.score;
+  document.getElementById('quiz-streak').textContent = quizState.streak;
+  quizState.round++;
+  if (quizState.round >= quizState.total) {
+    setTimeout(() => showGameComplete('quiz-result', 'quiz', '🎉 뜻 맞히기 완료! ' + quizState.score + '점'), 1100);
+  } else {
+    setTimeout(loadQuiz, 1100);
+  }
+}
+
+/* ---- 듣기 퀴즈 ---- */
+function initListen() {
+  document.getElementById('game-listen').style.display = '';
+  listenState = { score: 0, round: 0, total: 5 };
+  document.getElementById('listen-score').textContent = 0;
+  loadListen();
+}
+function loadListen() {
+  const words = getLevelWords();
+  if (words.length < 4) { document.getElementById('listen-opts').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text2)">단어가 부족합니다.</div>'; return; }
+  const ans = words[Math.floor(Math.random() * words.length)];
+  listenState.answer = ans;
+  const lp = document.getElementById('listen-prog'); if (lp) lp.textContent = (listenState.round || 0) + 1;
+  document.getElementById('listen-result').textContent = '';
+  document.getElementById('listen-py').textContent = '';
+  const opts = gShuffle([ans, ...sampleWords(3, ans)]);
+  document.getElementById('listen-opts').innerHTML = opts.map(w =>
+    `<div class="quiz-opt" style="font-family:var(--font-display);font-size:1.5rem;" onclick="answerListen(this, ${w.zh === ans.zh})">${w.zh}</div>`).join('');
+  setTimeout(() => speak(ans.zh, document.getElementById('listen-play')), 350);
+}
+function playListen() { if (listenState.answer) speak(listenState.answer.zh, document.getElementById('listen-play')); }
+function answerListen(el, correct) {
+  document.querySelectorAll('#listen-opts .quiz-opt').forEach(o => o.classList.add('disabled'));
+  const a = listenState.answer;
+  const res = document.getElementById('listen-result');
+  document.getElementById('listen-py').textContent = a.zh + ' [' + a.py + '] ' + a.ko;
+  if (correct) { el.classList.add('correct'); listenState.score += 10; res.className = 'result-msg ok'; res.textContent = '✓ 정답!'; }
+  else {
+    el.classList.add('wrong'); res.className = 'result-msg fail'; res.textContent = '✗ 정답을 표시했어요';
+    document.querySelectorAll('#listen-opts .quiz-opt').forEach(o => { if (o.textContent === a.zh) o.classList.add('correct'); });
+  }
+  document.getElementById('listen-score').textContent = listenState.score;
+  listenState.round++;
+  if (listenState.round >= listenState.total) {
+    setTimeout(() => showGameComplete('listen-result', 'listen', '🎉 듣기 퀴즈 완료! ' + listenState.score + '점'), 1500);
+  } else {
+    setTimeout(loadListen, 1500);
+  }
+}
+
+/* ---- 성조 맞히기 ---- */
+function initTone2() {
+  document.getElementById('game-tone2').style.display = '';
+  tone2State = { score: 0, round: 0, total: 5 };
+  document.getElementById('tone2-score').textContent = 0;
+  loadTone2();
+}
+function loadTone2() {
+  const words = getLevelWords().filter(w => w.tones && w.tones.length);
+  if (words.length < 4) { document.getElementById('tone2-opts').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text2)">단어가 부족합니다.</div>'; return; }
+  const ans = words[Math.floor(Math.random() * words.length)];
+  tone2State.answer = ans;
+  const tp = document.getElementById('tone2-prog'); if (tp) tp.textContent = (tone2State.round || 0) + 1;
+  document.getElementById('tone2-zh').textContent = ans.zh;
+  document.getElementById('tone2-result').textContent = '';
+  const key = t => t.join(',');
+  const set = new Set([key(ans.tones)]);
+  const opts = [ans.tones.slice()];
+  let guard = 0;
+  while (opts.length < 4 && guard++ < 60) {
+    const cand = ans.tones.map(t => { if (Math.random() < 0.6) { let n; do { n = Math.floor(Math.random() * 5); } while (n === t); return n; } return t; });
+    if (!set.has(key(cand))) { set.add(key(cand)); opts.push(cand); }
+  }
+  const shuffled = gShuffle(opts);
+  document.getElementById('tone2-opts').innerHTML = shuffled.map(t =>
+    `<div class="quiz-opt" onclick="answerTone2(this, ${t.join(',') === ans.tones.join(',')})">${toneLabel(t)}</div>`).join('');
+}
+function answerTone2(el, correct) {
+  document.querySelectorAll('#tone2-opts .quiz-opt').forEach(o => o.classList.add('disabled'));
+  const a = tone2State.answer;
+  const res = document.getElementById('tone2-result');
+  if (correct) { el.classList.add('correct'); tone2State.score += 10; res.className = 'result-msg ok'; res.textContent = '✓ 정답! ' + a.py + ' — ' + a.ko; }
+  else {
+    el.classList.add('wrong'); res.className = 'result-msg fail'; res.textContent = '✗ 정답: ' + a.py + ' (' + a.ko + ')';
+    const want = toneLabel(a.tones);
+    document.querySelectorAll('#tone2-opts .quiz-opt').forEach(o => { if (o.textContent === want) o.classList.add('correct'); });
+  }
+  document.getElementById('tone2-score').textContent = tone2State.score;
+  speak(a.zh);
+  tone2State.round++;
+  if (tone2State.round >= tone2State.total) {
+    setTimeout(() => showGameComplete('tone2-result', 'tonematch', '🎉 성조 맞히기 완료! ' + tone2State.score + '점'), 1600);
+  } else {
+    setTimeout(loadTone2, 1600);
+  }
+}
+
+/* ---- 카드 뒤집기 (메모리) ---- */
+function initMemory() {
+  document.getElementById('game-memory').style.display = '';
+  const use = sampleWords(6).filter(w => w.ko).slice(0, 6);
+  memState = { first: null, lock: false, found: 0, tries: 0, total: use.length };
+  document.getElementById('mem-found').textContent = 0;
+  document.getElementById('mem-total').textContent = use.length;
+  document.getElementById('mem-tries').textContent = 0;
+  document.getElementById('mem-result').textContent = '';
+  const cards = [];
+  use.forEach((w, i) => { cards.push({ pid: i, text: w.zh }); cards.push({ pid: i, text: w.ko }); });
+  const sh = gShuffle(cards);
+  document.getElementById('mem-grid').innerHTML = sh.map((c, i) =>
+    `<div class="mem-card" id="mc2-${i}" data-pid="${c.pid}" data-text="${escapeHtml(c.text)}" onclick="flipMem(this)"><span class="mem-back">?</span></div>`).join('');
+}
+function flipMem(el) {
+  if (memState.lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  el.classList.add('flipped'); el.textContent = el.dataset.text;
+  if (!memState.first) { memState.first = el; return; }
+  memState.tries++; document.getElementById('mem-tries').textContent = memState.tries;
+  const a = memState.first, b = el;
+  if (a.dataset.pid === b.dataset.pid && a !== b) {
+    a.classList.add('matched'); b.classList.add('matched');
+    memState.found++; document.getElementById('mem-found').textContent = memState.found;
+    memState.first = null;
+    if (memState.found === memState.total) {
+      showGameComplete('mem-result', 'memory', '🎉 모두 찾았어요! 시도 ' + memState.tries + '회');
+    }
+  } else {
+    memState.lock = true;
+    setTimeout(() => {
+      a.classList.remove('flipped'); a.innerHTML = '<span class="mem-back">?</span>';
+      b.classList.remove('flipped'); b.innerHTML = '<span class="mem-back">?</span>';
+      memState.first = null; memState.lock = false;
+    }, 850);
+  }
+}
+
+/* ---- 스피드 퀴즈 (타임어택) ---- */
+function initSpeed() {
+  stopSpeed();
+  document.getElementById('game-speed').style.display = '';
+  speedState = { score: 0, time: 60 };
+  document.getElementById('speed-score').textContent = 0;
+  document.getElementById('speed-time').textContent = 60;
+  document.getElementById('speed-bar').style.width = '100%';
+  document.getElementById('speed-result').textContent = '';
+  loadSpeed();
+  speedState.timer = setInterval(() => {
+    speedState.time--;
+    document.getElementById('speed-time').textContent = speedState.time;
+    document.getElementById('speed-bar').style.width = (speedState.time / 60 * 100) + '%';
+    if (speedState.time <= 0) endSpeed();
+  }, 1000);
+}
+function loadSpeed() {
+  const words = getLevelWords();
+  if (words.length < 4) return;
+  const ans = words[Math.floor(Math.random() * words.length)];
+  speedState.answer = ans;
+  document.getElementById('speed-zh').textContent = ans.zh;
+  document.getElementById('speed-py').textContent = ans.py;
+  const opts = gShuffle([ans, ...sampleWords(3, ans)]);
+  document.getElementById('speed-opts').innerHTML = opts.map(w =>
+    `<div class="quiz-opt" onclick="answerSpeed(this, ${w.zh === ans.zh})">${escapeHtml(w.ko)}</div>`).join('');
+}
+function answerSpeed(el, correct) {
+  if (speedState.time <= 0) return;
+  if (correct) {
+    el.classList.add('correct'); speedState.score += 10;
+    document.getElementById('speed-score').textContent = speedState.score;
+    setTimeout(loadSpeed, 150);
+  } else {
+    el.classList.add('wrong');
+    speedState.time = Math.max(0, speedState.time - 3);
+    document.getElementById('speed-time').textContent = speedState.time;
+    setTimeout(loadSpeed, 300);
+  }
+}
+function endSpeed() {
+  stopSpeed();
+  document.getElementById('speed-opts').innerHTML = '';
+  document.getElementById('speed-bar').style.width = '0%';
+  const nt = nextGameType('speed');
+  const r = document.getElementById('speed-result');
+  r.className = 'result-msg ok';
+  r.innerHTML = '<div style="margin-bottom:10px;">⏰ 시간 종료! 최종 <b>' + speedState.score + '점</b></div>' +
+    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="initSpeed()">다시 도전</button>' +
+    '<button class="btn btn-primary" onclick="startGame(\'' + nt + '\')">다음 놀이: ' + GAME_NAMES[nt] + ' ›</button>' +
+    '<button class="btn" onclick="showGamesMenu()">놀이 메뉴</button>' +
+    '</div>';
+}
+function stopSpeed() { if (speedState && speedState.timer) { clearInterval(speedState.timer); speedState.timer = null; } }
 
 /* ---- DICTIONARY / TRANSLATOR ---- */
 function initDict() {
