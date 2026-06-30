@@ -27,8 +27,33 @@
     --purple-bg: rgba(160,123,245,0.12);
     --yellow: #f4c94a;
     --yellow-bg: rgba(244,201,74,0.12);
+    --nav-bg: rgba(15,17,23,0.92);
     --radius: 12px;
     --transition: 0.2s ease;
+  }
+  body.light {
+    --bg: #f5f6fa;
+    --bg2: #eef0f6;
+    --card: #ffffff;
+    --card2: #f0f2f8;
+    --border: rgba(0,0,0,0.09);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1c25;
+    --text2: #4a5068;
+    --text3: #8a90a8;
+    --red: #d24545;
+    --red-bg: rgba(210,69,69,0.10);
+    --orange: #d96a36;
+    --orange-bg: rgba(217,106,54,0.10);
+    --blue: #3a6fd8;
+    --blue-bg: rgba(58,111,216,0.10);
+    --green: #1fa37a;
+    --green-bg: rgba(31,163,122,0.10);
+    --purple: #7d54d4;
+    --purple-bg: rgba(125,84,212,0.10);
+    --yellow: #c79a10;
+    --yellow-bg: rgba(199,154,16,0.12);
+    --nav-bg: rgba(245,246,250,0.92);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -40,7 +65,7 @@
   /* NAV */
   .nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(15,17,23,0.92);
+    background: var(--nav-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 0 1.5rem;
@@ -54,6 +79,14 @@
     margin-right: auto;
   }
   .nav-logo span { font-size: 0.75rem; font-weight: 400; display: block; color: var(--text3); -webkit-text-fill-color: var(--text3); }
+  .theme-toggle {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--card2); border: 1px solid var(--border2);
+    cursor: pointer; font-size: 1.1rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); flex-shrink: 0;
+  }
+  .theme-toggle:hover { background: var(--card); transform: scale(1.08); }
   .level-tabs {
     display: flex; gap: 4px;
     background: var(--card);
@@ -555,6 +588,7 @@
     <button class="level-tab" data-lv="intermediate" onclick="setLevel('intermediate')">중급</button>
     <button class="level-tab" data-lv="advanced" onclick="setLevel('advanced')">고급</button>
   </div>
+  <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="화면 모드 전환">🌙</button>
 </nav>
 
 <main class="main">
@@ -4431,6 +4465,14 @@ function speak(text, btnEl) {
     u.onend = u.onerror = () => btnEl.classList.remove('speaking');
   }
   speechSynthesis.speak(u);
+}
+
+/* ---- THEME TOGGLE (다크/밝은 모드) ---- */
+let isLight = false;
+function toggleTheme() {
+  isLight = !isLight;
+  document.body.classList.toggle('light', isLight);
+  document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
 }
 
 /* ---- INIT ---- */
