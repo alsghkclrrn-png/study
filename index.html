@@ -594,6 +594,14 @@
   .speak-btn.speaking { background: var(--blue); border-color: var(--blue); color: var(--on-accent); animation: pulse 0.8s ease infinite; }
   @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
   .speak-btn.big { width: 40px; height: 40px; min-width: 40px; font-size: 1.15rem; }
+  .speak-btn.playall {
+    width: auto; min-width: auto; border-radius: 20px;
+    padding: 7px 14px; font-size: 0.8rem; font-weight: 600;
+    font-family: var(--font-display); gap: 5px;
+    border-color: var(--green); color: var(--green);
+  }
+  .speak-btn.playall:hover { background: var(--green); color: var(--on-accent); }
+  .speak-btn.playall.speaking { background: var(--green); border-color: var(--green); color: var(--on-accent); }
 
   /* DICTIONARY RESULT */
   .dict-card {
@@ -5222,9 +5230,13 @@ function selectStory(i) {
 }
 
 function loadStory(i) {
+  stopStoryAll();
   const s = DATA[currentLevel].stories[i];
   document.getElementById('story-intro').innerHTML =
-    `<b style="color:var(--text);font-family:var(--font-display)">${s.title}</b> <span style="color:var(--text3)">· ${s.type}</span><br>${s.intro}`;
+    `<div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between;">
+      <div style="flex:1;"><b style="color:var(--text);font-family:var(--font-display)">${s.title}</b> <span style="color:var(--text3)">· ${s.type}</span><br>${s.intro}</div>
+      <button class="speak-btn playall" id="story-playall-btn" onclick="toggleStoryAll()" title="전체 듣기" style="flex-shrink:0;">▶️ 전체듣기</button>
+    </div>`;
   const wrap = document.getElementById('story-lines');
   wrap.innerHTML = s.lines.map((l,idx) => `
     <div class="story-line" id="sl-${idx}" onclick="showStoryLine(${idx})">
@@ -5238,8 +5250,66 @@ function loadStory(i) {
 }
 
 function speakStory(idx, btn) {
+  stopStoryAll();
   const l = DATA[currentLevel].stories[currentStoryIdx].lines[idx];
   speak(l.zh, btn);
+}
+
+/* ---- STORY "전체 듣기" (play all lines in sequence) ---- */
+let storyAllPlaying = false;
+let storyAllIdx = 0;
+
+function toggleStoryAll() {
+  if (storyAllPlaying) {
+    stopStoryAll();
+  } else {
+    startStoryAll();
+  }
+}
+
+function startStoryAll() {
+  if (!('speechSynthesis' in window)) {
+    alert('이 브라우저는 발음 듣기를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.');
+    return;
+  }
+  speechSynthesis.cancel();
+  storyAllPlaying = true;
+  storyAllIdx = 0;
+  const btn = document.getElementById('story-playall-btn');
+  if (btn) { btn.textContent = '⏹ 멈추기'; btn.classList.add('speaking'); }
+  playStoryAllStep();
+}
+
+function playStoryAllStep() {
+  if (!storyAllPlaying) return;
+  const lines = DATA[currentLevel].stories[currentStoryIdx].lines;
+  if (storyAllIdx >= lines.length) {
+    stopStoryAll();
+    return;
+  }
+  showStoryLine(storyAllIdx);
+  const lineEl = document.getElementById(`sl-${storyAllIdx}`);
+  if (lineEl) lineEl.scrollIntoView({ behavior:'smooth', block:'center' });
+  const l = lines[storyAllIdx];
+  const u = new SpeechSynthesisUtterance(l.zh);
+  u.lang = 'zh-CN';
+  if (zhVoice) u.voice = zhVoice;
+  u.rate = 0.85;
+  u.pitch = 1.0;
+  u.onend = u.onerror = () => {
+    if (!storyAllPlaying) return;
+    storyAllIdx++;
+    setTimeout(playStoryAllStep, 350);
+  };
+  speechSynthesis.speak(u);
+}
+
+function stopStoryAll() {
+  storyAllPlaying = false;
+  storyAllIdx = 0;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  const btn = document.getElementById('story-playall-btn');
+  if (btn) { btn.textContent = '▶️ 전체듣기'; btn.classList.remove('speaking'); }
 }
 
 function showStoryLine(idx) {
