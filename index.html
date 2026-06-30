@@ -3,65 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>중국어 학습 — 汉语学习</title>
+<title>수달 중국어 🦦 — 함께 배워요!</title>
 <script src="https://js.puter.com/v2/"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --bg2: #181c27;
-    --card: #1e2334;
-    --card2: #252a3a;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.15);
-    --text: #f0f0f0;
-    --text2: #a8afc4;
-    --text3: #6b7494;
-    --red: #e05c5c;
-    --red-bg: rgba(224,92,92,0.12);
-    --orange: #f4875a;
-    --orange-bg: rgba(244,135,90,0.12);
-    --blue: #5b8ef4;
-    --blue-bg: rgba(91,142,244,0.12);
-    --green: #4ecba4;
-    --green-bg: rgba(78,203,164,0.12);
-    --purple: #a07bf5;
-    --purple-bg: rgba(160,123,245,0.12);
-    --yellow: #f4c94a;
-    --yellow-bg: rgba(244,201,74,0.12);
-    --nav-bg: rgba(15,17,23,0.92);
-    --radius: 12px;
+    /* 기본: 부드러운 크림 파스텔 테마 */
+    --bg: #fdf6f0;
+    --bg2: #f7ece3;
+    --card: #fffdfb;
+    --card2: #fbf1ea;
+    --border: rgba(120,90,70,0.13);
+    --border2: rgba(120,90,70,0.26);
+    --text: #4a3b32;
+    --text2: #8a7164;
+    --text3: #b3a094;
+    --red: #f08a8a;
+    --red-bg: rgba(240,138,138,0.16);
+    --orange: #f5a878;
+    --orange-bg: rgba(245,168,120,0.18);
+    --blue: #7fb5e6;
+    --blue-bg: rgba(127,181,230,0.18);
+    --green: #7fcbb0;
+    --green-bg: rgba(127,203,176,0.18);
+    --purple: #b9a3e8;
+    --purple-bg: rgba(185,163,232,0.18);
+    --yellow: #f3cf7a;
+    --yellow-bg: rgba(243,207,122,0.2);
+    --nav-bg: rgba(253,246,240,0.9);
+    --on-accent: #5a4030;
+    --radius: 20px;
     --transition: 0.2s ease;
   }
   body.light {
-    --bg: #f5f6fa;
-    --bg2: #eef0f6;
-    --card: #ffffff;
-    --card2: #f0f2f8;
-    --border: rgba(0,0,0,0.09);
-    --border2: rgba(0,0,0,0.18);
-    --text: #1a1c25;
-    --text2: #4a5068;
-    --text3: #8a90a8;
-    --red: #d24545;
-    --red-bg: rgba(210,69,69,0.10);
-    --orange: #d96a36;
-    --orange-bg: rgba(217,106,54,0.10);
-    --blue: #3a6fd8;
-    --blue-bg: rgba(58,111,216,0.10);
-    --green: #1fa37a;
-    --green-bg: rgba(31,163,122,0.10);
-    --purple: #7d54d4;
-    --purple-bg: rgba(125,84,212,0.10);
-    --yellow: #c79a10;
-    --yellow-bg: rgba(199,154,16,0.12);
-    --nav-bg: rgba(245,246,250,0.92);
+    /* 토글: 아늑한 코코아 다크 테마 */
+    --bg: #2a2228;
+    --bg2: #332a31;
+    --card: #3a2f38;
+    --card2: #453843;
+    --border: rgba(255,235,225,0.10);
+    --border2: rgba(255,235,225,0.20);
+    --text: #f5eae6;
+    --text2: #c9b3aa;
+    --text3: #9c8579;
+    --red: #f3a0a0;
+    --red-bg: rgba(243,160,160,0.16);
+    --orange: #f7bb92;
+    --orange-bg: rgba(247,187,146,0.16);
+    --blue: #9ac5ee;
+    --blue-bg: rgba(154,197,238,0.16);
+    --green: #95d6bf;
+    --green-bg: rgba(149,214,191,0.16);
+    --purple: #c9b6ef;
+    --purple-bg: rgba(201,182,239,0.16);
+    --yellow: #f5d690;
+    --yellow-bg: rgba(245,214,144,0.18);
+    --nav-bg: rgba(42,34,40,0.9);
+    --on-accent: #2a2228;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --font-body: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --font-display: 'Jua', 'Gowun Dodum', sans-serif;
+    --font-zh: 'Noto Sans SC', 'Gowun Dodum', sans-serif;
+  }
   body {
-    font-family: 'Segoe UI', -apple-system, sans-serif;
+    font-family: var(--font-body);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    letter-spacing: 0.01em;
+  }
+  /* 중국어 한자는 전용 폰트로 또렷하게 */
+  .fc-char, .conv-zh, .grammar-sentence, .practice-word, .tone-word,
+  .dict-zh, .msg-zh, .gp-pattern, .tone-eg .zh, .dict-eg .zh,
+  .match-card, .fill-sentence, #tone-word {
+    font-family: var(--font-zh);
   }
   /* NAV */
   .nav {
@@ -74,12 +93,20 @@
     height: 60px;
   }
   .nav-logo {
-    font-size: 1.2rem; font-weight: 700;
-    background: linear-gradient(135deg, #e05c5c, #a07bf5);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: flex; align-items: center; gap: 10px;
     margin-right: auto;
   }
-  .nav-logo span { font-size: 0.75rem; font-weight: 400; display: block; color: var(--text3); -webkit-text-fill-color: var(--text3); }
+  .logo-otter { display: flex; align-items: center; }
+  .logo-otter svg { width: 40px; height: 40px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); transition: transform 0.3s ease; }
+  .nav-logo:hover .logo-otter svg { transform: rotate(-8deg) scale(1.08); }
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 1.3rem; font-weight: 400;
+    background: linear-gradient(135deg, #f5a878, #b9a3e8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.15;
+  }
+  .logo-text span { font-family: var(--font-body); font-size: 0.7rem; font-weight: 400; display: block; color: var(--text3); -webkit-text-fill-color: var(--text3); }
   .theme-toggle {
     width: 38px; height: 38px; border-radius: 50%;
     background: var(--card2); border: 1px solid var(--border2);
@@ -87,7 +114,7 @@
     display: flex; align-items: center; justify-content: center;
     transition: var(--transition); flex-shrink: 0;
   }
-  .theme-toggle:hover { background: var(--card); transform: scale(1.08); }
+  .theme-toggle:hover { background: var(--card); transform: scale(1.08) rotate(12deg); }
   .level-tabs {
     display: flex; gap: 4px;
     background: var(--card);
@@ -119,26 +146,35 @@
   }
   .module-btn {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: var(--radius);
     padding: 1.1rem 1rem;
     cursor: pointer;
     text-align: left;
-    transition: var(--transition);
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), border-color 0.2s, background 0.2s, box-shadow 0.2s;
     display: flex; flex-direction: column; gap: 8px;
     position: relative; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-  .module-btn:hover { border-color: var(--border2); background: var(--card2); }
+  .module-btn:hover { border-color: var(--border2); background: var(--card2); transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
   .module-btn.active { border-color: var(--module-color); background: var(--module-bg); }
-  .module-icon { font-size: 1.5rem; }
-  .module-name { font-size: 0.82rem; font-weight: 600; color: var(--text2); }
+  .module-icon { font-size: 1.7rem; display: inline-block; transition: transform 0.25s cubic-bezier(.34,1.56,.64,1); transform-origin: bottom center; }
+  .module-btn:hover .module-icon { transform: scale(1.25) rotate(-6deg); }
+  .module-btn.active .module-icon { animation: iconWiggle 0.5s ease; }
+  @keyframes iconWiggle {
+    0%,100% { transform: rotate(0); }
+    25% { transform: rotate(-12deg) scale(1.15); }
+    75% { transform: rotate(12deg) scale(1.15); }
+  }
+  .module-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 400; color: var(--text2); }
   .module-btn.active .module-name { color: var(--module-color); }
   .module-sub { font-size: 0.72rem; color: var(--text3); }
 
   /* CONTENT AREA */
   .content-area { min-height: 460px; }
   .section { display: none; }
-  .section.active { display: block; }
+  .section.active { display: block; animation: sectionIn 0.35s ease; }
+  @keyframes sectionIn { from { opacity:0; transform:translateY(8px);} to {opacity:1; transform:none;} }
 
   /* CARDS */
   .card {
@@ -147,10 +183,12 @@
     border-radius: var(--radius);
     padding: 1.5rem;
     margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
   .card-title {
-    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--text3);
+    font-family: var(--font-display);
+    font-size: 0.95rem; font-weight: 400; letter-spacing: 0.01em;
+    color: var(--text2);
     margin-bottom: 1rem;
   }
 
@@ -198,7 +236,7 @@
     transition: var(--transition);
   }
   .btn:hover { background: var(--card); border-color: var(--border2); }
-  .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn-primary { background: var(--blue); border-color: var(--blue); color: var(--on-accent); font-weight:700; }
   .btn-primary:hover { opacity: 0.85; }
   .btn-success { background: var(--green-bg); border-color: var(--green); color: var(--green); }
   .btn-danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
@@ -377,7 +415,7 @@
   }
   .game-card:hover { border-color: var(--border2); transform: translateY(-2px); }
   .game-emoji { font-size: 2rem; margin-bottom: 8px; }
-  .game-name { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+  .game-name { font-family: var(--font-display); font-size: 1rem; font-weight: 400; margin-bottom: 4px; }
   .game-desc { font-size: 0.77rem; color: var(--text2); }
 
   /* MATCHING GAME */
@@ -408,12 +446,14 @@
     background: var(--card2);
   }
   .chat-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--red), var(--purple));
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--orange);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 700;
+    overflow: hidden;
   }
-  .chat-info .chat-name { font-size: 0.9rem; font-weight: 600; }
+  .chat-avatar svg { width: 38px; height: 38px; margin-top: 4px; }
+  .chat-info .chat-name { font-family: var(--font-display); font-size: 1rem; font-weight: 400; }
   .chat-info .chat-status { font-size: 0.72rem; color: var(--green); }
   .chat-messages {
     flex: 1; overflow-y: auto; padding: 1rem;
@@ -431,7 +471,7 @@
   }
   .msg.user {
     align-self: flex-end;
-    background: var(--blue); color: #fff;
+    background: var(--blue); color: var(--on-accent);
     border-radius: 14px 4px 14px 14px;
   }
   .msg-zh { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
@@ -453,7 +493,7 @@
   .chat-send {
     background: var(--blue); border: none;
     border-radius: 10px; padding: 10px 18px;
-    color: #fff; font-weight: 700; cursor: pointer;
+    color: var(--on-accent); font-weight: 700; cursor: pointer;
     transition: var(--transition); font-size: 0.88rem;
   }
   .chat-send:hover { opacity: 0.85; }
@@ -479,6 +519,15 @@
   .badge-intermediate { background: var(--blue-bg); color: var(--blue); }
   .badge-advanced { background: var(--purple-bg); color: var(--purple); }
 
+  /* OTTER EMPTY STATE */
+  .otter-empty {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 2rem 1rem; color: var(--text3); font-size: 0.9rem; text-align: center;
+  }
+  .otter-empty svg { animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .grammar-panel-empty svg { animation: float 3s ease-in-out infinite; }
+
   /* SPEAK BUTTON */
   .speak-btn {
     display: inline-flex; align-items: center; justify-content: center;
@@ -490,7 +539,7 @@
     vertical-align: middle;
   }
   .speak-btn:hover { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
-  .speak-btn.speaking { background: var(--blue); border-color: var(--blue); color: #fff; animation: pulse 0.8s ease infinite; }
+  .speak-btn.speaking { background: var(--blue); border-color: var(--blue); color: var(--on-accent); animation: pulse 0.8s ease infinite; }
   @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
   .speak-btn.big { width: 40px; height: 40px; min-width: 40px; font-size: 1.15rem; }
 
@@ -583,7 +632,10 @@
 <body>
 
 <nav class="nav">
-  <div class="nav-logo">汉语学习 <span>Chinese Learning</span></div>
+  <div class="nav-logo">
+    <span class="logo-otter" id="logo-otter"></span>
+    <span class="logo-text">수달 중국어 <span>🦦 함께 배워요!</span></span>
+  </div>
   <div class="level-tabs">
     <button class="level-tab active" data-lv="beginner" onclick="setLevel('beginner')">초급</button>
     <button class="level-tab" data-lv="intermediate" onclick="setLevel('intermediate')">중급</button>
@@ -778,7 +830,8 @@
         <div class="conv-list" id="conv-list"></div>
         <div class="grammar-panel" id="grammar-panel">
           <div class="grammar-panel-empty" id="grammar-empty">
-            ← 문장을 클릭하면<br>문법 설명이 나타납니다
+            <span id="grammar-empty-otter"></span>
+            <div style="margin-top:10px;">왼쪽 문장을 콕 누르면<br>수달이 문법을 알려줄게요!</div>
           </div>
           <div id="grammar-content" style="display:none">
             <div class="grammar-panel-title">📖 문법 설명</div>
@@ -797,16 +850,17 @@
     <!-- 3.5 DICTIONARY / TRANSLATOR -->
     <div class="section" id="sec-dict">
       <div class="card">
-        <div class="card-title">🔍 통역·사전 — 모르는 단어·문법을 검색하세요</div>
-        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;line-height:1.6;">
-          한국어 → 중국어, 중국어 → 한국어 모두 가능해요. 단어·문장·문법 무엇이든 입력하면 병음·뜻·예문·문법 설명을 알려드려요.
+        <div class="card-title">🔍 통역·사전</div>
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
+          모르는 단어나 문법이 있나요? 수달이 찾아줄게요! 🦦<br>
+          한국어든 중국어든, 단어·문장·문법 무엇이든 적어보세요.
         </p>
         <div style="display:flex;gap:8px;margin-bottom:10px;">
           <input class="chat-input" id="dict-input" placeholder="예: 谢谢 / 고마워요 / 把 자문이 뭐야?" onkeydown="if(event.key==='Enter')searchDict()" style="flex:1;" />
           <button class="chat-send" id="dict-btn" onclick="searchDict()" style="background:var(--red);">검색</button>
         </div>
         <div class="quick-replies" id="dict-quick" style="padding:0 0 4px;"></div>
-        <div class="typing" id="dict-typing">검색 중...</div>
+        <div class="typing" id="dict-typing">수달이 찾는 중... 🦦</div>
         <div id="dict-result"></div>
       </div>
     </div>
@@ -857,9 +911,9 @@
     <div class="section" id="sec-chat">
       <div class="chat-container">
         <div class="chat-header">
-          <div class="chat-avatar">李</div>
+          <div class="chat-avatar" id="chat-avatar"></div>
           <div class="chat-info">
-            <div class="chat-name">AI 중국어 선생님</div>
+            <div class="chat-name">수달 선생님 🦦</div>
             <div class="chat-status">● 온라인</div>
           </div>
           <span style="margin-left:auto;font-size:0.75rem;color:var(--text3)" id="chat-level-tag"></span>
@@ -879,12 +933,12 @@
 
 <script>
 const MODULES = [
-  { id:'vocab',  icon:'📖', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
-  { id:'tones',  icon:'🎵', name:'발음·성조',   sub:'성조 퀴즈',      color:'var(--orange)', bg:'var(--orange-bg)' },
+  { id:'vocab',  icon:'🌱', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
+  { id:'tones',  icon:'🔔', name:'발음·성조',   sub:'성조 퀴즈',      color:'var(--orange)', bg:'var(--orange-bg)' },
   { id:'conv',   icon:'💬', name:'회화 문장',   sub:'실생활 표현',    color:'var(--orange)', bg:'var(--orange-bg)' },
-  { id:'dict',   icon:'🔍', name:'통역·사전',   sub:'단어·문법 검색', color:'var(--red)',    bg:'var(--red-bg)' },
-  { id:'games',  icon:'🎮', name:'학습 놀이',   sub:'게임으로 복습',  color:'var(--yellow)', bg:'var(--yellow-bg)' },
-  { id:'chat',   icon:'🤖', name:'AI 채팅',     sub:'대화 연습',      color:'var(--purple)', bg:'var(--purple-bg)' },
+  { id:'dict',   icon:'🔮', name:'통역·사전',   sub:'단어·문법 검색', color:'var(--red)',    bg:'var(--red-bg)' },
+  { id:'games',  icon:'🎲', name:'학습 놀이',   sub:'게임으로 복습',  color:'var(--yellow)', bg:'var(--yellow-bg)' },
+  { id:'chat',   icon:'🦦', name:'AI 채팅',     sub:'수달 선생님과 대화', color:'var(--purple)', bg:'var(--purple-bg)' },
 ];
 
 const DATA = {
@@ -4468,16 +4522,47 @@ function speak(text, btnEl) {
   speechSynthesis.speak(u);
 }
 
-/* ---- THEME TOGGLE (다크/밝은 모드) ---- */
-let isLight = false;
+/* ---- OTTER MASCOT 🦦 ---- */
+function otterSVG(size) {
+  size = size || 56;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="otter-svg">
+    <ellipse cx="50" cy="62" rx="26" ry="30" fill="#a87850"/>
+    <ellipse cx="50" cy="66" rx="17" ry="22" fill="#e8d4b8"/>
+    <circle cx="50" cy="34" r="24" fill="#a87850"/>
+    <circle cx="32" cy="20" r="7" fill="#a87850"/>
+    <circle cx="68" cy="20" r="7" fill="#a87850"/>
+    <circle cx="32" cy="20" r="3.5" fill="#8a5f3c"/>
+    <circle cx="68" cy="20" r="3.5" fill="#8a5f3c"/>
+    <ellipse cx="50" cy="40" rx="16" ry="14" fill="#e8d4b8"/>
+    <circle cx="42" cy="33" r="4.5" fill="#3a2a1a"/>
+    <circle cx="58" cy="33" r="4.5" fill="#3a2a1a"/>
+    <circle cx="43.5" cy="31.5" r="1.6" fill="#fff"/>
+    <circle cx="59.5" cy="31.5" r="1.6" fill="#fff"/>
+    <ellipse cx="50" cy="42" rx="4" ry="3" fill="#5a3d28"/>
+    <path d="M50 45 Q46 49 42 47" stroke="#5a3d28" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M50 45 Q54 49 58 47" stroke="#5a3d28" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <line x1="34" y1="42" x2="24" y2="40" stroke="#c9a878" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="34" y1="45" x2="24" y2="46" stroke="#c9a878" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="66" y1="42" x2="76" y2="40" stroke="#c9a878" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="66" y1="45" x2="76" y2="46" stroke="#c9a878" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="28" cy="60" rx="6" ry="11" fill="#9a6c47" transform="rotate(20 28 60)"/>
+    <ellipse cx="72" cy="60" rx="6" ry="11" fill="#9a6c47" transform="rotate(-20 72 60)"/>
+    <ellipse cx="40" cy="90" rx="7" ry="5" fill="#8a5f3c"/>
+    <ellipse cx="60" cy="90" rx="7" ry="5" fill="#8a5f3c"/>
+  </svg>`;
+}
+
+/* ---- THEME TOGGLE (크림/다크 모드) ---- */
+let isDark = false;
 function toggleTheme() {
-  isLight = !isLight;
-  document.body.classList.toggle('light', isLight);
-  document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+  isDark = !isDark;
+  document.body.classList.toggle('light', isDark); // .light 클래스 = 아늑한 다크 테마
+  document.getElementById('theme-toggle').textContent = isDark ? '☀️' : '🌙';
 }
 
 /* ---- INIT ---- */
 function init() {
+  document.getElementById('logo-otter').innerHTML = otterSVG(40);
   renderModules();
   setModule('vocab');
 }
@@ -4658,6 +4743,8 @@ function initConv() {
   // reset grammar panel
   document.getElementById('grammar-empty').style.display = '';
   document.getElementById('grammar-content').style.display = 'none';
+  const ge = document.getElementById('grammar-empty-otter');
+  if (ge && !ge.querySelector('svg')) ge.innerHTML = otterSVG(80);
   const list = document.getElementById('conv-list');
   list.innerHTML = d.conv.map((c,i) => `
     <div class="conv-item" onclick="showGrammar(${i})" id="ci-${i}">
@@ -4800,6 +4887,10 @@ function initDict() {
   const samples = ['谢谢', '고마워요', '把 자문이 뭐야?', '我想去中国', '집에 가고 싶어요'];
   const qr = document.getElementById('dict-quick');
   qr.innerHTML = samples.map(s => `<button class="qr-btn" onclick="dictQuick('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');
+  const res = document.getElementById('dict-result');
+  if (res && !res.querySelector('.dict-card')) {
+    res.innerHTML = `<div class="otter-empty">${otterSVG(90)}<div>무엇이든 물어보세요!</div></div>`;
+  }
 }
 
 function dictQuick(text) {
@@ -4883,6 +4974,8 @@ async function searchDict() {
 /* ---- CHAT ---- */
 function initChat() {
   chatHistory = [];
+  const av = document.getElementById('chat-avatar');
+  if (av && !av.querySelector('svg')) av.innerHTML = otterSVG(38);
   document.getElementById('chat-messages').innerHTML = '';
   const tag = document.getElementById('chat-level-tag');
   tag.textContent = currentLevel === 'beginner' ? '초급 모드' : currentLevel === 'intermediate' ? '중급 모드' : '고급 모드';
