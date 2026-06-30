@@ -340,6 +340,45 @@
   @media (max-width: 720px) {
     .conv-layout { grid-template-columns: 1fr; }
   }
+  /* STORY MODULE */
+  .story-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  @media (max-width: 720px) {
+    .story-layout { grid-template-columns: 1fr; }
+  }
+  .story-tab {
+    padding: 7px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 400;
+    font-family: var(--font-display);
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--card2); color: var(--text2);
+    transition: var(--transition); white-space: nowrap;
+  }
+  .story-tab:hover { border-color: var(--border2); color: var(--text); }
+  .story-tab.active { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .story-intro {
+    font-size: 0.85rem; color: var(--text2); line-height: 1.65;
+    background: var(--green-bg); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 14px;
+  }
+  .story-lines { display: flex; flex-direction: column; gap: 8px; }
+  .story-line {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.85rem 1.1rem;
+    cursor: pointer; transition: var(--transition);
+  }
+  .story-line:hover { border-color: var(--border2); }
+  .story-line.active-line { border-color: var(--green); background: var(--green-bg); }
+  .story-line .sl-zh { font-family: var(--font-zh); font-size: 1.15rem; font-weight: 600; margin-bottom: 3px; }
+  .story-line .sl-py { font-size: 0.82rem; color: var(--text2); }
+  .story-line .sl-ko { font-size: 0.82rem; color: var(--green); margin-top: 5px; display: none; }
+  .story-line.active-line .sl-ko { display: block; }
+  #story-panel { position: sticky; top: 76px; }
+  .sp-note-label-poem { color: var(--purple) !important; }
   .conv-list { display: flex; flex-direction: column; gap: 10px; }
   .conv-item {
     background: var(--card2); border: 1px solid var(--border);
@@ -862,6 +901,39 @@
       </div>
     </div>
 
+    <!-- 3.2 STORIES & POEMS -->
+    <div class="section" id="sec-story">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">📚 이야기·시 <span id="story-level-badge"></span></div>
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
+          동요·전래동화·고전시로 중국어를 배워요. 작품을 고른 뒤 문장을 누르면 뜻·단어·문법 풀이가 나와요! 🦦
+        </p>
+        <div id="story-tab-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="story-layout">
+        <div class="card" style="margin-bottom:0">
+          <div id="story-intro" class="story-intro"></div>
+          <div class="story-lines" id="story-lines"></div>
+        </div>
+        <div class="grammar-panel" id="story-panel">
+          <div class="grammar-panel-empty" id="story-empty">
+            <span id="story-empty-otter"></span>
+            <div style="margin-top:10px;">문장을 콕 누르면<br>수달이 풀이해 줄게요!</div>
+          </div>
+          <div id="story-content" style="display:none">
+            <div class="grammar-panel-title">📖 구절 풀이</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="grammar-sentence" id="sp-zh" style="flex:1;"></div>
+              <button class="speak-btn" onclick="speak(document.getElementById('sp-zh').textContent, this)" title="발음 듣기">🔊</button>
+            </div>
+            <div class="grammar-pinyin" id="sp-py"></div>
+            <div class="grammar-ko" id="sp-ko"></div>
+            <div class="grammar-points" id="sp-notes"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 3.5 DICTIONARY / TRANSLATOR -->
     <div class="section" id="sec-dict">
       <div class="card">
@@ -951,6 +1023,7 @@ const MODULES = [
   { id:'vocab',  icon:'🌱', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
   { id:'tones',  icon:'🔔', name:'발음·성조',   sub:'성조 퀴즈',      color:'var(--orange)', bg:'var(--orange-bg)' },
   { id:'conv',   icon:'💬', name:'회화 문장',   sub:'실생활 표현',    color:'var(--orange)', bg:'var(--orange-bg)' },
+  { id:'story',  icon:'📚', name:'이야기·시',   sub:'동요·동화·고전시', color:'var(--green)',  bg:'var(--green-bg)' },
   { id:'dict',   icon:'🔮', name:'통역·사전',   sub:'단어·문법 검색', color:'var(--red)',    bg:'var(--red-bg)' },
   { id:'games',  icon:'🎲', name:'학습 놀이',   sub:'게임으로 복습',  color:'var(--yellow)', bg:'var(--yellow-bg)' },
   { id:'chat',   icon:'🦦', name:'AI 채팅',     sub:'수달 선생님과 대화', color:'var(--purple)', bg:'var(--purple-bg)' },
@@ -1713,6 +1786,108 @@ const DATA = {
         grammar:[
           { label:'작별 인사', pattern:'시간 + 见', desc:'见은 "보다/만나다". 시간+见으로 작별 인사.', example:'回头见。이따 봐요. / 下次见。다음에 봐요.' },
         ]},
+    ],
+    stories: [
+      {
+        title:'两只老虎 (두 마리 호랑이)',
+        type:'동요',
+        intro:'프랑스 곡 "Frère Jacques"에 중국어 가사를 붙인, 중국에서 가장 유명한 동요예요. 모르는 사람이 없을 정도랍니다.',
+        lines:[
+          { zh:'两只老虎，两只老虎，', py:'Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ,', ko:'호랑이 두 마리, 호랑이 두 마리,',
+            notes:[
+              { label:'양사', text:'只(zhī)는 동물을 세는 양사. 两只 = 두 마리. (숫자 2는 양사 앞에서 二가 아니라 两을 써요)' },
+              { label:'단어', text:'老虎(lǎohǔ) 호랑이 — 老는 여기서 "늙다"가 아니라 동물 이름에 붙는 접두어예요.' },
+            ]},
+          { zh:'跑得快，跑得快！', py:'Pǎo de kuài, pǎo de kuài!', ko:'빨리 달려요, 빨리 달려요!',
+            notes:[
+              { label:'문법', text:'동사 + 得 + 형용사 = 정도보어. 跑得快 = "달리는 게 빠르다". 得(de)가 동작의 정도를 이어줘요.' },
+              { label:'단어', text:'跑(pǎo) 달리다 / 快(kuài) 빠르다' },
+            ]},
+          { zh:'一只没有耳朵，', py:'Yì zhī méiyǒu ěrduo,', ko:'한 마리는 귀가 없고,',
+            notes:[
+              { label:'문법', text:'没有(méiyǒu) = "없다". 有(있다)의 부정은 不가 아니라 반드시 没를 써요.' },
+              { label:'단어', text:'耳朵(ěrduo) 귀 — 朵는 가볍게 경성으로 읽어요.' },
+            ]},
+          { zh:'一只没有尾巴，', py:'Yì zhī méiyǒu wěiba,', ko:'한 마리는 꼬리가 없네,',
+            notes:[
+              { label:'단어', text:'尾巴(wěiba) 꼬리 — 巴도 경성. 동물 신체 명사에 자주 붙어요.' },
+            ]},
+          { zh:'真奇怪！真奇怪！', py:'Zhēn qíguài! Zhēn qíguài!', ko:'정말 이상해! 정말 이상해!',
+            notes:[
+              { label:'단어', text:'真(zhēn) 정말/진짜 (강조 부사) / 奇怪(qíguài) 이상하다' },
+            ]},
+        ]
+      },
+      {
+        title:'小星星 (반짝반짝 작은 별)',
+        type:'동요',
+        intro:'전 세계적으로 유명한 "Twinkle Twinkle Little Star"의 중국어 버전이에요.',
+        lines:[
+          { zh:'一闪一闪亮晶晶，', py:'Yì shǎn yì shǎn liàng jīngjīng,', ko:'반짝반짝 빛나는,',
+            notes:[
+              { label:'단어', text:'闪(shǎn) 반짝이다 / 亮(liàng) 밝다 / 晶晶(jīngjīng) 반짝반짝 (빛나는 모양)' },
+              { label:'문법', text:'一闪一闪 처럼 "一+동사" 반복은 동작이 거듭됨을 생생하게 표현해요.' },
+            ]},
+          { zh:'满天都是小星星。', py:'Mǎn tiān dōu shì xiǎo xīngxing.', ko:'온 하늘이 작은 별이에요.',
+            notes:[
+              { label:'단어', text:'满(mǎn) 가득하다 / 满天 온 하늘 / 星星(xīngxing) 별' },
+              { label:'문법', text:'都(dōu) = "모두". 满天都是… = "온 하늘이 모두 ~이다".' },
+            ]},
+          { zh:'挂在天上放光明，', py:'Guà zài tiānshàng fàng guāngmíng,', ko:'하늘에 걸려 빛을 내며,',
+            notes:[
+              { label:'문법', text:'挂在天上 = 동사(挂 걸다) + 在 + 장소. "하늘에 걸려 있다".' },
+              { label:'단어', text:'放光明 빛을 내다 / 光明(guāngmíng) 광명, 밝은 빛' },
+            ]},
+          { zh:'好像许多小眼睛。', py:'Hǎoxiàng xǔduō xiǎo yǎnjing.', ko:'마치 많은 작은 눈 같아요.',
+            notes:[
+              { label:'단어', text:'好像(hǎoxiàng) 마치 ~같다 / 许多(xǔduō) 많은 / 眼睛(yǎnjing) 눈' },
+            ]},
+        ]
+      },
+      {
+        title:'乌鸦喝水 (까마귀가 물을 마시다)',
+        type:'전래동화',
+        intro:'목마른 까마귀가 지혜로 물을 마신 이야기. 이솝우화가 중국 교과서에 실린 것으로, 초등 1학년 필수 이야기예요.',
+        lines:[
+          { zh:'一只乌鸦口渴了，', py:'Yì zhī wūyā kǒukě le,', ko:'까마귀 한 마리가 목이 말랐어요,',
+            notes:[
+              { label:'단어', text:'乌鸦(wūyā) 까마귀 / 口渴(kǒukě) 목마르다' },
+              { label:'문법', text:'문장 끝 了(le)는 상태의 변화. "목이 (이제) 말라졌다".' },
+            ]},
+          { zh:'到处找水喝。', py:'Dàochù zhǎo shuǐ hē.', ko:'여기저기 마실 물을 찾았어요.',
+            notes:[
+              { label:'단어', text:'到处(dàochù) 여기저기, 도처에 / 找(zhǎo) 찾다' },
+              { label:'문법', text:'找水喝 = "물을 찾아 마시다" — 동사가 연달아 오는 연동문이에요.' },
+            ]},
+          { zh:'它看见一个瓶子，', py:'Tā kànjiàn yí ge píngzi,', ko:'까마귀는 병 하나를 보았어요,',
+            notes:[
+              { label:'단어', text:'它(tā) 그것(동물·사물) / 看见(kànjiàn) 보다(보이다) / 瓶子(píngzi) 병' },
+              { label:'문법', text:'看见은 看(보다)+见(보이다)의 결과보어. "봐서 눈에 띄다"는 결과를 나타내요.' },
+            ]},
+          { zh:'瓶子里有水，', py:'Píngzi lǐ yǒu shuǐ,', ko:'병 안에 물이 있었지만,',
+            notes:[
+              { label:'문법', text:'瓶子里 = 명사 + 里(안). 방위사 里는 "~의 안"을 나타내요.' },
+            ]},
+          { zh:'但是水不多。', py:'Dànshì shuǐ bù duō.', ko:'물이 많지 않았어요.',
+            notes:[
+              { label:'단어', text:'但是(dànshì) 그러나 / 不多 많지 않다' },
+            ]},
+          { zh:'乌鸦把小石子放进瓶子，', py:'Wūyā bǎ xiǎo shízǐ fàng jìn píngzi,', ko:'까마귀는 작은 돌을 병에 넣었어요,',
+            notes:[
+              { label:'문법', text:'把(bǎ)자문! "把 + 목적어 + 동사" = 그 대상을 어떻게 처리하다. 把石子放进 = "돌을 넣다".' },
+              { label:'단어', text:'石子(shízǐ) 자갈 / 放进(fàng jìn) 넣다 (放 놓다 + 进 들어가다)' },
+            ]},
+          { zh:'水慢慢升高了，', py:'Shuǐ mànmàn shēng gāo le,', ko:'물이 천천히 올라왔어요,',
+            notes:[
+              { label:'단어', text:'慢慢(mànmàn) 천천히 / 升高(shēng gāo) 올라가다, 높아지다' },
+            ]},
+          { zh:'乌鸦喝到水了。', py:'Wūyā hē dào shuǐ le.', ko:'까마귀는 물을 마실 수 있었어요.',
+            notes:[
+              { label:'문법', text:'喝到 = 喝(마시다) + 到(도달) 결과보어. "마시는 데 성공하다".' },
+              { label:'교훈', text:'遇到困难要动脑筋 — 어려움을 만나면 머리를 써야 한다는 교훈이에요.' },
+            ]},
+        ]
+      },
     ],
     match: [
       { zh:'你好', ko:'안녕하세요' }, { zh:'谢谢', ko:'감사합니다' },
@@ -2485,6 +2660,127 @@ const DATA = {
         grammar:[
           { label:'还是', pattern:'还是 (háishi) — 여전히', desc:'"여전히/그대로". 老样子는 "예전 그대로".', example:'还是那么忙。여전히 그렇게 바빠요.' },
         ]},
+    ],
+    stories: [
+      {
+        title:'守株待兔 (그루터기를 지키며 토끼를 기다리다)',
+        type:'전래동화·성어',
+        intro:'우연한 행운을 노리며 노력하지 않는 어리석음을 풍자한 이야기. 한비자(韩非子)에 나오는 유명한 성어의 유래예요.',
+        lines:[
+          { zh:'从前有个农夫，', py:'Cóngqián yǒu ge nóngfū,', ko:'옛날에 한 농부가 있었어요,',
+            notes:[
+              { label:'단어', text:'从前(cóngqián) 옛날에 (이야기 첫머리 관용 표현) / 农夫(nóngfū) 농부' },
+              { label:'문법', text:'有个农夫 = 有 + (一)个 + 농부. 처음 등장하는 대상은 "有"로 도입해요.' },
+            ]},
+          { zh:'每天在田里干活。', py:'Měitiān zài tián lǐ gànhuó.', ko:'매일 밭에서 일했어요.',
+            notes:[
+              { label:'단어', text:'每天(měitiān) 매일 / 田(tián) 밭 / 干活(gànhuó) 일하다 (구어)' },
+              { label:'문법', text:'在田里 = 在 + 장소 + 里. 동작이 일어나는 장소를 동사 앞에 둬요.' },
+            ]},
+          { zh:'有一天，一只兔子撞死在树桩上。', py:'Yǒu yì tiān, yì zhī tùzi zhuàng sǐ zài shùzhuāng shàng.', ko:'어느 날, 토끼 한 마리가 그루터기에 부딪혀 죽었어요.',
+            notes:[
+              { label:'단어', text:'兔子(tùzi) 토끼 / 撞(zhuàng) 부딪치다 / 树桩(shùzhuāng) 나무 그루터기' },
+              { label:'문법', text:'撞死 = 撞(부딪치다)+死(죽다) 결과보어. "부딪쳐서 죽다"는 결과까지 한 단어로.' },
+            ]},
+          { zh:'农夫白白捡了一只兔子，', py:'Nóngfū báibái jiǎn le yì zhī tùzi,', ko:'농부는 거저 토끼 한 마리를 주웠고,',
+            notes:[
+              { label:'단어', text:'白白(báibái) 거저, 공짜로 / 捡(jiǎn) 줍다' },
+            ]},
+          { zh:'非常高兴。', py:'Fēicháng gāoxìng.', ko:'무척 기뻐했어요.',
+            notes:[
+              { label:'단어', text:'非常(fēicháng) 매우, 무척 (정도부사)' },
+            ]},
+          { zh:'从此他不再干活，', py:'Cóngcǐ tā bú zài gànhuó,', ko:'그때부터 그는 더 이상 일하지 않고,',
+            notes:[
+              { label:'문법', text:'不再 = "더 이상 ~하지 않다". 不 + 再(다시)의 조합. 不再干活 = 다시는 일하지 않다.' },
+              { label:'단어', text:'从此(cóngcǐ) 그때부터' },
+            ]},
+          { zh:'天天守在树桩旁边，', py:'Tiāntiān shǒu zài shùzhuāng pángbiān,', ko:'날마다 그루터기 곁을 지키며,',
+            notes:[
+              { label:'단어', text:'守(shǒu) 지키다 / 旁边(pángbiān) 옆, 곁 / 天天 = 매일매일(每天의 구어 강조)' },
+            ]},
+          { zh:'等着下一只兔子。', py:'Děng zhe xià yì zhī tùzi.', ko:'다음 토끼를 기다렸어요.',
+            notes:[
+              { label:'문법', text:'等着 = 等(기다리다) + 着(zhe). 着는 동작의 지속·진행을 나타내요. "기다리고 있다".' },
+            ]},
+          { zh:'结果，他再也没等到，', py:'Jiéguǒ, tā zài yě méi děng dào,', ko:'결국 그는 끝내 (토끼를) 기다리지 못했고,',
+            notes:[
+              { label:'문법', text:'再也没…= "두 번 다시 ~하지 못했다". 等到 = 기다려서 결국 만나다(결과보어 到).' },
+              { label:'단어', text:'结果(jiéguǒ) 결국, 그 결과' },
+            ]},
+          { zh:'田地也荒了。', py:'Tiándì yě huāng le.', ko:'밭마저 황폐해졌어요.',
+            notes:[
+              { label:'단어', text:'田地(tiándì) 논밭 / 荒(huāng) 황폐해지다' },
+              { label:'교훈', text:'守株待兔는 노력 없이 요행만 바라는 태도를 비판하는 성어예요.' },
+            ]},
+        ]
+      },
+      {
+        title:'拔苗助长 (싹을 뽑아 자라게 돕다)',
+        type:'전래동화·성어',
+        intro:'조급함이 일을 망친다는 교훈. 맹자(孟子)에 나오는 이야기로, "서두르면 그르친다"는 뜻의 성어예요.',
+        lines:[
+          { zh:'宋国有个农夫，', py:'Sòng guó yǒu ge nóngfū,', ko:'송나라에 한 농부가 있었어요,',
+            notes:[
+              { label:'단어', text:'宋国(Sòng guó) 송나라 (춘추시대 나라) / 农夫 농부' },
+            ]},
+          { zh:'他希望禾苗长得快一点儿。', py:'Tā xīwàng hémiáo zhǎng de kuài yìdiǎnr.', ko:'그는 벼 싹이 좀 더 빨리 자라길 바랐어요.',
+            notes:[
+              { label:'단어', text:'希望(xīwàng) 바라다 / 禾苗(hémiáo) 벼 싹 / 长(zhǎng) 자라다' },
+              { label:'문법', text:'长得快 = 정도보어(동사+得+형용사). "자라는 게 빠르다".' },
+            ]},
+          { zh:'于是他把禾苗一棵棵往上拔。', py:'Yúshì tā bǎ hémiáo yì kē kē wǎng shàng bá.', ko:'그래서 그는 벼 싹을 하나하나 위로 뽑아 올렸어요.',
+            notes:[
+              { label:'문법', text:'把자문 + 방향: 把禾苗…往上拔 = "싹을 위로 뽑다". 往上 = 위쪽으로.' },
+              { label:'단어', text:'于是(yúshì) 그래서 / 一棵棵 한 그루 한 그루(양사 중첩) / 拔(bá) 뽑다' },
+            ]},
+          { zh:'累得满头大汗。', py:'Lèi de mǎn tóu dà hàn.', ko:'땀이 비 오듯 흐를 만큼 지쳤어요.',
+            notes:[
+              { label:'문법', text:'累得满头大汗 = 정도보어. "지쳐서 온 머리에 큰 땀이 났다".' },
+              { label:'단어', text:'满头大汗(mǎn tóu dà hàn) 온 얼굴이 땀범벅 (성어식 표현)' },
+            ]},
+          { zh:'回家后他得意地说：', py:'Huí jiā hòu tā déyì de shuō:', ko:'집에 돌아온 뒤 그는 의기양양하게 말했어요:',
+            notes:[
+              { label:'문법', text:'得意地说 = 형용사 + 地(de) + 동사 = 부사어. "의기양양하게 말하다". 地는 동작의 방식을 꾸며요.' },
+              { label:'단어', text:'得意(déyì) 의기양양하다' },
+            ]},
+          { zh:'"今天我帮禾苗长高了！"', py:'"Jīntiān wǒ bāng hémiáo zhǎng gāo le!"', ko:'"오늘 내가 벼 싹이 자라도록 도왔어!"',
+            notes:[
+              { label:'문법', text:'帮 + 대상 + 동작 = "~가 ~하도록 돕다". 帮禾苗长高 = 싹이 크게 자라도록 돕다.' },
+            ]},
+          { zh:'第二天，禾苗全都枯死了。', py:'Dì-èr tiān, hémiáo quándōu kū sǐ le.', ko:'다음 날, 벼 싹은 모두 말라 죽었어요.',
+            notes:[
+              { label:'단어', text:'第二天 이튿날 / 全都(quándōu) 모두, 전부 / 枯死(kū sǐ) 말라 죽다' },
+              { label:'교훈', text:'拔苗助长은 자연의 순리를 거슬러 서두르면 오히려 망친다는 교훈이에요.' },
+            ]},
+        ]
+      },
+      {
+        title:'读唐诗 (당시 읽기 동요)',
+        type:'동요',
+        intro:'아이들이 당시(唐诗)에 친숙해지도록 만든 동요예요. 중국 아이들은 노래로 고전시를 익히기 시작해요.',
+        lines:[
+          { zh:'床前明月光，', py:'Chuáng qián míng yuè guāng,', ko:'침상 앞 밝은 달빛,',
+            notes:[
+              { label:'배경', text:'이백(李白)의 「静夜思(고요한 밤의 그리움)」 첫 구절. 중국에서 가장 유명한 시예요.' },
+              { label:'단어', text:'床(chuáng) 침상 / 明月(míng yuè) 밝은 달 / 光(guāng) 빛' },
+            ]},
+          { zh:'疑是地上霜。', py:'Yí shì dì shàng shuāng.', ko:'땅 위의 서리인가 했네.',
+            notes:[
+              { label:'단어', text:'疑(yí) 의심하다, ~인가 싶다 / 霜(shuāng) 서리' },
+              { label:'문법', text:'문언에서 是는 "~이다". 疑是 = "~인가 의심하다". 달빛을 서리로 착각한 표현이에요.' },
+            ]},
+          { zh:'举头望明月，', py:'Jǔ tóu wàng míng yuè,', ko:'고개 들어 밝은 달을 보고,',
+            notes:[
+              { label:'단어', text:'举头(jǔ tóu) 고개를 들다 / 望(wàng) 멀리 바라보다' },
+            ]},
+          { zh:'低头思故乡。', py:'Dī tóu sī gùxiāng.', ko:'고개 숙여 고향을 그리네.',
+            notes:[
+              { label:'단어', text:'低头(dī tóu) 고개를 숙이다 / 思(sī) 그리워하다 / 故乡(gùxiāng) 고향' },
+              { label:'감상', text:'举头/低头(고개 들고-숙이고)의 대구로 나그네의 향수를 그렸어요. 단 20자로 그리움을 담은 명시예요.' },
+            ]},
+        ]
+      },
     ],
     match: [
       { zh:'旅游', ko:'여행' }, { zh:'朋友', ko:'친구' },
@@ -4471,6 +4767,113 @@ const DATA = {
           { label:'작별 격식', pattern:'后会有期 / 保重', desc:'정중한 작별 인사. 后会有期=다시 만날 기회가 있다. 保重=몸조심하다.', example:'请多保重。부디 건강하세요.' },
         ]},
     ],
+    stories: [
+      {
+        title:'静夜思 — 李白 (고요한 밤의 그리움 · 이백)',
+        type:'당시(唐诗)',
+        intro:'당나라 시인 이백(李白, 701~762)의 대표작. 중국인이라면 누구나 외우는 "국민 시"로, 타향에서 달을 보며 고향을 그리는 마음을 단 20자에 담았어요.',
+        lines:[
+          { zh:'床前明月光，', py:'Chuáng qián míng yuè guāng,', ko:'침상 앞에 밝은 달빛 비치니,',
+            notes:[
+              { label:'문언', text:'문언문은 글자 하나가 한 단어. 床(침상)·前(앞)·明月(밝은 달)·光(빛)이 각각 의미 단위예요.' },
+              { label:'운율', text:'5자씩 끊어지는 五言绝句(오언절구). 한 구 5자, 총 4구로 이뤄진 당시의 대표 형식이에요.' },
+            ]},
+          { zh:'疑是地上霜。', py:'Yí shì dì shàng shuāng.', ko:'땅에 내린 서리인가 했네.',
+            notes:[
+              { label:'문언', text:'疑(의심하다)+是(이다) = "~인 줄 알았다". 현대 중국어의 "好像"에 해당하는 고전 표현.' },
+              { label:'수사', text:'달빛을 서리에 빗댄 비유(比喻). 차갑고 외로운 분위기를 미리 깔아줘요.' },
+            ]},
+          { zh:'举头望明月，', py:'Jǔ tóu wàng míng yuè,', ko:'고개 들어 밝은 달 바라보고,',
+            notes:[
+              { label:'문언', text:'举(들다)头(머리) = 고개를 들다. 望은 "멀리 바라보다"로 看보다 시적이에요.' },
+              { label:'대구', text:'다음 구절과 짝을 이루는 对仗(대구). 举头(들다)↔低头(숙이다)가 정확히 대응돼요.' },
+            ]},
+          { zh:'低头思故乡。', py:'Dī tóu sī gùxiāng.', ko:'고개 숙여 고향을 그리네.',
+            notes:[
+              { label:'문언', text:'思(그리다)는 현대어 想念에 해당. 故乡 = 고향(故는 "옛, 본래의").' },
+              { label:'감상', text:'동작(고개 들고-숙임)만으로 감정을 드러내는 절제미. 설명 없이 그리움을 전하는 게 한시의 매력이에요.' },
+            ]},
+        ]
+      },
+      {
+        title:'春晓 — 孟浩然 (봄 새벽 · 맹호연)',
+        type:'당시(唐诗)',
+        intro:'맹호연(孟浩然, 689~740)의 봄 정경 시. 봄잠에 취해 늦게 깬 아침, 간밤의 비바람에 진 꽃을 떠올리는 한가롭고 서정적인 명편이에요.',
+        lines:[
+          { zh:'春眠不觉晓，', py:'Chūn mián bù jué xiǎo,', ko:'봄잠에 날 밝는 줄 몰랐더니,',
+            notes:[
+              { label:'문언', text:'春眠 봄잠 / 不觉 깨닫지 못하다 / 晓 새벽. "봄잠에 새벽이 온 줄 몰랐다".' },
+              { label:'단어', text:'晓(xiǎo)는 문언에서 "새벽". 현대어 早晨(아침)과 통해요.' },
+            ]},
+          { zh:'处处闻啼鸟。', py:'Chùchù wén tí niǎo,', ko:'곳곳에 새 우는 소리 들리네.',
+            notes:[
+              { label:'문언', text:'处处 곳곳 / 闻(wén)은 문언에서 "듣다"(현대어는 "냄새 맡다"). 啼鸟 우는 새.' },
+              { label:'어순', text:'闻啼鸟 = "우는 새를 듣다". 시에서는 운율을 위해 어순이 도치되기도 해요.' },
+            ]},
+          { zh:'夜来风雨声，', py:'Yè lái fēng yǔ shēng,', ko:'밤사이 비바람 소리,',
+            notes:[
+              { label:'문언', text:'夜来 밤새, 간밤 / 风雨声 비바람 소리. 새벽의 고요와 대비되는 어젯밤 회상이에요.' },
+            ]},
+          { zh:'花落知多少。', py:'Huā luò zhī duōshao.', ko:'꽃은 또 얼마나 졌을까.',
+            notes:[
+              { label:'문언', text:'花落 꽃이 지다 / 知多少 = "얼마나인지 알겠는가" → "얼마나 졌을까". 知는 "알다".' },
+              { label:'감상', text:'직접 보지 않고 "얼마나 졌을까" 묻는 여운. 봄을 아끼는(惜春) 마음이 은은히 배어 있어요.' },
+            ]},
+        ]
+      },
+      {
+        title:'登鹳雀楼 — 王之涣 (관작루에 올라 · 왕지환)',
+        type:'당시(唐诗)',
+        intro:'왕지환(王之涣)의 시. "더 멀리 보려면 한 층 더 올라가라"는 마지막 구절은 끊임없는 향상심을 뜻하는 명언으로 널리 인용돼요.',
+        lines:[
+          { zh:'白日依山尽，', py:'Bái rì yī shān jìn,', ko:'해는 산에 기대어 저물고,',
+            notes:[
+              { label:'문언', text:'白日 밝은 해 / 依 기대다 / 尽 다하다, 저물다. "해가 산에 기대어 사라진다".' },
+              { label:'단어', text:'尽(jìn)은 "끝나다, 다하다". 日尽 = 해가 다 짐(일몰).' },
+            ]},
+          { zh:'黄河入海流。', py:'Huáng hé rù hǎi liú,', ko:'황하는 바다로 흘러드네.',
+            notes:[
+              { label:'대구', text:'白日(흰 해)↔黄河(누런 강), 依山(산에 기대)↔入海(바다로 들어감). 색과 방향의 완벽한 대구예요.' },
+              { label:'단어', text:'入海流 = 바다로 들어가 흐르다. 웅장한 자연 풍경.' },
+            ]},
+          { zh:'欲穷千里目，', py:'Yù qióng qiān lǐ mù,', ko:'천 리 끝까지 바라보고 싶다면,',
+            notes:[
+              { label:'문언', text:'欲 ~하고자 하다 / 穷 끝까지 다하다 / 千里目 천 리를 보는 시야. "천 리 끝까지 보려면".' },
+              { label:'단어', text:'欲(yù)는 문언의 조동사 "~하려 하다"(현대어 想/要).' },
+            ]},
+          { zh:'更上一层楼。', py:'Gèng shàng yì céng lóu.', ko:'다시 한 층 더 올라가라.',
+            notes:[
+              { label:'문언', text:'更 더욱 / 上 오르다 / 一层楼 한 층. "한 층 더 오르다".' },
+              { label:'명언', text:'更上一层楼는 "한 단계 더 발전하다"는 격려의 관용구로, 오늘날에도 졸업·승진 축하에 자주 써요.' },
+            ]},
+        ]
+      },
+      {
+        title:'悯农 — 李绅 (농민을 가엾이 여기다 · 이신)',
+        type:'당시(唐诗)',
+        intro:'이신(李绅)의 시. 농부의 땀으로 지은 곡식의 소중함을 노래해, 음식을 아끼라는 교훈으로 식사 교육에 늘 인용되는 시예요.',
+        lines:[
+          { zh:'锄禾日当午，', py:'Chú hé rì dāng wǔ,', ko:'한낮 뙤약볕에 김을 매니,',
+            notes:[
+              { label:'문언', text:'锄 김매다 / 禾 벼 / 日当午 해가 정오에 이르다. "정오에 벼밭의 김을 매다".' },
+              { label:'단어', text:'当午(dāng wǔ) 정오가 되다. 当은 "마침 ~에 이르다".' },
+            ]},
+          { zh:'汗滴禾下土。', py:'Hàn dī hé xià tǔ,', ko:'땀이 벼 아래 흙에 떨어지네.',
+            notes:[
+              { label:'문언', text:'汗 땀 / 滴 (방울져) 떨어지다 / 禾下土 벼 아래 흙. 노동의 고됨을 생생히 묘사.' },
+            ]},
+          { zh:'谁知盘中餐，', py:'Shéi zhī pán zhōng cān,', ko:'누가 알랴, 밥상 위의 밥이,',
+            notes:[
+              { label:'문언', text:'谁知 누가 알겠는가(반어) / 盘中餐 쟁반(밥상) 안의 음식. 知는 "알다".' },
+            ]},
+          { zh:'粒粒皆辛苦。', py:'Lì lì jiē xīnkǔ.', ko:'알알이 모두 고생이라는 것을.',
+            notes:[
+              { label:'문언', text:'粒粒 알알이(낟알 하나하나) / 皆 모두(현대어 都) / 辛苦 고생. "낟알마다 모두 고생이다".' },
+              { label:'교훈', text:'밥 한 톨도 농부의 땀이라는 뜻. 중국 아이들이 음식을 아끼도록 배우는 대표 시예요.' },
+            ]},
+        ]
+      },
+    ],
     match: [
       { zh:'经济', ko:'경제' }, { zh:'文化', ko:'문화' },
       { zh:'科技', ko:'과학기술' }, { zh:'社会', ko:'사회' },
@@ -4595,6 +4998,7 @@ function setModule(mod) {
   if (mod === 'vocab') initVocab();
   else if (mod === 'tones') initTones();
   else if (mod === 'conv') initConv();
+  else if (mod === 'story') initStory();
   else if (mod === 'dict') initDict();
   else if (mod === 'games') { showGamesMenu(); }
   else if (mod === 'chat') initChat();
@@ -4787,7 +5191,76 @@ function showGrammar(i) {
   }
 }
 
-/* ---- GAMES ---- */
+/* ---- STORIES & POEMS ---- */
+let currentStoryIdx = 0;
+function initStory() {
+  const d = DATA[currentLevel];
+  const badge = document.getElementById('story-level-badge');
+  badge.className = `level-badge badge-${currentLevel}`;
+  badge.textContent = currentLevel === 'beginner' ? '초급' : currentLevel === 'intermediate' ? '중급' : '고급';
+  currentStoryIdx = 0;
+  // tabs
+  const bar = document.getElementById('story-tab-bar');
+  bar.innerHTML = d.stories.map((s,i) =>
+    `<button class="story-tab ${i===0?'active':''}" id="stab-${i}" onclick="selectStory(${i})">${s.title.split(' (')[0]}</button>`
+  ).join('');
+  // reset panel
+  document.getElementById('story-empty').style.display = '';
+  document.getElementById('story-content').style.display = 'none';
+  const se = document.getElementById('story-empty-otter');
+  if (se && !se.querySelector('img')) se.innerHTML = otterSVG(130);
+  loadStory(0);
+}
+
+function selectStory(i) {
+  currentStoryIdx = i;
+  document.querySelectorAll('.story-tab').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+  // reset panel
+  document.getElementById('story-empty').style.display = '';
+  document.getElementById('story-content').style.display = 'none';
+  loadStory(i);
+}
+
+function loadStory(i) {
+  const s = DATA[currentLevel].stories[i];
+  document.getElementById('story-intro').innerHTML =
+    `<b style="color:var(--text);font-family:var(--font-display)">${s.title}</b> <span style="color:var(--text3)">· ${s.type}</span><br>${s.intro}`;
+  const wrap = document.getElementById('story-lines');
+  wrap.innerHTML = s.lines.map((l,idx) => `
+    <div class="story-line" id="sl-${idx}" onclick="showStoryLine(${idx})">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="sl-zh" style="flex:1;">${l.zh}</div>
+        <button class="speak-btn" onclick="event.stopPropagation();speakStory(${idx}, this)" title="발음 듣기">🔊</button>
+      </div>
+      <div class="sl-py">${l.py}</div>
+      <div class="sl-ko">${l.ko}</div>
+    </div>`).join('');
+}
+
+function speakStory(idx, btn) {
+  const l = DATA[currentLevel].stories[currentStoryIdx].lines[idx];
+  speak(l.zh, btn);
+}
+
+function showStoryLine(idx) {
+  const l = DATA[currentLevel].stories[currentStoryIdx].lines[idx];
+  document.querySelectorAll('.story-line').forEach((el,i)=>el.classList.toggle('active-line', i===idx));
+  document.getElementById('story-empty').style.display = 'none';
+  document.getElementById('story-content').style.display = '';
+  document.getElementById('sp-zh').textContent = l.zh;
+  document.getElementById('sp-py').textContent = l.py;
+  document.getElementById('sp-ko').textContent = l.ko;
+  const notes = l.notes || [];
+  document.getElementById('sp-notes').innerHTML = notes.map(n => `
+    <div class="grammar-point">
+      <div class="gp-label">${n.label}</div>
+      <div class="gp-desc">${n.text}</div>
+    </div>`).join('');
+  if (window.innerWidth < 720) {
+    document.getElementById('story-panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+}
+
 function showGamesMenu() {
   document.getElementById('games-menu').style.display = '';
   document.getElementById('game-match').style.display = 'none';
