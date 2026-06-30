@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>중국어 학습 — 汉语学习</title>
+<script src="https://js.puter.com/v2/"></script>
 <style>
   :root {
     --bg: #0f1117;
@@ -4838,18 +4839,11 @@ async function searchDict() {
 규칙: 1) 반드시 유효한 JSON만 출력. 2) examples는 2~3개. 3) 입력이 한국어면 중국어로 번역해서 zh에 넣기. 4) 문법 질문(예: "把 자문이 뭐야?")이면 explain에 문법을 자세히 설명하고 examples에 해당 문법 예문을 넣기.`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system: sys,
-        messages:[{ role:'user', content: q }],
-      })
-    });
-    const data = await resp.json();
-    let text = data.content?.map(b=>b.text||'').join('') || '';
+    const reply = await puter.ai.chat(
+      sys + '\n\n사용자 입력: ' + q,
+      { model: 'gpt-4o-mini' }
+    );
+    let text = (typeof reply === 'string') ? reply : (reply?.message?.content || reply?.text || String(reply));
     text = text.replace(/```json|```/g,'').trim();
 
     typing.classList.remove('active');
@@ -4944,23 +4938,23 @@ async function sendChat() {
   typing.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: DATA[currentLevel].systemPrompt,
-        messages: chatHistory.slice(-10),
-      })
-    });
-    const data = await resp.json();
-    const reply = data.content?.map(b=>b.text||'').join('') || '응답을 받지 못했습니다.';
+    // Build a single prompt from system + recent history (Puter takes a text prompt)
+    const history = chatHistory.slice(-10)
+      .map(m => (m.role === 'user' ? '학생: ' : '선생님: ') + m.content)
+      .join('\n');
+    const prompt = DATA[currentLevel].systemPrompt
+      + '\n\n--- 지금까지의 대화 ---\n' + history
+      + '\n\n선생님으로서 다음에 할 답변을 작성하세요 (위 형식을 지키되 "선생님:" 같은 접두어는 붙이지 마세요):';
+
+    const result = await puter.ai.chat(prompt, { model: 'gpt-4o-mini' });
+    const reply = (typeof result === 'string')
+      ? result
+      : (result?.message?.content || result?.text || '응답을 받지 못했습니다.');
     chatHistory.push({ role:'assistant', content: reply });
     typing.classList.remove('active');
     // Parse for Chinese/pinyin/Korean format
     const lines = reply.split('\n').filter(l=>l.trim());
-    const html = lines.map(l=>`<div style="margin-bottom:4px">${l}</div>`).join('');
+    const html = lines.map(l=>`<div style="margin-bottom:4px">${escapeHtml(l)}</div>`).join('');
     addAiMsg(html);
   } catch(e) {
     typing.classList.remove('active');
