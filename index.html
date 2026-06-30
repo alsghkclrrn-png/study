@@ -5772,19 +5772,15 @@ function toneLabel(tones) {
   return tones.map(t => (t === 0 ? '0' : t)).join('-') + '  (' + tones.map(t => TONE_MARKS[t] !== undefined ? TONE_MARKS[t] : t).join('') + ')';
 }
 
-/* ---- 놀이 진행(다음 놀이로 연결) ---- */
-const GAME_ORDER = ['match','fill','quiz','listen','tonematch','memory','speed'];
-const GAME_NAMES = { match:'매칭 게임', fill:'빈칸 채우기', quiz:'뜻 맞히기', listen:'듣기 퀴즈', tonematch:'성조 맞히기', memory:'카드 뒤집기', speed:'스피드 퀴즈' };
-function nextGameType(t) { const i = GAME_ORDER.indexOf(t); return GAME_ORDER[(i + 1) % GAME_ORDER.length]; }
+/* ---- 놀이 완료 시: 같은 놀이를 새 문제로 다시 시작 ---- */
 function showGameComplete(resultElId, curType, summary) {
-  const nt = nextGameType(curType);
   const el = document.getElementById(resultElId);
   if (!el) return;
   el.className = 'result-msg ok';
   el.innerHTML =
     (summary ? '<div style="margin-bottom:10px;">' + summary + '</div>' : '') +
     '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" onclick="startGame(\'' + nt + '\')">다음 놀이: ' + GAME_NAMES[nt] + ' ›</button>' +
+    '<button class="btn btn-primary" onclick="startGame(\'' + curType + '\')">↻ 새 문제로 다시!</button>' +
     '<button class="btn" onclick="showGamesMenu()">놀이 메뉴</button>' +
     '</div>';
 }
@@ -6001,13 +5997,11 @@ function endSpeed() {
   stopSpeed();
   document.getElementById('speed-opts').innerHTML = '';
   document.getElementById('speed-bar').style.width = '0%';
-  const nt = nextGameType('speed');
   const r = document.getElementById('speed-result');
   r.className = 'result-msg ok';
   r.innerHTML = '<div style="margin-bottom:10px;">⏰ 시간 종료! 최종 <b>' + speedState.score + '점</b></div>' +
     '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" onclick="initSpeed()">다시 도전</button>' +
-    '<button class="btn btn-primary" onclick="startGame(\'' + nt + '\')">다음 놀이: ' + GAME_NAMES[nt] + ' ›</button>' +
+    '<button class="btn btn-primary" onclick="initSpeed()">↻ 새 문제로 다시!</button>' +
     '<button class="btn" onclick="showGamesMenu()">놀이 메뉴</button>' +
     '</div>';
 }
