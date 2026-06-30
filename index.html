@@ -5226,25 +5226,23 @@ const NOTE_FREQ = {
   'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'G4':392.00,'A4':440.00,'B4':493.88,
   'C5':523.25,'D5':587.33,'E5':659.25,'F5':698.46,'G5':783.99,'A5':880.00
 };
-/* 곡조가 명확히 알려진 동요만 멜로디 제공 */
+/* 곡조가 명확히 알려진 동요만 멜로디 제공. 각 음표: [음이름, 박자, 가사글자] */
 const STORY_MELODIES = {
-  '两只老虎': [ /* Frère Jacques 곡조 */
-    ['C4',1],['D4',1],['E4',1],['C4',1],
-    ['C4',1],['D4',1],['E4',1],['C4',1],
-    ['E4',1],['F4',1],['G4',2],
-    ['E4',1],['F4',1],['G4',2],
-    ['G4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['E4',1],['C4',1],
-    ['G4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['E4',1],['C4',1],
-    ['C4',1],['G4',1],['C4',2],
-    ['C4',1],['G4',1],['C4',2]
+  '两只老虎': [ /* Frère Jacques 곡조 — 가사 32자 = 음표 32개 */
+    ['C4',1,'两'],['D4',1,'只'],['E4',1,'老'],['C4',1,'虎'],
+    ['C4',1,'两'],['D4',1,'只'],['E4',1,'老'],['C4',1,'虎'],
+    ['E4',1,'跑'],['F4',1,'得'],['G4',2,'快'],
+    ['E4',1,'跑'],['F4',1,'得'],['G4',2,'快'],
+    ['G4',0.5,'一'],['A4',0.5,'只'],['G4',0.5,'没'],['F4',0.5,'有'],['E4',1,'耳'],['C4',1,'朵'],
+    ['G4',0.5,'一'],['A4',0.5,'只'],['G4',0.5,'没'],['F4',0.5,'有'],['E4',1,'尾'],['C4',1,'巴'],
+    ['C4',1,'真'],['G4',1,'奇'],['C4',2,'怪'],
+    ['C4',1,'真'],['G4',1,'奇'],['C4',2,'怪']
   ],
-  '小星星': [ /* Twinkle Twinkle Little Star */
-    ['C4',1],['C4',1],['G4',1],['G4',1],['A4',1],['A4',1],['G4',2],
-    ['F4',1],['F4',1],['E4',1],['E4',1],['D4',1],['D4',1],['C4',2],
-    ['G4',1],['G4',1],['F4',1],['F4',1],['E4',1],['E4',1],['D4',2],
-    ['G4',1],['G4',1],['F4',1],['F4',1],['E4',1],['E4',1],['D4',2],
-    ['C4',1],['C4',1],['G4',1],['G4',1],['A4',1],['A4',1],['G4',2],
-    ['F4',1],['F4',1],['E4',1],['E4',1],['D4',1],['D4',1],['C4',2]
+  '小星星': [ /* Twinkle Twinkle — 가사 28자 = 음표 28개 */
+    ['C4',1,'一'],['C4',1,'闪'],['G4',1,'一'],['G4',1,'闪'],['A4',1,'亮'],['A4',1,'晶'],['G4',2,'晶'],
+    ['F4',1,'满'],['F4',1,'天'],['E4',1,'都'],['E4',1,'是'],['D4',1,'小'],['D4',1,'星'],['C4',2,'星'],
+    ['G4',1,'挂'],['G4',1,'在'],['F4',1,'天'],['F4',1,'上'],['E4',1,'放'],['E4',1,'光'],['D4',2,'明'],
+    ['G4',1,'好'],['G4',1,'像'],['F4',1,'许'],['F4',1,'多'],['E4',1,'小'],['E4',1,'眼'],['D4',2,'睛']
   ]
 };
 
@@ -5269,6 +5267,7 @@ function stopMelody() {
 
 function toggleMelody() {
   if (_melodyPlaying) { stopMelody(); return; }
+  stopSing();
   stopStoryAll();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   const key = storyMelodyKey(DATA[currentLevel].stories[currentStoryIdx].title);
@@ -5299,7 +5298,6 @@ function playMelody(notes) {
       const gain = ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.value = freq;
-      // 부드러운 음 시작/끝 (똑똑 끊기지 않게)
       gain.gain.setValueAtTime(0.0001, t);
       gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
       gain.gain.setValueAtTime(0.25, t + len - 0.06);
@@ -5309,9 +5307,69 @@ function playMelody(notes) {
     }
     t += len;
   });
-  // 연주가 끝나면 버튼 원상복구
   const totalMs = (t - ctx.currentTime) * 1000 + 100;
   _melodyTimers.push(setTimeout(stopMelody, totalMs));
+}
+
+/* ---- 노래 부르기: 멜로디 + 가사를 한 글자씩 박자에 맞춰 발음 ---- */
+let _singing = false;
+let _singTimers = [];
+
+function stopSing() {
+  _singing = false;
+  _singTimers.forEach(t => clearTimeout(t));
+  _singTimers = [];
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  const btn = document.getElementById('story-sing-btn');
+  if (btn) { btn.textContent = '🎤 노래 부르기'; btn.classList.remove('speaking'); }
+  const box = document.getElementById('story-sing-lyric');
+  if (box) box.textContent = '';
+}
+
+function toggleSing() {
+  if (_singing) { stopSing(); return; }
+  stopStoryAll();
+  stopMelody();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  const key = storyMelodyKey(DATA[currentLevel].stories[currentStoryIdx].title);
+  if (!key) return;
+  singAlong(STORY_MELODIES[key]);
+}
+
+function singAlong(notes) {
+  if (!('speechSynthesis' in window)) {
+    alert('이 브라우저는 노래 부르기(음성)를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.');
+    return;
+  }
+  // 멜로디(악기음)를 먼저 시작
+  playMelody(notes);
+  _singing = true;
+  const btn = document.getElementById('story-sing-btn');
+  if (btn) { btn.textContent = '⏹ 멈추기'; btn.classList.add('speaking'); }
+  const box = document.getElementById('story-sing-lyric');
+
+  const beat = 0.45;
+  let elapsed = 50; // playMelody가 +0.05초 뒤 시작하므로 맞춤(ms)
+  notes.forEach(([name, dur, ch]) => {
+    const startMs = elapsed;
+    _singTimers.push(setTimeout(() => {
+      if (!_singing) return;
+      if (box && ch) box.textContent = ch;
+      if (ch) {
+        const u = new SpeechSynthesisUtterance(ch);
+        u.lang = 'zh-CN';
+        if (zhVoice) u.voice = zhVoice;
+        u.rate = 1.0;
+        // 음높이를 음표에 살짝 반영(정확한 음정은 아님)
+        const freq = NOTE_FREQ[name] || 392;
+        u.pitch = Math.max(0.5, Math.min(2.0, freq / 392));
+        speechSynthesis.speak(u);
+      }
+    }, startMs));
+    elapsed += dur * beat * 1000;
+  });
+  // 끝나면 정리
+  _singTimers.push(setTimeout(stopSing, elapsed + 200));
 }
 
 function initStory() {
@@ -5345,11 +5403,16 @@ function selectStory(i) {
 function loadStory(i) {
   stopStoryAll();
   stopMelody();
+  stopSing();
   const s = DATA[currentLevel].stories[i];
   const emoji = storyEmoji(s.title);
   const hasMelody = !!storyMelodyKey(s.title);
-  const melodyBtn = hasMelody
-    ? `<button class="speak-btn playall" id="story-melody-btn" onclick="toggleMelody()" title="멜로디 듣기" style="flex-shrink:0;background:transparent;border-color:var(--purple);color:var(--purple);">🎵 멜로디 듣기</button>`
+  const melodyBtns = hasMelody
+    ? `<button class="speak-btn playall" id="story-melody-btn" onclick="toggleMelody()" title="멜로디 듣기" style="background:transparent;border-color:var(--purple);color:var(--purple);">🎵 멜로디 듣기</button>
+       <button class="speak-btn playall" id="story-sing-btn" onclick="toggleSing()" title="노래 부르기" style="background:transparent;border-color:var(--blue);color:var(--blue);">🎤 노래 부르기</button>`
+    : '';
+  const lyricBox = hasMelody
+    ? `<div id="story-sing-lyric" style="text-align:center;font-family:var(--font-zh);font-size:2.2rem;color:var(--blue);min-height:1.2em;margin-top:6px;font-weight:700;"></div>`
     : '';
   document.getElementById('story-intro').innerHTML =
     `<div style="text-align:center;font-size:2.6rem;line-height:1.1;margin-bottom:8px;">${emoji}</div>
@@ -5357,9 +5420,9 @@ function loadStory(i) {
       <div style="flex:1;min-width:160px;"><b style="color:var(--text);font-family:var(--font-display)">${s.title}</b> <span style="color:var(--text3)">· ${s.type}</span><br>${s.intro}</div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
         <button class="speak-btn playall" id="story-playall-btn" onclick="toggleStoryAll()" title="전체 듣기">▶️ 전체듣기</button>
-        ${melodyBtn}
+        ${melodyBtns}
       </div>
-    </div>`;
+    </div>${lyricBox}`;
   const wrap = document.getElementById('story-lines');
   wrap.innerHTML = s.lines.map((l,idx) => `
     <div class="story-line" id="sl-${idx}" onclick="showStoryLine(${idx})">
@@ -5392,6 +5455,7 @@ function toggleStoryAll() {
 
 function startStoryAll() {
   stopMelody();
+  stopSing();
   if (!('speechSynthesis' in window)) {
     alert('이 브라우저는 발음 듣기를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.');
     return;
