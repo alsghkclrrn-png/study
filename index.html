@@ -948,7 +948,8 @@
         <div class="card-title">🔍 통역·사전</div>
         <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
           모르는 단어나 문법이 있나요? 수달이 찾아줄게요! 🦦<br>
-          한국어든 중국어든, 단어·문장·문법 무엇이든 적어보세요.
+          한국어든 중국어든 적어보세요. 기본 단어는 <b>로그인 없이 바로</b> 검색되고,<br>
+          더 자세한 설명·번역이 필요하면 <b>AI 검색(최초 1회 로그인)</b>을 이용할 수 있어요.
         </p>
         <div style="display:flex;gap:8px;margin-bottom:10px;">
           <input class="chat-input" id="dict-input" placeholder="예: 谢谢 / 고마워요 / 把 자문이 뭐야?" onkeydown="if(event.key==='Enter')searchDict()" style="flex:1;" />
@@ -5443,15 +5444,79 @@ function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-async function searchDict() {
+/* 로컬 사전: 모든 레벨의 단어를 모아 검색 (로그인 불필요) */
+function buildLocalDict() {
+  if (window._localDictCache) return window._localDictCache;
+  const all = [];
+  Object.keys(DATA).forEach(lv => {
+    (DATA[lv].vocabThemes || []).forEach(t => {
+      (t.words || []).forEach(w => { if (w && w.zh) all.push(w); });
+    });
+  });
+  window._localDictCache = all;
+  return all;
+}
+
+function searchLocalDict(q) {
+  const dict = buildLocalDict();
+  const query = q.trim();
+  const lower = query.toLowerCase();
+  let exact = dict.filter(w => w.zh === query);
+  if (exact.length) return exact;
+  let py = dict.filter(w => (w.py || '').toLowerCase().replace(/\s+/g,'') === lower.replace(/\s+/g,''));
+  if (py.length) return py;
+  const zhPart = dict.filter(w => w.zh.includes(query));
+  const koPart = dict.filter(w => (w.ko || '').toLowerCase().includes(lower));
+  const seen = new Set(); const merged = [];
+  [...zhPart, ...koPart].forEach(w => {
+    const key = w.zh + '|' + w.py;
+    if (!seen.has(key)) { seen.add(key); merged.push(w); }
+  });
+  return merged;
+}
+
+function renderLocalDictResults(list) {
+  return list.slice(0, 8).map(w => `<div class="dict-card">
+    <div class="dict-head">
+      <span class="dict-zh">${escapeHtml(w.zh)}</span>
+      <span class="dict-py">${escapeHtml(w.py||'')}</span>
+      <button class="speak-btn" onclick="speak(${JSON.stringify(w.zh).replace(/"/g,'&quot;')}, this)" title="발음 듣기">🔊</button>
+    </div>
+    <div class="dict-ko">${escapeHtml(w.ko||'')}</div>
+  </div>`).join('');
+}
+
+function searchDict() {
   const input = document.getElementById('dict-input');
   const q = input.value.trim();
+  if (!q) return;
+  const resultBox = document.getElementById('dict-result');
+  const safeQ = q.replace(/'/g, "\\'");
+  const local = searchLocalDict(q);
+  if (local.length) {
+    resultBox.innerHTML = renderLocalDictResults(local) +
+      `<div style="margin-top:10px;font-size:0.78rem;color:var(--text3);line-height:1.6;">
+        원하는 결과가 없나요? 더 자세한 설명·예문·번역은 AI 검색을 이용하세요.<br>
+        <button class="chat-send" style="margin-top:8px;background:var(--red);" onclick="searchDictAI('${safeQ}')">🤖 AI로 자세히 검색 (로그인 필요)</button>
+      </div>`;
+  } else {
+    resultBox.innerHTML =
+      `<div class="dict-card"><div class="dict-sec-body" style="line-height:1.7;">
+        '<b>${escapeHtml(q)}</b>'에 대한 단어가 기본 사전에 없어요. 🦦<br>
+        AI 검색을 이용하면 번역·설명·예문을 받을 수 있어요.<br>
+        <button class="chat-send" style="margin-top:10px;background:var(--red);" onclick="searchDictAI('${safeQ}')">🤖 AI로 검색하기 (로그인 필요)</button>
+      </div></div>`;
+  }
+}
+
+async function searchDictAI(q) {
+  q = (q || '').trim();
   if (!q) return;
 
   const btn = document.getElementById('dict-btn');
   const typing = document.getElementById('dict-typing');
   const resultBox = document.getElementById('dict-result');
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   typing.classList.add('active');
   resultBox.innerHTML = '';
 
@@ -5471,6 +5536,7 @@ async function searchDict() {
 규칙: 1) 반드시 유효한 JSON만 출력. 2) examples는 2~3개. 3) 입력이 한국어면 중국어로 번역해서 zh에 넣기. 4) 문법 질문(예: "把 자문이 뭐야?")이면 explain에 문법을 자세히 설명하고 examples에 해당 문법 예문을 넣기.`;
 
   try {
+    if (typeof puter === 'undefined' || !puter.ai) { throw new Error('puter-unavailable'); }
     const reply = await puter.ai.chat(
       sys + '\n\n사용자 입력: ' + q,
       { model: 'gpt-4o-mini' }
@@ -5507,9 +5573,9 @@ async function searchDict() {
     }
   } catch(e) {
     typing.classList.remove('active');
-    resultBox.innerHTML = `<div class="dict-card"><div class="dict-raw" style="color:var(--red)">연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div></div>`;
+    resultBox.innerHTML = `<div class="dict-card"><div class="dict-raw" style="color:var(--red);line-height:1.7;">AI 검색에 연결하지 못했어요.<br>처음 사용 시 Puter 로그인 창이 떠요. 로그인 후 다시 시도하거나, 잠시 후 다시 시도해주세요.</div></div>`;
   }
-  btn.disabled = false;
+  if (btn) btn.disabled = false;
 }
 
 /* ---- CHAT ---- */
@@ -5532,6 +5598,7 @@ function initChat() {
     advanced: { zh:'您好！今天想讨论什么话题？可以谈文化、社会、科技等各种主题。', py:'Nín hǎo! Jīntiān xiǎng tǎolùn shénme huàtí?', ko:'안녕하세요! 오늘은 어떤 주제를 이야기할까요? 문화, 사회, 기술 등 다양한 주제를 다룰 수 있습니다.' },
   };
   const g = greetings[currentLevel];
+  addAiMsg(`<div class="msg-ko" style="font-size:0.78rem;color:var(--text3);line-height:1.6;">💡 AI 채팅은 진짜 인공지능과 대화하는 기능이라, 처음 사용할 때 한 번 <b>Puter 로그인</b>이 필요해요. (무료)</div>`);
   addAiMsg(`<div class="msg-zh">${g.zh}</div><div class="msg-pinyin">${g.py}</div><div class="msg-ko">${g.ko}</div>`);
   chatHistory.push({ role:'assistant', content: `${g.zh} (${g.ko})` });
 }
@@ -5572,6 +5639,7 @@ async function sendChat() {
   typing.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
   try {
+    if (typeof puter === 'undefined' || !puter.ai) { throw new Error('puter-unavailable'); }
     // Build a single prompt from system + recent history (Puter takes a text prompt)
     const history = chatHistory.slice(-10)
       .map(m => (m.role === 'user' ? '학생: ' : '선생님: ') + m.content)
@@ -5592,7 +5660,7 @@ async function sendChat() {
     addAiMsg(html);
   } catch(e) {
     typing.classList.remove('active');
-    addAiMsg('<div class="msg-ko" style="color:var(--red)">연결 오류가 발생했습니다. 다시 시도해주세요.</div>');
+    addAiMsg('<div class="msg-ko" style="color:var(--red);line-height:1.7">AI 선생님에 연결하지 못했어요. 🦦<br>AI 채팅은 처음 사용할 때 Puter 로그인 창이 떠요. 로그인한 뒤 다시 보내주세요.</div>');
   }
   btn.disabled = false;
 }
