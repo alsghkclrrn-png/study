@@ -5030,6 +5030,7 @@ let currentModule = 'vocab';
 let fcIndex = 0, fcScore = 0;
 let toneQIndex = 0;
 let matchSelected = null, matchMatched = 0, matchScore = 0, matchTotal = 0;
+let fillDeck = [];
 let fillIndex = 0, fillScore = 0;
 let chatHistory = [];
 let quizState = {}, listenState = {}, tone2State = {}, memState = {}, speedState = {};
@@ -5660,10 +5661,21 @@ function startGame(type) {
   else if (type === 'speed') initSpeed();
 }
 
+function shortKo(ko) {
+  const s = (ko || '').split('(')[0].split(';')[0].trim();
+  return s || ko;
+}
 function initMatch() {
   document.getElementById('game-match').style.display = '';
   matchSelected = null; matchMatched = 0; matchScore = 0;
-  const items = DATA[currentLevel].match;
+  // 전체 단어 풀에서 매번 새로운 6개를 무작위로 뽑는다
+  let items;
+  const pool = getLevelWords();
+  if (pool.length >= 6) {
+    items = gShuffle(pool).slice(0, 6).map(w => ({ zh: w.zh, ko: shortKo(w.ko) }));
+  } else {
+    items = DATA[currentLevel].match;
+  }
   matchTotal = items.length;
   document.getElementById('match-total').textContent = items.length;
   document.getElementById('match-pairs').textContent = 0;
@@ -5711,13 +5723,14 @@ function selectMatch(el) {
 
 function initFill() {
   document.getElementById('game-fill').style.display = '';
+  fillDeck = gShuffle(DATA[currentLevel].fill || []);
   fillIndex = 0; fillScore = 0;
   document.getElementById('fill-score').textContent = 0;
   loadFill();
 }
 
 function loadFill() {
-  const fills = DATA[currentLevel].fill;
+  const fills = fillDeck;
   const f = fills[fillIndex % fills.length];
   document.getElementById('fill-result').textContent = '';
   const ft = document.getElementById('fill-total'); if (ft) ft.textContent = fills.length;
@@ -5729,7 +5742,7 @@ function loadFill() {
 }
 
 function checkFill() {
-  const fills = DATA[currentLevel].fill;
+  const fills = fillDeck;
   const f = fills[fillIndex % fills.length];
   const val = document.getElementById('fill-input').value.trim();
   const inp = document.getElementById('fill-input');
@@ -5746,7 +5759,7 @@ function checkFill() {
 }
 
 function nextFill() {
-  const fills = DATA[currentLevel].fill;
+  const fills = fillDeck;
   if (fillIndex >= fills.length - 1) {
     showGameComplete('fill-result', 'fill', '🎉 빈칸 채우기 완료! ' + fillScore + '점');
     return;
