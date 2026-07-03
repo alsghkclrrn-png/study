@@ -6,6 +6,42 @@
 <title>수달 중국어 🦦 — 함께 배워요!</title>
 <meta name="description" content="무료로 배우는 중국어 학습 사이트. HSK 단어, 발음, 성조, 문법, 학습 놀이(게임), AI 회화까지 초급·중급·고급 단계별로 제공합니다.">
 <meta name="author" content="수달 중국어">
+<meta name="keywords" content="중국어 공부, 중국어 학습, HSK, 병음, 성조, 중국어 단어, 중국어 발음, 무료 중국어, 중국어 회화, 중국어 문법">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://study-3ne.pages.dev/">
+<meta name="theme-color" content="#fdf6f0">
+<!-- Open Graph (SNS 공유용) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="수달 중국어">
+<meta property="og:title" content="수달 중국어 🦦 — 무료 중국어 학습 사이트">
+<meta property="og:description" content="성조·병음부터 HSK 단어, 문법, 학습 놀이, AI 회화까지. 초급·중급·고급 단계별 무료 중국어 학습 사이트.">
+<meta property="og:url" content="https://study-3ne.pages.dev/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="수달 중국어 🦦 — 무료 중국어 학습 사이트">
+<meta name="twitter:description" content="성조·병음부터 HSK 단어, 문법, 학습 놀이, AI 회화까지. 무료 중국어 학습 사이트.">
+<!-- 구조화 데이터 (검색엔진이 사이트를 이해하도록) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "수달 중국어",
+  "url": "https://study-3ne.pages.dev/",
+  "description": "무료로 중국어를 배울 수 있는 학습 사이트. HSK 단어, 발음, 성조, 문법, 학습 놀이, AI 회화를 초급·중급·고급 단계별로 제공합니다.",
+  "inLanguage": "ko",
+  "sameAs": [],
+  "email": "alsghkclrrn@naver.com"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "수달 중국어",
+  "url": "https://study-3ne.pages.dev/",
+  "inLanguage": "ko"
+}
+</script>
 <!-- ================= Google AdSense =================
      게시자 ID(ca-pub-1969247209463048)가 적용되었습니다.
      (애드센스 가입 후 발급받는 pub-... 로 시작하는 번호)         -->
@@ -1064,7 +1100,7 @@
         <div id="guide-tab-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
       </div>
       <div class="card" style="margin-top:16px;">
-        <article class="guide-article" id="guide-article"></article>
+        <div id="guide-articles"></div>
       </div>
     </div>
 
@@ -6392,18 +6428,23 @@ async function sendChat() {
 const INFO_PAGES = {
   about: `
     <h2>사이트 소개</h2>
-    <p><b>수달 중국어 🦦</b>는 누구나 무료로 중국어를 배울 수 있도록 만든 학습 사이트입니다.
-    HSK 기반의 단어 학습, 발음과 성조 연습, 문법 설명, 다양한 학습 놀이(게임), 그리고 AI 회화 연습까지
-    초급·중급·고급 단계별로 제공합니다.</p>
-    <h3>주요 기능</h3>
+    <p><b>수달 중국어 🦦</b>는 중국어를 처음 시작하는 한국인 학습자를 위해 만든 무료 중국어 학습 사이트입니다.
+    교재 없이도 성조와 병음 같은 기초부터 HSK 어휘, 실전 문법, 회화까지 단계적으로 익힐 수 있도록 직접 구성한 콘텐츠를 제공합니다.</p>
+    <h3>이 사이트가 다루는 것</h3>
     <ul>
-      <li>단계별 단어 플래시카드 학습 (초급·중급·고급)</li>
-      <li>발음·성조 연습과 원어민 발음 듣기</li>
-      <li>매칭, 빈칸 채우기, 뜻 맞히기, 듣기, 성조, 카드 뒤집기, 스피드 퀴즈 등 학습 놀이</li>
-      <li>실전 문법 패턴과 예문</li>
-      <li>AI 선생님과의 회화 연습</li>
+      <li><b>학습 가이드</b> — 성조·병음 읽는 법, HSK 안내, 자주 하는 실수, 공부 습관 등 직접 작성한 길잡이 글</li>
+      <li><b>단어 학습</b> — 초급·중급·고급으로 나눈 HSK 기반 어휘 플래시카드</li>
+      <li><b>발음·성조</b> — 성조 퀴즈와 원어민 발음 듣기</li>
+      <li><b>회화 문장</b> — 실생활에서 바로 쓰는 표현</li>
+      <li><b>이야기·시</b> — 동요·전래동화·고전시로 배우는 중국어</li>
+      <li><b>학습 놀이</b> — 매칭, 빈칸 채우기, 듣기, 성조, 카드 뒤집기, 스피드 퀴즈 등 게임형 복습</li>
+      <li><b>AI 채팅</b> — 수달 선생님과의 회화 연습</li>
     </ul>
-    <p>이 사이트는 학습자에게 유용한 콘텐츠를 제공하는 것을 목표로 하며, 운영을 위해 광고를 게재할 수 있습니다.</p>
+    <h3>운영 방침</h3>
+    <p>모든 학습 콘텐츠는 이용자에게 실질적인 도움을 주는 것을 목표로 직접 기획·작성했습니다.
+    콘텐츠는 지속적으로 보완·업데이트하고 있으며, 사이트 운영 비용을 충당하기 위해 광고를 게재할 수 있습니다.</p>
+    <h3>문의</h3>
+    <p>학습 내용에 대한 제안이나 오류 신고는 <a href="mailto:alsghkclrrn@naver.com">alsghkclrrn@naver.com</a> 으로 보내주세요.</p>
   `,
   privacy: `
     <h2>개인정보처리방침</h2>
@@ -6687,19 +6728,29 @@ const GUIDE_ARTICLES = [
 ];
 
 let guideCurrent = 0;
+let guideBuilt = false;
 function initGuide() {
   const bar = document.getElementById('guide-tab-bar');
   if (bar) {
     bar.innerHTML = GUIDE_ARTICLES.map((a, i) =>
       `<div class="guide-tab${i === guideCurrent ? ' active' : ''}" onclick="showGuide(${i})">${a.tab}</div>`).join('');
   }
+  const wrap = document.getElementById('guide-articles');
+  if (wrap && !guideBuilt) {
+    // 모든 글을 DOM에 넣어 검색엔진이 전부 읽을 수 있게 하고, 화면에는 선택한 글만 표시
+    wrap.innerHTML = GUIDE_ARTICLES.map((a, i) =>
+      `<article class="guide-article" data-idx="${i}"${i === guideCurrent ? '' : ' hidden'}>${a.html}</article>`).join('');
+    guideBuilt = true;
+  }
   showGuide(guideCurrent);
 }
 function showGuide(i) {
   guideCurrent = i;
   document.querySelectorAll('#guide-tab-bar .guide-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
-  const el = document.getElementById('guide-article');
-  if (el) { el.innerHTML = GUIDE_ARTICLES[i].html; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  const arts = document.querySelectorAll('#guide-articles .guide-article');
+  arts.forEach((a, idx) => { a.hidden = (idx !== i); });
+  const wrap = document.getElementById('guide-articles');
+  if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 init();
