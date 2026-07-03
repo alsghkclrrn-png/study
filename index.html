@@ -771,6 +771,34 @@
     border-radius: 10px; padding: 4px 12px; cursor: pointer; color: var(--text2); font-size: 0.9rem;
   }
   .info-close:hover { color: var(--text); }
+  /* ===== 학습 가이드 글 ===== */
+  .guide-tab {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 7px 14px; cursor: pointer;
+    font-size: 0.82rem; color: var(--text2); transition: var(--transition);
+  }
+  .guide-tab:hover { border-color: var(--border2); color: var(--text); }
+  .guide-tab.active { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); font-weight: 600; }
+  .guide-article { color: var(--text); line-height: 1.9; font-size: 0.95rem; }
+  .guide-article h1 { font-family: var(--font-display, 'Jua'); font-size: 1.5rem; margin: 0 0 6px; color: var(--text); }
+  .guide-article .guide-lead { color: var(--text2); font-size: 0.9rem; margin-bottom: 1.4rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .guide-article h2 { font-size: 1.15rem; margin: 1.8rem 0 0.6rem; color: var(--text); font-family: var(--font-display, 'Jua'); }
+  .guide-article h3 { font-size: 1rem; margin: 1.2rem 0 0.4rem; color: var(--text); }
+  .guide-article p { margin: 0.6rem 0; color: var(--text); }
+  .guide-article ul, .guide-article ol { padding-left: 1.4rem; margin: 0.6rem 0; }
+  .guide-article li { margin: 0.4rem 0; color: var(--text); }
+  .guide-article .zh-ex {
+    display: inline-block; background: var(--green-bg); border-radius: 6px;
+    padding: 1px 6px; font-family: var(--font-display, 'Jua'); color: var(--text);
+  }
+  .guide-article .tip {
+    background: var(--yellow-bg); border-left: 3px solid var(--yellow);
+    border-radius: 8px; padding: 0.8rem 1rem; margin: 1rem 0; font-size: 0.9rem;
+  }
+  .guide-article table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.88rem; }
+  .guide-article th, .guide-article td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+  .guide-article th { background: var(--card2); }
+  .guide-article .guide-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text3); font-size: 0.82rem; }
 </style>
 </head>
 <body>
@@ -1026,6 +1054,20 @@
       </div>
     </div>
 
+    <!-- 3.2 STUDY GUIDE (articles) -->
+    <div class="section" id="sec-guide">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">📖 학습 가이드</div>
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.6;">
+          중국어를 처음 배우는 분들을 위한 길잡이 글이에요. 성조·병음부터 공부 습관까지, 궁금한 주제를 골라 읽어보세요! 🦦
+        </p>
+        <div id="guide-tab-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <article class="guide-article" id="guide-article"></article>
+      </div>
+    </div>
+
     <!-- 3.5 DICTIONARY / TRANSLATOR -->
     <div class="section" id="sec-dict">
       <div class="card">
@@ -1231,8 +1273,9 @@
 
 <script>
 const MODULES = [
-  { id:'vocab',  icon:'🌱', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
+  { id:'guide',  icon:'📖', name:'학습 가이드', sub:'중국어 배우기 글', color:'var(--purple)', bg:'var(--purple-bg)' },
   { id:'tones',  icon:'🔔', name:'발음·성조',   sub:'성조 퀴즈',      color:'var(--orange)', bg:'var(--orange-bg)' },
+  { id:'vocab',  icon:'🌱', name:'단어 학습',   sub:'어휘 플래시카드', color:'var(--green)',  bg:'var(--green-bg)' },
   { id:'conv',   icon:'💬', name:'회화 문장',   sub:'실생활 표현',    color:'var(--orange)', bg:'var(--orange-bg)' },
   { id:'story',  icon:'📚', name:'이야기·시',   sub:'동요·동화·고전시', color:'var(--green)',  bg:'var(--green-bg)' },
   { id:'dict',   icon:'🔮', name:'통역·사전',   sub:'단어·문법 검색', color:'var(--red)',    bg:'var(--red-bg)' },
@@ -5213,6 +5256,7 @@ function setModule(mod) {
   else if (mod === 'tones') initTones();
   else if (mod === 'conv') initConv();
   else if (mod === 'story') initStory();
+  else if (mod === 'guide') initGuide();
   else if (mod === 'dict') initDict();
   else if (mod === 'games') { showGamesMenu(); }
   else if (mod === 'chat') initChat();
@@ -6407,6 +6451,256 @@ function closeInfo() {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfo(); });
 (function(){ const y = document.getElementById('foot-year'); if (y) y.textContent = new Date().getFullYear(); })();
+
+
+/* ===================== 학습 가이드 (읽을거리 글) ===================== */
+const GUIDE_ARTICLES = [
+  {
+    id: 'tones',
+    tab: '🔔 성조 정복',
+    html: `
+      <h1>중국어 성조(4성) 완전 정복 가이드</h1>
+      <p class="guide-lead">중국어를 처음 배우는 사람이 가장 먼저 부딪히는 벽이 바로 '성조'입니다. 같은 발음이라도 성조가 다르면 뜻이 완전히 달라지기 때문이에요. 이 글에서는 성조가 무엇인지, 네 개의 성조를 각각 어떻게 발음하는지, 그리고 초보자가 자주 놓치는 규칙까지 차근차근 정리했습니다.</p>
+
+      <h2>성조란 무엇일까요?</h2>
+      <p>성조(声调)는 한 음절을 발음할 때의 '음의 높낮이 변화'를 말합니다. 한국어에는 성조가 없기 때문에 처음에는 낯설게 느껴지지만, 사실 우리도 감탄이나 질문을 할 때 무의식적으로 음의 높낮이를 바꿉니다. 예를 들어 "뭐?"라고 되물을 때 끝을 올리는 것과 비슷합니다. 중국어는 이 높낮이가 '단어의 의미 그 자체'를 결정한다는 점이 다릅니다.</p>
+      <p>가장 유명한 예가 <span class="zh-ex">ma</span>라는 음절입니다. 성조에 따라 다음처럼 뜻이 완전히 달라집니다.</p>
+      <table>
+        <tr><th>표기</th><th>성조</th><th>뜻</th></tr>
+        <tr><td>mā (妈)</td><td>1성</td><td>엄마</td></tr>
+        <tr><td>má (麻)</td><td>2성</td><td>삼(마), 저리다</td></tr>
+        <tr><td>mǎ (马)</td><td>3성</td><td>말(동물)</td></tr>
+        <tr><td>mà (骂)</td><td>4성</td><td>꾸짖다, 욕하다</td></tr>
+      </table>
+      <p>즉 "엄마"라고 말하려다 성조를 틀리면 "말"이나 "욕하다"가 되어버릴 수 있습니다. 그래서 성조는 선택이 아니라 발음의 필수 요소입니다.</p>
+
+      <h2>네 가지 성조 발음법</h2>
+      <h3>제1성 ( ˉ ) — 높고 평평하게</h3>
+      <p>처음부터 끝까지 높은 음을 평평하게 유지합니다. 병원에서 "아~" 하고 길게 소리 낼 때의 그 톤을 떠올리면 쉽습니다. 예: <span class="zh-ex">妈 mā</span>, <span class="zh-ex">天 tiān</span>(하늘).</p>
+      <h3>제2성 ( ˊ ) — 아래에서 위로 올리며</h3>
+      <p>중간 높이에서 시작해 위로 끌어올립니다. 한국어로 놀라서 "뭐?"라고 되물을 때의 억양과 거의 같습니다. 예: <span class="zh-ex">麻 má</span>, <span class="zh-ex">来 lái</span>(오다).</p>
+      <h3>제3성 ( ˇ ) — 내렸다가 살짝 올리며</h3>
+      <p>가장 어려운 성조입니다. 중간에서 살짝 내려갔다가 다시 올라옵니다. 실망해서 "아이고…" 하고 낮게 깔았다가 끝을 살짝 올리는 느낌입니다. 예: <span class="zh-ex">马 mǎ</span>, <span class="zh-ex">好 hǎo</span>(좋다).</p>
+      <h3>제4성 ( ˋ ) — 위에서 아래로 뚝</h3>
+      <p>높은 곳에서 아래로 단호하게 떨어뜨립니다. 화가 나서 "야!" 하고 짧고 강하게 내리꽂는 느낌입니다. 예: <span class="zh-ex">骂 mà</span>, <span class="zh-ex">是 shì</span>(~이다).</p>
+      <h3>경성(輕聲) — 가볍고 짧게</h3>
+      <p>성조 없이 짧고 가볍게 발음하는 음절입니다. 주로 단어의 뒤에 붙습니다. 예: <span class="zh-ex">妈妈 māma</span>(엄마)의 두 번째 '妈', <span class="zh-ex">爸爸 bàba</span>의 두 번째 '爸'.</p>
+
+      <h2>초보자가 꼭 알아야 할 성조 변화 규칙</h2>
+      <p>실제 회화에서는 성조가 상황에 따라 살짝 바뀝니다. 대표적인 세 가지만 기억하세요.</p>
+      <ul>
+        <li><b>3성 + 3성 → 2성 + 3성:</b> 3성이 연달아 나오면 앞의 3성을 2성처럼 발음합니다. <span class="zh-ex">你好 nǐ hǎo</span>는 실제로 "ní hǎo"에 가깝게 들립니다.</li>
+        <li><b>不(bù)의 변화:</b> 원래 4성이지만 뒤에 4성이 오면 2성으로 바뀝니다. <span class="zh-ex">不是 bú shì</span>(아니다)처럼요.</li>
+        <li><b>一(yī)의 변화:</b> 뒤 글자에 따라 성조가 바뀝니다. 뒤가 4성이면 2성(<span class="zh-ex">一样 yíyàng</span>), 그 외에는 4성(<span class="zh-ex">一起 yìqǐ</span>)이 됩니다.</li>
+      </ul>
+
+      <div class="tip">💡 <b>연습 팁:</b> 성조는 눈으로 외우는 것이 아니라 '입과 귀'로 익히는 것입니다. 새 단어를 배울 때 반드시 소리 내어 따라 말하고, 손으로 성조의 높낮이를 그리며 발음해 보세요. 이 사이트의 '발음·성조' 메뉴와 '학습 놀이'의 성조 게임을 함께 활용하면 훨씬 빨리 익숙해집니다.</div>
+
+      <div class="guide-footer">🦦 다음 글에서는 성조를 표기하는 '병음(pinyin)'을 읽는 방법을 다룹니다.</div>
+    `
+  },
+  {
+    id: 'pinyin',
+    tab: '🔤 병음 읽기',
+    html: `
+      <h1>중국어 병음(pinyin) 읽는 법 총정리</h1>
+      <p class="guide-lead">병음(拼音)은 한자의 발음을 로마자로 적은 발음 기호입니다. 알파벳처럼 생겼지만 영어와 읽는 법이 다른 글자가 많아서, 처음에 정확히 익혀두지 않으면 발음이 계속 어긋나게 됩니다. 이 글에서는 한국인이 특히 헷갈리는 부분을 중심으로 병음 읽는 법을 정리합니다.</p>
+
+      <h2>병음은 '성모 + 운모 + 성조'로 이루어집니다</h2>
+      <p>한 음절은 크게 앞의 자음 부분인 <b>성모(声母)</b>와 뒤의 모음 부분인 <b>운모(韵母)</b>, 그리고 그 위에 얹히는 <b>성조</b>로 구성됩니다. 예를 들어 <span class="zh-ex">hǎo</span>는 성모 h + 운모 ao + 3성으로 이루어져 있습니다.</p>
+
+      <h2>한국인이 자주 틀리는 성모(자음)</h2>
+      <p>영어 알파벳과 소리가 다른 글자들을 특히 조심해야 합니다.</p>
+      <table>
+        <tr><th>병음</th><th>실제 발음</th><th>예시</th></tr>
+        <tr><td>zh</td><td>'즈'에 가까운 혀 말은 소리</td><td>中 zhōng (가운데)</td></tr>
+        <tr><td>ch</td><td>'츠'에 가까운 거센 소리</td><td>茶 chá (차)</td></tr>
+        <tr><td>sh</td><td>'스'에 가까운 혀 말은 소리</td><td>是 shì (~이다)</td></tr>
+        <tr><td>r</td><td>영어 r과 다른, 혀를 만 '르'</td><td>人 rén (사람)</td></tr>
+        <tr><td>c</td><td>'ㅊ'처럼 세게 나오는 '츠'</td><td>菜 cài (요리)</td></tr>
+        <tr><td>q</td><td>'치'에 가까운 소리 (k 아님!)</td><td>去 qù (가다)</td></tr>
+        <tr><td>x</td><td>'시'에 가까운 소리</td><td>谢 xiè (감사)</td></tr>
+      </table>
+      <p>특히 <b>q</b>를 영어처럼 '크'로 읽는 실수가 아주 많습니다. <span class="zh-ex">请 qǐng</span>(부탁하다)은 '크잉'이 아니라 '칭'에 가깝습니다.</p>
+
+      <h2>가장 까다로운 모음: ü</h2>
+      <p>병음에는 우리말에 없는 <b>ü</b>(위) 소리가 있습니다. 입술을 '우' 모양으로 동그랗게 오므린 채 '이'를 발음하면 됩니다. 예: <span class="zh-ex">女 nǚ</span>(여자), <span class="zh-ex">绿 lǜ</span>(초록).</p>
+      <div class="tip">💡 <b>주의:</b> j, q, x 뒤에 오는 u는 사실 ü 소리입니다. 표기는 u로 하지만 <span class="zh-ex">去 qù</span>는 '쿠'가 아니라 '취'로 읽습니다.</div>
+
+      <h2>알아두면 편한 규칙 몇 가지</h2>
+      <ul>
+        <li><b>i의 두 얼굴:</b> zhi, chi, shi, ri, zi, ci, si에서의 i는 '이'가 아니라 앞 자음을 늘여 내는 '으'에 가깝습니다. <span class="zh-ex">四 sì</span>는 '시'가 아니라 '쓰'에 가깝습니다.</li>
+        <li><b>e의 소리:</b> 단독 e는 '어'에 가깝습니다. <span class="zh-ex">喝 hē</span>(마시다)는 '흐어'처럼 들립니다.</li>
+        <li><b>ian은 '이안'이 아니라 '이엔':</b> <span class="zh-ex">天 tiān</span>은 '티안'보다 '티엔'에 가깝습니다.</li>
+      </ul>
+
+      <div class="tip">💡 <b>연습 팁:</b> 병음은 '눈'이 아니라 '귀'로 익혀야 합니다. 이 사이트에서 단어를 볼 때마다 🔊 버튼을 눌러 원어민 발음을 듣고 그대로 따라 말해 보세요. 처음에는 어색해도 반복하면 자연스러워집니다.</div>
+
+      <div class="guide-footer">🦦 이제 발음의 기초를 익혔으니, 다음 글에서 실제로 쓰는 첫 문장들을 배워봅시다.</div>
+    `
+  },
+  {
+    id: 'firststep',
+    tab: '🌱 왕초보 첫걸음',
+    html: `
+      <h1>왕초보 중국어 첫걸음: 인사와 기본 표현</h1>
+      <p class="guide-lead">이론만 붙잡고 있으면 지루하죠. 실제로 입에서 바로 나오는 문장부터 익히면 공부가 훨씬 즐거워집니다. 이 글에서는 중국 사람을 만났을 때 바로 쓸 수 있는 필수 인사와 기본 표현을 모았습니다. 각 문장을 소리 내어 따라 말해 보세요.</p>
+
+      <h2>가장 기본이 되는 인사</h2>
+      <ul>
+        <li><span class="zh-ex">你好 nǐ hǎo</span> — 안녕하세요 (가장 기본적인 인사)</li>
+        <li><span class="zh-ex">您好 nín hǎo</span> — 안녕하세요 (윗사람에게 정중하게)</li>
+        <li><span class="zh-ex">大家好 dàjiā hǎo</span> — 여러분 안녕하세요</li>
+        <li><span class="zh-ex">早上好 zǎoshang hǎo</span> — 좋은 아침입니다</li>
+        <li><span class="zh-ex">再见 zàijiàn</span> — 안녕히 가세요 (헤어질 때)</li>
+      </ul>
+
+      <h2>고마움과 사과</h2>
+      <ul>
+        <li><span class="zh-ex">谢谢 xièxie</span> — 감사합니다</li>
+        <li><span class="zh-ex">不客气 bú kèqi</span> — 천만에요</li>
+        <li><span class="zh-ex">对不起 duìbuqǐ</span> — 죄송합니다</li>
+        <li><span class="zh-ex">没关系 méi guānxi</span> — 괜찮아요</li>
+      </ul>
+
+      <h2>나를 소개하는 문장</h2>
+      <p>이름과 국적만 말할 수 있어도 첫 대화가 됩니다.</p>
+      <ul>
+        <li><span class="zh-ex">我叫〇〇 wǒ jiào 〇〇</span> — 저는 〇〇라고 합니다</li>
+        <li><span class="zh-ex">我是韩国人 wǒ shì Hánguó rén</span> — 저는 한국 사람입니다</li>
+        <li><span class="zh-ex">很高兴认识你 hěn gāoxìng rènshi nǐ</span> — 만나서 반갑습니다</li>
+        <li><span class="zh-ex">你叫什么名字？ nǐ jiào shénme míngzi?</span> — 이름이 뭐예요?</li>
+      </ul>
+
+      <h2>생존에 필요한 표현</h2>
+      <p>여행이나 급한 상황에서 요긴한 문장들입니다.</p>
+      <ul>
+        <li><span class="zh-ex">多少钱？ duōshao qián?</span> — 얼마예요?</li>
+        <li><span class="zh-ex">这个 zhège</span> — 이것 / <span class="zh-ex">那个 nàge</span> — 저것</li>
+        <li><span class="zh-ex">厕所在哪儿？ cèsuǒ zài nǎr?</span> — 화장실이 어디예요?</li>
+        <li><span class="zh-ex">我不懂 wǒ bù dǒng</span> — 저는 이해하지 못했어요</li>
+        <li><span class="zh-ex">请再说一遍 qǐng zài shuō yí biàn</span> — 다시 한 번 말씀해 주세요</li>
+      </ul>
+
+      <div class="tip">💡 <b>공부 순서 추천:</b> 위 문장을 무작정 외우기보다, 하루에 2~3개씩 골라 그날 실제로 소리 내어 여러 번 말해 보세요. 문장을 '외운다'기보다 '입에 붙인다'는 느낌으로요. 이 사이트의 '회화 문장' 메뉴에서 더 많은 실생활 표현을 발음과 함께 연습할 수 있습니다.</div>
+
+      <div class="guide-footer">🦦 인사를 익혔다면, 이제 체계적으로 실력을 쌓기 위해 HSK가 무엇인지 알아봅시다.</div>
+    `
+  },
+  {
+    id: 'hsk',
+    tab: '📊 HSK 가이드',
+    html: `
+      <h1>HSK란 무엇인가? 급수별 공략 가이드</h1>
+      <p class="guide-lead">중국어를 어느 정도 배우다 보면 "내 실력이 어느 정도일까?"가 궁금해집니다. 그 기준이 되는 것이 바로 HSK입니다. 이 글에서는 HSK가 무엇인지, 급수별로 어느 정도 수준인지, 그리고 각 단계를 어떻게 공부하면 좋은지 안내합니다.</p>
+
+      <h2>HSK란?</h2>
+      <p>HSK(汉语水平考试, Hànyǔ Shuǐpíng Kǎoshì)는 중국 정부가 공인하는 '중국어 능력 시험'입니다. 영어의 TOEIC이나 일본어의 JLPT처럼, 외국인의 중국어 실력을 객관적으로 평가하는 국제 표준 시험이에요. 유학, 취업, 자기 실력 점검 등 다양한 목적으로 활용됩니다.</p>
+
+      <h2>급수별 수준 한눈에 보기</h2>
+      <p>전통적인 HSK는 1급부터 6급까지 있으며, 숫자가 높을수록 어렵습니다. 대략적인 필요 어휘량과 수준은 다음과 같습니다.</p>
+      <table>
+        <tr><th>급수</th><th>필요 어휘(대략)</th><th>수준</th></tr>
+        <tr><td>1급</td><td>약 150개</td><td>아주 기초적인 인사·자기소개</td></tr>
+        <tr><td>2급</td><td>약 300개</td><td>일상적인 간단한 대화</td></tr>
+        <tr><td>3급</td><td>약 600개</td><td>여행·생활 속 기본 소통</td></tr>
+        <tr><td>4급</td><td>약 1,200개</td><td>폭넓은 주제로 대화 가능</td></tr>
+        <tr><td>5급</td><td>약 2,500개</td><td>신문·드라마 이해, 유창한 표현</td></tr>
+        <tr><td>6급</td><td>약 5,000개 이상</td><td>거의 모든 내용을 자유롭게 이해</td></tr>
+      </table>
+      <p>많은 대학의 중국어권 학부 유학 기준이 4~5급 수준이며, 일상 회화가 목표라면 3~4급만 되어도 충분히 소통할 수 있습니다.</p>
+
+      <h2>급수별 공부 전략</h2>
+      <h3>1~2급 (입문)</h3>
+      <p>이 단계의 핵심은 '발음'과 '기초 단어'입니다. 성조와 병음을 정확히 익히고, 자주 쓰는 단어 300개를 소리 내어 반복하세요. 이 시기에 발음 습관을 잘 들이면 나중이 훨씬 편해집니다.</p>
+      <h3>3~4급 (초·중급)</h3>
+      <p>단어가 급격히 늘어나는 시기입니다. 단어를 낱개로 외우기보다 '예문 속에서' 익히는 것이 효과적입니다. 기본 문법(어순, 了, 把 구문 등)도 이때 정리해 두세요.</p>
+      <h3>5~6급 (중·고급)</h3>
+      <p>이제는 '많이 읽고 많이 듣는' 노출량이 실력을 결정합니다. 중국 뉴스, 드라마, 영상 등 실제 콘텐츠를 접하며 어휘와 표현을 늘려가세요.</p>
+
+      <div class="tip">💡 <b>이 사이트 활용법:</b> '단어 학습' 메뉴에서 초급·중급·고급 단계별로 어휘를 학습할 수 있고, '학습 놀이'로 복습하면 기억에 오래 남습니다. 목표 급수를 정하고 매일 조금씩 꾸준히 하는 것이 가장 빠른 길입니다.</div>
+
+      <div class="guide-footer">🦦 다음 글에서는 한국인이 특히 자주 저지르는 실수를 짚어봅니다.</div>
+    `
+  },
+  {
+    id: 'mistakes',
+    tab: '⚠️ 자주 하는 실수',
+    html: `
+      <h1>한국인이 자주 틀리는 중국어 실수 5가지</h1>
+      <p class="guide-lead">한국어와 중국어는 어순과 사고방식이 달라서, 한국어를 그대로 옮기면 어색한 중국어가 되기 쉽습니다. 미리 알아두면 피할 수 있는 대표적인 실수 다섯 가지를 정리했습니다.</p>
+
+      <h2>1. '是(shì)'를 너무 많이 쓴다</h2>
+      <p>'是'는 '~이다'라는 뜻이라 무조건 붙이고 싶어지지만, 형용사 앞에서는 쓰지 않습니다. "나는 바쁘다"는 <span class="zh-ex">我是忙</span>(X)이 아니라 <span class="zh-ex">我很忙 wǒ hěn máng</span>(O)입니다. 형용사 앞에는 是 대신 정도부사 '很(hěn)' 등을 씁니다.</p>
+
+      <h2>2. 양사(量词)를 빠뜨린다</h2>
+      <p>중국어는 숫자와 명사 사이에 반드시 '양사(단위)'를 넣습니다. "책 한 권"은 <span class="zh-ex">一书</span>(X)가 아니라 <span class="zh-ex">一本书 yì běn shū</span>(O)입니다. 대상마다 어울리는 양사가 다르니(사람은 个/位, 책은 本, 동물은 只 등) 단어를 외울 때 양사도 함께 익히는 것이 좋습니다.</p>
+
+      <h2>3. '了(le)'의 위치와 쓰임을 헷갈린다</h2>
+      <p>'了'는 완료나 변화를 나타내는데, 무조건 과거를 뜻하는 것은 아닙니다. "나는 밥을 먹었다"는 <span class="zh-ex">我吃了饭 wǒ chī le fàn</span>처럼 동사 뒤에 붙습니다. 처음에는 '동작의 완료'를 나타낼 때 동사 바로 뒤에 붙인다는 감각만 익혀도 충분합니다.</p>
+
+      <h2>4. 어순을 한국어식으로 만든다</h2>
+      <p>한국어는 "나는 학교에 간다"처럼 동사가 맨 뒤에 오지만, 중국어는 영어처럼 <b>주어 + 동사 + 목적어</b> 순서입니다. "나는 중국어를 공부한다"는 <span class="zh-ex">我学习汉语 wǒ xuéxí Hànyǔ</span>(나-공부하다-중국어)입니다. 또한 시간·장소는 대개 동사 앞에 옵니다.</p>
+
+      <h2>5. 성조를 대충 발음한다</h2>
+      <p>가장 흔하면서도 치명적인 실수입니다. 단어는 맞게 알아도 성조가 틀리면 상대가 못 알아듣습니다. 앞서 본 것처럼 <span class="zh-ex">买 mǎi</span>(사다)와 <span class="zh-ex">卖 mài</span>(팔다)는 성조 하나로 정반대 뜻이 됩니다. 새 단어는 반드시 성조까지 함께 외우세요.</p>
+
+      <div class="tip">💡 <b>정리:</b> 이 다섯 가지만 의식해도 훨씬 자연스러운 중국어를 구사할 수 있습니다. 실수는 부끄러운 것이 아니라 실력이 느는 과정입니다. 틀린 문장을 두려워하지 말고 자꾸 말해 보세요.</div>
+
+      <div class="guide-footer">🦦 마지막 글에서는 꾸준히 공부하는 습관을 만드는 방법을 소개합니다.</div>
+    `
+  },
+  {
+    id: 'habit',
+    tab: '⏰ 공부 습관',
+    html: `
+      <h1>중국어 공부 습관 만들기: 하루 20분 학습법</h1>
+      <p class="guide-lead">외국어는 '얼마나 오래' 공부했느냐보다 '얼마나 꾸준히' 했느냐가 실력을 결정합니다. 주말에 몰아서 세 시간 하는 것보다 매일 20분씩 하는 편이 훨씬 효과적입니다. 이 글에서는 지치지 않고 오래 지속할 수 있는 학습 습관을 제안합니다.</p>
+
+      <h2>왜 '매일 조금씩'이 중요할까?</h2>
+      <p>사람의 기억은 시간이 지나면 자연스럽게 잊힙니다. 이때 '적절한 간격을 두고 반복'하면 기억이 장기 기억으로 굳어집니다. 이를 <b>간격 반복(spaced repetition)</b>이라고 합니다. 그래서 하루 몰아치기보다 매일 짧게 반복하는 것이 훨씬 효율적입니다.</p>
+
+      <h2>하루 20분 루틴 예시</h2>
+      <ol>
+        <li><b>0~5분 — 어제 복습:</b> 전날 배운 단어를 빠르게 다시 봅니다. 이 사이트의 '학습 놀이'로 게임처럼 복습하면 좋습니다.</li>
+        <li><b>5~13분 — 새 단어 학습:</b> 새 단어를 5~10개 익힙니다. 반드시 소리 내어 발음하고 성조까지 함께 외우세요.</li>
+        <li><b>13~18분 — 문장 익히기:</b> '회화 문장'이나 '이야기·시' 메뉴에서 예문을 소리 내어 따라 말합니다.</li>
+        <li><b>18~20분 — 마무리:</b> 오늘 배운 것 중 하나를 골라 실제 문장으로 만들어 보거나, AI 채팅에서 짧게 대화해 봅니다.</li>
+      </ol>
+
+      <h2>지속하게 만드는 세 가지 요령</h2>
+      <ul>
+        <li><b>시간을 고정하세요.</b> "아침 식사 후" 또는 "자기 전"처럼 이미 있는 습관에 붙이면 빼먹지 않게 됩니다.</li>
+        <li><b>목표를 아주 작게 잡으세요.</b> "하루 3단어"처럼 부담 없는 목표가 오히려 오래 갑니다. 작게 시작해서 자연스럽게 늘리면 됩니다.</li>
+        <li><b>완벽하려 하지 마세요.</b> 하루 빠졌다고 자책하며 그만두는 것이 가장 나쁩니다. 다음 날 그냥 이어가면 됩니다.</li>
+      </ul>
+
+      <h2>효과를 높이는 학습법</h2>
+      <p><b>섀도잉(shadowing):</b> 원어민 음성을 듣고 0.5초 뒤에 그림자처럼 따라 말하는 방법입니다. 발음과 억양, 리듬을 통째로 익히는 데 매우 효과적입니다. 이 사이트의 🔊 발음 듣기 기능을 활용해 보세요.</p>
+      <p><b>소리 내어 말하기:</b> 눈으로만 읽으면 실제 회화 실력은 잘 늘지 않습니다. 반드시 입 밖으로 소리 내는 것이 핵심입니다.</p>
+
+      <div class="tip">💡 <b>마지막으로:</b> 언어 공부에 지름길은 없지만, '꾸준함'이라는 가장 확실한 길은 있습니다. 오늘 20분이 1년 뒤 완전히 다른 실력을 만듭니다. 이 사이트가 그 여정을 즐겁게 도와드릴게요. 加油(jiāyóu, 파이팅)! 🦦</div>
+
+      <div class="guide-footer">🦦 궁금한 점이 있으면 하단 '문의하기'로 언제든 연락 주세요.</div>
+    `
+  }
+];
+
+let guideCurrent = 0;
+function initGuide() {
+  const bar = document.getElementById('guide-tab-bar');
+  if (bar) {
+    bar.innerHTML = GUIDE_ARTICLES.map((a, i) =>
+      `<div class="guide-tab${i === guideCurrent ? ' active' : ''}" onclick="showGuide(${i})">${a.tab}</div>`).join('');
+  }
+  showGuide(guideCurrent);
+}
+function showGuide(i) {
+  guideCurrent = i;
+  document.querySelectorAll('#guide-tab-bar .guide-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  const el = document.getElementById('guide-article');
+  if (el) { el.innerHTML = GUIDE_ARTICLES[i].html; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
 
 init();
 </script>
