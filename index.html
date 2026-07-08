@@ -837,6 +837,37 @@
   .guide-article th, .guide-article td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
   .guide-article th { background: var(--card2); }
   .guide-article .guide-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text3); font-size: 0.82rem; }
+
+  /* ===== 연습문제(인터랙티브 퀴즈) ===== */
+  .qz-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0.4rem 0 1.4rem; }
+  .qz-badge { font-size: 0.78rem; font-weight: 700; padding: 3px 12px; border-radius: 999px; }
+  .qz-badge.badge-beginner { background: var(--green-bg); color: var(--green); }
+  .qz-badge.badge-intermediate { background: var(--blue-bg); color: var(--blue); }
+  .qz-badge.badge-advanced { background: var(--purple-bg); color: var(--purple); }
+  .qz-count { font-size: 0.78rem; color: var(--text3); }
+  .qz-toolbar .qz-new { margin-left: auto; }
+  .qz-btn { font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; background: var(--card2); color: var(--text); transition: all .15s; }
+  .qz-btn:hover { filter: brightness(0.97); }
+  .qz-new { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+  .qz-grade { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .qz-q { margin: 0 0 1.4rem; padding: 0 0 1.2rem; border-bottom: 1px dashed var(--border); }
+  .qz-q:last-child { border-bottom: none; }
+  .qz-qhead { font-weight: 600; margin-bottom: 0.7rem; line-height: 1.7; }
+  .qz-qno { display: inline-block; font-size: 0.78rem; color: var(--purple); font-weight: 700; margin-right: 6px; }
+  .qz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .qz-opt { text-align: left; font-family: inherit; font-size: 0.92rem; cursor: pointer; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; background: var(--card); color: var(--text); transition: all .12s; line-height: 1.6; }
+  .qz-opt:hover:not(:disabled) { border-color: var(--purple); background: var(--purple-bg); }
+  .qz-opt.selected { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); font-weight: 600; }
+  .qz-opt.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); font-weight: 700; }
+  .qz-opt.wrong { border-color: #e88; background: rgba(230,120,120,0.14); color: #d66; font-weight: 600; }
+  .qz-opt:disabled { cursor: default; }
+  .qz-explain { margin-top: 0.8rem; padding: 12px 14px; background: var(--card2); border-radius: 10px; font-size: 0.88rem; line-height: 1.8; color: var(--text2); }
+  .qz-explain .qz-ok { color: var(--green); }
+  .qz-explain .qz-no { color: #d66; }
+  .qz-explain .qz-na { color: var(--text3); }
+  .qz-explain .qz-ans { font-size: 0.82rem; color: var(--text3); }
+  .qz-actions { display: flex; gap: 10px; margin-top: 1.2rem; }
+  .qz-score { margin-top: 1.2rem; padding: 14px 16px; text-align: center; background: var(--purple-bg); border: 1px solid var(--purple); border-radius: 12px; font-size: 1rem; color: var(--text); }
 </style>
 </head>
 <body>
@@ -6876,78 +6907,238 @@ const GUIDE_ARTICLES = [
     `
   },
   {
-    id: 'hsk1-quiz', cat: '📝 연습문제', tab: '📝 HSK 1급 문제',
-    html: `
-      <h1>HSK 1급 연습문제 (해설 포함)</h1>
-      <p class="guide-lead">HSK 1급 수준의 맛보기 문제입니다. 먼저 스스로 풀어본 뒤 해설을 확인하세요. 1급은 병음이 함께 제공되므로 한자를 아직 잘 몰라도 도전할 수 있습니다.</p>
-
-      <h2>문제 1. 뜻이 알맞은 것은?</h2>
-      <p><span class="zh-ex">谢谢 xièxie</span></p>
-      <p>① 안녕하세요 &nbsp; ② 감사합니다 &nbsp; ③ 죄송합니다 &nbsp; ④ 안녕히 가세요</p>
-      <p><b>정답: ②</b> — 谢谢는 '감사합니다'입니다. 대답으로는 <span class="zh-ex">不客气 bú kèqi</span>(천만에요)를 씁니다.</p>
-
-      <h2>문제 2. 빈칸에 알맞은 말은?</h2>
-      <p><span class="zh-ex">我 ___ 韩国人。</span> (나는 한국 사람입니다.)</p>
-      <p>① 是 shì &nbsp; ② 有 yǒu &nbsp; ③ 在 zài &nbsp; ④ 很 hěn</p>
-      <p><b>정답: ①</b> — 'A는 B이다'는 <span class="zh-ex">A 是 B</span> 구조입니다. 따라서 <span class="zh-ex">我是韩国人</span>이 맞습니다. ②有(있다/가지다), ③在(~에 있다), ④很(매우)은 문맥에 맞지 않습니다.</p>
-
-      <h2>문제 3. 성조가 올바른 것은?</h2>
-      <p>'엄마'를 뜻하는 단어는?</p>
-      <p>① mā &nbsp; ② má &nbsp; ③ mǎ &nbsp; ④ mà</p>
-      <p><b>정답: ①</b> — '엄마(妈)'는 제1성 mā입니다. ③mǎ는 '말(马)', ④mà는 '욕하다(骂)'로 뜻이 완전히 달라집니다.</p>
-
-      <h2>문제 4. 숫자 '3'을 나타내는 한자는?</h2>
-      <p>① 二 èr &nbsp; ② 三 sān &nbsp; ③ 四 sì &nbsp; ④ 五 wǔ</p>
-      <p><b>정답: ②</b> — 三(sān)이 3입니다. ①二(2), ③四(4), ④五(5). 참고로 四(sì)와 十(shí, 10)의 발음을 헷갈리지 않도록 주의하세요.</p>
-
-      <h2>문제 5. 대화의 빈칸에 알맞은 대답은?</h2>
-      <p>A: <span class="zh-ex">你好吗？ nǐ hǎo ma?</span> (잘 지내요?)<br>B: ___</p>
-      <p>① 谢谢 &nbsp; ② 再见 &nbsp; ③ 我很好 &nbsp; ④ 对不起</p>
-      <p><b>정답: ③</b> — 안부를 물으면 <span class="zh-ex">我很好 wǒ hěn hǎo</span>(잘 지내요)로 답합니다. 이어서 <span class="zh-ex">你呢？ nǐ ne?</span>(당신은요?)로 되물으면 자연스럽습니다.</p>
-
-      <div class="tip">💡 몇 개 맞히셨나요? 틀린 문제는 관련 단어를 '단어 학습' 메뉴에서 다시 익히고, '학습 놀이'로 복습해 보세요.</div>
-      <div class="guide-footer">🦦 다음은 조금 더 어려운 HSK 2급 문제입니다.</div>
-    `
+    id: "vocab-quiz", cat: "📝 연습문제", tab: "🔤 어휘 문제",
+    quiz: {"dynamic":"vocab","title":"어휘 연습문제","intro":"단어의 뜻·반의어·알맞은 낱말을 익히는 문제입니다. 상단의 <b>초급·중급·고급</b> 탭에 따라 난이도가 달라지고, 위쪽 <b>🔄 새로운 문제</b> 버튼을 누르면 매번 다른 문제가 나와요.","byLevel":{"beginner":[{"q":"<span class=\"zh-ex\">谢谢 xièxie</span> 의 뜻은?","options":["안녕하세요","감사합니다","죄송합니다","안녕히 가세요"],"answer":1,"explain":"<b>谢谢</b>는 \"감사합니다\"입니다. 대답으로는 <span class=\"zh-ex\">不客气 bú kèqi</span>(천만에요)를 씁니다. ①은 你好, ③은 对不起, ④는 再见."},{"q":"<span class=\"zh-ex\">水 shuǐ</span> 의 뜻은?","options":["불","물","밥","차"],"answer":1,"explain":"<b>水(shuǐ)</b>는 \"물\"입니다. 불은 火(huǒ), 밥은 饭(fàn), 차는 茶(chá)입니다."},{"q":"<span class=\"zh-ex\">大 dà</span> 의 반대말은?","options":["小 xiǎo","多 duō","高 gāo","好 hǎo"],"answer":0,"explain":"<b>大(크다)</b>의 반대말은 <span class=\"zh-ex\">小 xiǎo(작다)</span>입니다. 多(많다)↔少, 高(높다)↔矮/低."},{"q":"<span class=\"zh-ex\">老师 lǎoshī</span> 의 뜻은?","options":["학생","선생님","친구","의사"],"answer":1,"explain":"<b>老师(lǎoshī)</b>는 \"선생님\". 학생은 学生(xuésheng), 친구는 朋友(péngyou), 의사는 医生(yīshēng)입니다."},{"q":"<span class=\"zh-ex\">吃 chī</span> 의 뜻은?","options":["마시다","자다","먹다","보다"],"answer":2,"explain":"<b>吃(chī)</b>는 \"먹다\". 마시다는 喝(hē), 자다는 睡(shuì), 보다는 看(kàn)입니다."},{"q":"'엄마'를 뜻하는 단어는?","options":["爸爸 bàba","妈妈 māma","哥哥 gēge","姐姐 jiějie"],"answer":1,"explain":"<b>妈妈(māma)</b>가 엄마입니다. 爸爸(아빠), 哥哥(형/오빠), 姐姐(누나/언니)."},{"q":"<span class=\"zh-ex\">好 hǎo</span> 의 뜻은?","options":["나쁘다","좋다","크다","많다"],"answer":1,"explain":"<b>好(hǎo)</b>는 \"좋다\". 나쁘다는 坏(huài)입니다."},{"q":"숫자 '三'이 뜻하는 것은?","options":["2","3","4","5"],"answer":1,"explain":"<b>三(sān)</b>은 3입니다. 二(2), 四(4), 五(5). 四(sì)와 十(shí, 10) 발음을 헷갈리지 마세요."},{"q":"<span class=\"zh-ex\">火 huǒ</span> 의 뜻은?","options":["물","불","바람","흙"],"answer":1,"explain":"<b>火(huǒ)</b>는 \"불\"입니다. 물은 水(shuǐ), 바람은 风(fēng)."},{"q":"<span class=\"zh-ex\">少 shǎo</span> 의 반대말은?","options":["多 duō","小 xiǎo","大 dà","好 hǎo"],"answer":0,"explain":"<b>少(적다)</b>의 반대말은 <span class=\"zh-ex\">多 duō(많다)</span>입니다. 小(작다)↔大."},{"q":"<span class=\"zh-ex\">医生 yīshēng</span> 의 뜻은?","options":["간호사","의사","환자","약사"],"answer":1,"explain":"<b>医生(yīshēng)</b>은 \"의사\"입니다. 병원은 医院(yīyuàn)."},{"q":"<span class=\"zh-ex\">喝 hē</span> 의 뜻은?","options":["먹다","마시다","자다","걷다"],"answer":1,"explain":"<b>喝(hē)</b>는 \"마시다\". 먹다는 吃(chī)입니다: 喝水(물을 마시다)."}],"intermediate":[{"q":"<span class=\"zh-ex\">已经 yǐjīng</span> 의 뜻은?","options":["아직","이미/벌써","방금","곧"],"answer":1,"explain":"<b>已经(yǐjīng)</b>은 \"이미/벌써\". 흔히 문장 끝에 了와 함께 씁니다: <span class=\"zh-ex\">我已经吃了</span>(나는 이미 먹었다)."},{"q":"<span class=\"zh-ex\">便宜 piányi</span> 의 반대말은?","options":["贵 guì","多 duō","大 dà","快 kuài"],"answer":0,"explain":"<b>便宜(싸다)</b>의 반대말은 <span class=\"zh-ex\">贵 guì(비싸다)</span>입니다."},{"q":"<span class=\"zh-ex\">迟到 chídào</span> 의 뜻은?","options":["일찍 오다","지각하다","결석하다","조퇴하다"],"answer":1,"explain":"<b>迟到(chídào)</b>는 \"지각하다\". <span class=\"zh-ex\">对不起，我迟到了</span>(죄송해요, 늦었어요)처럼 씁니다."},{"q":"<span class=\"zh-ex\">复杂 fùzá</span> 의 반대말은?","options":["简单 jiǎndān","容易 róngyì","方便 fāngbiàn","清楚 qīngchu"],"answer":0,"explain":"<b>复杂(복잡하다)</b>의 반대말은 <span class=\"zh-ex\">简单 jiǎndān(간단하다)</span>입니다. 容易(쉽다)의 반대는 难(어렵다)."},{"q":"<span class=\"zh-ex\">决定 juédìng</span> 의 뜻은?","options":["결정하다","준비하다","희망하다","반대하다"],"answer":0,"explain":"<b>决定(juédìng)</b>은 \"결정하다\". <span class=\"zh-ex\">我决定去中国</span>(나는 중국에 가기로 했다)."},{"q":"<span class=\"zh-ex\">认真 rènzhēn</span> 의 뜻은?","options":["게으르다","성실하다/진지하다","피곤하다","즐겁다"],"answer":1,"explain":"<b>认真(rènzhēn)</b>은 \"성실하다, 진지하다\". <span class=\"zh-ex\">他学习很认真</span>(그는 공부를 열심히 한다)."},{"q":"<span class=\"zh-ex\">满意 mǎnyì</span> 의 뜻은?","options":["만족하다","실망하다","걱정하다","긴장하다"],"answer":0,"explain":"<b>满意(mǎnyì)</b>는 \"만족하다\". <span class=\"zh-ex\">对…满意</span>(~에 만족하다) 형태로 자주 씁니다."},{"q":"<span class=\"zh-ex\">因为 yīnwèi</span> 의 뜻은?","options":["그래서","왜냐하면","그러나","만약"],"answer":1,"explain":"<b>因为(yīnwèi)</b>는 \"왜냐하면\". <span class=\"zh-ex\">因为…所以…</span>(~때문에 그래서~) 구문으로 자주 씁니다."},{"q":"<span class=\"zh-ex\">突然 tūrán</span> 의 뜻은?","options":["천천히","갑자기","자주","반드시"],"answer":1,"explain":"<b>突然(tūrán)</b>은 \"갑자기\". <span class=\"zh-ex\">天突然下雨了</span>(갑자기 비가 왔다)."},{"q":"<span class=\"zh-ex\">危险 wēixiǎn</span> 의 반대말은?","options":["安全 ānquán","简单 jiǎndān","方便 fāngbiàn","安静 ānjìng"],"answer":0,"explain":"<b>危险(위험하다)</b>의 반대말은 <span class=\"zh-ex\">安全 ānquán(안전하다)</span>입니다."},{"q":"<span class=\"zh-ex\">提高 tígāo</span> 의 뜻은?","options":["낮추다","향상시키다/높이다","멈추다","반복하다"],"answer":1,"explain":"<b>提高(tígāo)</b>는 \"향상시키다, 높이다\". <span class=\"zh-ex\">提高水平</span>(수준을 높이다)."},{"q":"<span class=\"zh-ex\">熟悉</span> 와 뜻이 <u>비슷한</u> 단어는?","options":["陌生","了解 liǎojiě","忘记","讨厌"],"answer":1,"explain":"<b>了解(liǎojiě, 잘 알다/이해하다)</b>가 熟悉(익숙하다/잘 알다)와 가깝습니다. 陌生(낯설다)은 반대."}],"advanced":[{"q":"성어 <span class=\"zh-ex\">一举两得 yìjǔliǎngdé</span> 의 뜻은?","options":["일거양득(한 번에 두 가지 이득)","작심삼일","유비무환","동문서답"],"answer":0,"explain":"<b>一举两得</b>는 한 가지 행동으로 두 가지 이득을 얻는다는 뜻으로 \"일거양득\"과 같습니다."},{"q":"<span class=\"zh-ex\">谦虚 qiānxū</span> 의 뜻은?","options":["거만하다","겸손하다","솔직하다","용감하다"],"answer":1,"explain":"<b>谦虚(qiānxū)</b>는 \"겸손하다\". 반대말은 骄傲(jiāo'ào, 거만하다)입니다."},{"q":"<span class=\"zh-ex\">马马虎虎 mǎmǎhūhū</span> 의 뜻은?","options":["아주 훌륭하다","대충대충/그저 그렇다","매우 위험하다","몹시 바쁘다"],"answer":1,"explain":"<b>马马虎虎</b>는 \"대충대충 한다\" 또는 \"그저 그렇다\"는 뜻의 구어 표현입니다."},{"q":"<span class=\"zh-ex\">熟悉 shúxī</span> 의 뜻은?","options":["낯설다","익숙하다/잘 알다","지루하다","복잡하다"],"answer":1,"explain":"<b>熟悉(shúxī)</b>는 \"익숙하다, 잘 알다\". 반대말은 陌生(mòshēng, 낯설다)입니다."},{"q":"<span class=\"zh-ex\">后悔 hòuhuǐ</span> 의 뜻은?","options":["후회하다","기대하다","감동하다","망설이다"],"answer":0,"explain":"<b>后悔(hòuhuǐ)</b>는 \"후회하다\". <span class=\"zh-ex\">我很后悔没去</span>(안 간 것을 후회한다)."},{"q":"<span class=\"zh-ex\">严格 yángé</span> 의 뜻은?","options":["너그럽다","엄격하다","친절하다","조용하다"],"answer":1,"explain":"<b>严格(yángé)</b>는 \"엄격하다\". <span class=\"zh-ex\">对…要求很严格</span>(~에 대해 요구가 엄격하다)."},{"q":"성어 <span class=\"zh-ex\">半途而废 bàntú'érfèi</span> 의 뜻은?","options":["처음부터 끝까지 완수하다","중도에 그만두다","천천히 나아가다","서두르다 실패하다"],"answer":1,"explain":"<b>半途而废</b>는 \"일을 중도에 그만두다\"는 뜻입니다. 반대 개념은 坚持到底(끝까지 견디다)."},{"q":"<span class=\"zh-ex\">骄傲 jiāo'ào</span> 가 <u>긍정적으로</u> 쓰일 때의 뜻은?","options":["자랑스럽다","게으르다","외롭다","부끄럽다"],"answer":0,"explain":"<b>骄傲</b>는 부정적으로는 \"거만하다\"이지만, <span class=\"zh-ex\">我为你骄傲</span>처럼 쓰면 \"자랑스럽다\"는 긍정적 뜻이 됩니다."},{"q":"<span class=\"zh-ex\">犹豫 yóuyù</span> 의 뜻은?","options":["망설이다","결심하다","기뻐하다","실망하다"],"answer":0,"explain":"<b>犹豫(yóuyù)</b>는 \"망설이다, 주저하다\". <span class=\"zh-ex\">犹豫不决</span>(결단을 못 내리다)."},{"q":"성어 <span class=\"zh-ex\">画蛇添足 huàshétiānzú</span> 의 뜻은?","options":["금상첨화","사족(쓸데없는 짓을 더함)","일석이조","유종의 미"],"answer":1,"explain":"<b>画蛇添足</b>는 뱀을 그리고 다리를 더한다 → 쓸데없는 짓을 덧붙여 오히려 그르치는 것을 뜻합니다."},{"q":"<span class=\"zh-ex\">节约 jiéyuē</span> 의 뜻은?","options":["낭비하다","절약하다","분배하다","수집하다"],"answer":1,"explain":"<b>节约(jiéyuē)</b>는 \"절약하다, 아끼다\". 반대말은 浪费(làngfèi, 낭비하다)."},{"q":"<span class=\"zh-ex\">陌生 mòshēng</span> 의 뜻은?","options":["익숙하다","낯설다","친절하다","유명하다"],"answer":1,"explain":"<b>陌生(mòshēng)</b>은 \"낯설다\". <span class=\"zh-ex\">陌生人</span>(낯선 사람). 반대말은 熟悉."}]}}
   },
   {
-    id: 'hsk2-quiz', cat: '📝 연습문제', tab: '📝 HSK 2급 문제',
-    html: `
-      <h1>HSK 2급 연습문제 (해설 포함)</h1>
-      <p class="guide-lead">HSK 2급 수준의 맛보기 문제입니다. 1급보다 어휘가 늘고 문장이 조금 더 길어집니다. 먼저 스스로 풀어본 뒤 해설을 확인하세요.</p>
-
-      <h2>문제 1. 빈칸에 알맞은 양사는?</h2>
-      <p><span class="zh-ex">我有两 ___ 书。</span> (나는 책 두 권이 있다.)</p>
-      <p>① 个 gè &nbsp; ② 本 běn &nbsp; ③ 只 zhī &nbsp; ④ 张 zhāng</p>
-      <p><b>정답: ②</b> — 책을 세는 양사는 本(běn)입니다. ①个는 사람·일반 사물, ③只는 동물, ④张은 종이·책상처럼 평평한 것에 씁니다.</p>
-
-      <h2>문제 2. '没'가 들어갈 자리로 올바른 문장은?</h2>
-      <p>'나는 밥을 먹지 않았다'를 바르게 옮긴 것은?</p>
-      <p>① 我不吃饭了 &nbsp; ② 我没吃饭 &nbsp; ③ 我吃饭没 &nbsp; ④ 我不有吃饭</p>
-      <p><b>정답: ②</b> — 과거의 동작을 부정할 때는 不이 아니라 <span class="zh-ex">没 méi</span>를 씁니다. 따라서 <span class="zh-ex">我没吃饭 wǒ méi chī fàn</span>이 맞습니다.</p>
-
-      <h2>문제 3. 밑줄 친 부분과 뜻이 반대인 단어는?</h2>
-      <p><span class="zh-ex">今天很 <u>热</u>。</span> (오늘은 아주 덥다.)</p>
-      <p>① 冷 lěng &nbsp; ② 大 dà &nbsp; ③ 高 gāo &nbsp; ④ 快 kuài</p>
-      <p><b>정답: ①</b> — 热(rè, 덥다)의 반대말은 冷(lěng, 춥다)입니다. ②大(크다)↔小(작다), ③高(높다)↔矮/低, ④快(빠르다)↔慢.</p>
-
-      <h2>문제 4. 어순이 올바른 문장은?</h2>
-      <p>'나는 내일 학교에 간다'를 바르게 옮긴 것은?</p>
-      <p>① 我去学校明天 &nbsp; ② 明天我学校去 &nbsp; ③ 我明天去学校 &nbsp; ④ 学校我明天去</p>
-      <p><b>정답: ③</b> — 중국어의 기본 어순은 '주어 + 시간 + 동사 + 장소/목적어'입니다. 따라서 <span class="zh-ex">我明天去学校 wǒ míngtiān qù xuéxiào</span>가 자연스럽습니다.</p>
-
-      <h2>문제 5. 대화에 알맞은 질문은?</h2>
-      <p>A: ___<br>B: <span class="zh-ex">这个二十块。 zhège èrshí kuài.</span> (이것은 20위안입니다.)</p>
-      <p>① 你好吗？ &nbsp; ② 多少钱？ &nbsp; ③ 你叫什么？ &nbsp; ④ 你去哪儿？</p>
-      <p><b>정답: ②</b> — 가격(块=위안)으로 답했으므로 질문은 <span class="zh-ex">多少钱？ duōshao qián?</span>(얼마예요?)이어야 합니다.</p>
-
-      <div class="tip">💡 2급은 양사, 부정(没/不), 어순, 반의어가 자주 출제됩니다. 이 사이트의 '자주 하는 실수' 가이드와 함께 보면 이해가 더 깊어집니다.</div>
-      <div class="guide-footer">🦦 더 많은 단어와 문장은 '단어 학습'과 '회화 문장' 메뉴에서 계속 익혀보세요. 加油!</div>
-    `
+    id: "pron-quiz", cat: "📝 연습문제", tab: "🔔 발음 문제",
+    quiz: {"dynamic":"pron","title":"발음·성조 연습문제","intro":"성조·병음·다음자(多音字)를 익히는 문제입니다. 초급은 기본 성조, 중급은 성조 변화, 고급은 다음자를 다룹니다. <b>🔄 새로운 문제</b>로 매번 다른 문제를 풀어보세요.","byLevel":{"beginner":[{"q":"'엄마(妈)'의 올바른 성조는?","options":["mā (1성)","má (2성)","mǎ (3성)","mà (4성)"],"answer":0,"explain":"妈(엄마)는 <b>1성 mā</b>입니다. mǎ는 马(말), mà는 骂(욕하다)로 뜻이 완전히 달라져요."},{"q":"<span class=\"zh-ex\">好</span> 의 올바른 병음은?","options":["hào","hǎo","háo","hāo"],"answer":1,"explain":"好는 보통 <b>3성 hǎo</b>(좋다)입니다. 참고로 爱好(취미)에서는 4성 hào로 읽습니다."},{"q":"중국어 성조는 기본적으로 몇 개인가요? (경성 제외)","options":["3개","4개","5개","6개"],"answer":1,"explain":"기본 성조는 <b>4개</b>(1·2·3·4성)이며, 여기에 짧고 가볍게 내는 경성(轻声)이 더해집니다."},{"q":"<span class=\"zh-ex\">中国</span> 의 병음은?","options":["Zhōngguó","Zōngguó","Chōngguó","Zhōngkuó"],"answer":0,"explain":"中国는 <b>Zhōngguó</b>입니다. zh는 혀를 말아 내는 권설음이에요."},{"q":"<span class=\"zh-ex\">爸爸 bàba</span> 에서 두 번째 '爸'의 성조는?","options":["1성","4성","경성","2성"],"answer":2,"explain":"앞 글자를 반복하는 호칭의 둘째 글자는 대개 <b>경성</b>으로 가볍게 읽습니다: bà + ba."},{"q":"<span class=\"zh-ex\">你好</span> 를 실제로 발음할 때 성조는?","options":["3성 + 3성","2성 + 3성","3성 + 4성","1성 + 3성"],"answer":1,"explain":"3성이 연달아 오면 앞 3성이 <b>2성으로 바뀝니다</b>. 그래서 nǐ hǎo → ní hǎo 로 발음됩니다(표기는 그대로)."},{"q":"<span class=\"zh-ex\">绿</span> (초록)의 병음은?","options":["lù","lǜ","lú","liù"],"answer":1,"explain":"ü 발음이 들어가 <b>lǜ</b>입니다. l/n 뒤의 ü는 점 두 개(ü)를 그대로 씁니다."},{"q":"<span class=\"zh-ex\">谢谢</span> 의 병음은?","options":["xièxie","xièxiè","sièsie","xiěxie"],"answer":0,"explain":"谢谢는 <b>xièxie</b>로, 둘째 글자는 경성입니다."},{"q":"<span class=\"zh-ex\">茶</span> (차)의 병음은?","options":["chā","chá","chǎ","chà"],"answer":1,"explain":"茶는 <b>2성 chá</b>입니다."},{"q":"<span class=\"zh-ex\">我</span> (나)의 병음은?","options":["wō","wó","wǒ","wò"],"answer":2,"explain":"我는 <b>3성 wǒ</b>입니다."},{"q":"숫자 <span class=\"zh-ex\">六</span> (6)의 병음은?","options":["liù","liú","liǔ","lù"],"answer":0,"explain":"六는 <b>4성 liù</b>입니다."},{"q":"<span class=\"zh-ex\">二</span> (2)의 성조는?","options":["1성","2성","3성","4성"],"answer":3,"explain":"二는 <b>4성 èr</b>입니다."}],"intermediate":[{"q":"<span class=\"zh-ex\">不</span> 뒤에 4성이 오면 不의 성조는?","options":["그대로 4성 bù","2성 bú","3성 bǔ","1성 bū"],"answer":1,"explain":"不(4성)은 뒤에 4성이 오면 <b>2성 bú</b>로 바뀝니다: <span class=\"zh-ex\">不是 búshì, 不去 búqù</span>."},{"q":"<span class=\"zh-ex\">一</span> 가 <span class=\"zh-ex\">一个</span>에서 읽히는 성조는?","options":["1성 yī","2성 yí","4성 yì","경성"],"answer":1,"explain":"一는 뒤에 4성(个 gè)이 오면 <b>2성 yí</b>로 변합니다. 뒤에 1·2·3성이 오면 4성 yì로 읽어요."},{"q":"3성이 두 번 연달아 오는 <span class=\"zh-ex\">很好</span>의 실제 발음은?","options":["hěn hǎo (3+3)","hén hǎo (2+3)","hèn hǎo (4+3)","hēn hǎo (1+3)"],"answer":1,"explain":"3성+3성은 앞이 <b>2성으로</b> 변조됩니다: hěn hǎo → <b>hén hǎo</b>."},{"q":"<span class=\"zh-ex\">一点儿 yìdiǎnr</span> 의 '儿'은 무엇인가요?","options":["별도의 음절","앞 음절과 합쳐지는 儿化(얼화)","아이라는 뜻","경성 조사"],"answer":1,"explain":"儿는 앞 음절과 합쳐져 혀를 마는 <b>儿化(얼화)</b> 현상을 만듭니다. 주로 북방 발음에서 두드러집니다."},{"q":"j, q, x 뒤의 <span class=\"zh-ex\">u</span> 는 실제로 어떤 소리인가요?","options":["u 소리 그대로","ü 소리","o 소리","묵음"],"answer":1,"explain":"j·q·x·y 뒤에서는 점을 생략해도 실제로는 <b>ü</b> 소리입니다: 去 qù=[qü], 学 xué=[xüé]."},{"q":"<span class=\"zh-ex\">z, c, s</span> 와 <span class=\"zh-ex\">zh, ch, sh</span> 의 차이는?","options":["성조가 다르다","혀를 마느냐(권설) 아니냐","길이가 다르다","차이 없다"],"answer":1,"explain":"zh·ch·sh는 혀끝을 말아 올리는 <b>권설음</b>, z·c·s는 혀를 펴는 <b>설치음</b>입니다."},{"q":"<span class=\"zh-ex\">妈妈</span> 처럼 둘째 글자가 경성일 때 특징은?","options":["더 길고 강하게","짧고 가볍게","4성으로","1성으로"],"answer":1,"explain":"경성(轻声)은 원래 성조를 잃고 <b>짧고 가볍게</b> 발음됩니다."},{"q":"<span class=\"zh-ex\">好吃 hǎochī</span> 의 뜻과 발음이 바르게 짝지어진 것은?","options":["맛있다 / hǎochī","먹기 좋다 / hàochī","좋아하다 / hàochī","요리하다 / hǎochī"],"answer":0,"explain":"好(3성)+吃 = <b>hǎochī(맛있다)</b>. 好를 4성 hào로 읽으면 \"먹기를 좋아하다\"라는 다른 뜻이 됩니다."},{"q":"<span class=\"zh-ex\">一</span> 가 뒤에 1·2·3성이 올 때의 성조는?","options":["1성 yī","2성 yí","4성 yì","경성"],"answer":2,"explain":"一는 뒤에 1·2·3성이 오면 <b>4성 yì</b>로 변합니다(一天 yìtiān). 뒤에 4성이 오면 2성 yí."},{"q":"<span class=\"zh-ex\">不</span> 가 뒤에 1·2·3성이 올 때의 성조는?","options":["그대로 4성 bù","2성 bú","1성 bū","경성"],"answer":0,"explain":"不는 뒤에 4성이 올 때만 2성(bú)이 되고, 그 외에는 <b>원래 4성 bù</b> 그대로입니다: 不高 bùgāo."},{"q":"<span class=\"zh-ex\">东西 dōngxi</span> (물건)에서 '西'의 성조는?","options":["1성","2성","4성","경성"],"answer":3,"explain":"'물건'을 뜻할 때 东西는 <b>西를 경성</b>으로 읽어 dōngxi. 방위 '동서'일 때는 dōngxī(1성)입니다."},{"q":"<span class=\"zh-ex\">花儿 huār</span> 의 '儿'은 어떤 현상인가요?","options":["별도 음절","儿化(얼화)","경성 조사","성조 부호"],"answer":1,"explain":"花儿는 앞 음절과 합쳐지는 <b>儿化</b>로 huā+r → huār 로 발음됩니다."}],"advanced":[{"q":"다음자 <span class=\"zh-ex\">行</span> — '은행(银行)'에서의 발음은?","options":["xíng","háng","xìng","hàng"],"answer":1,"explain":"行은 다음자입니다. 银行(은행)에서는 <b>háng</b>, 不行(안 된다)·旅行(여행)에서는 xíng."},{"q":"다음자 <span class=\"zh-ex\">觉</span> — '잠자다(睡觉)'에서의 발음은?","options":["jué","jiào","jiǎo","juě"],"answer":1,"explain":"睡觉(잠자다)에서는 <b>jiào</b>, 觉得(생각하다)에서는 jué로 읽습니다."},{"q":"다음자 <span class=\"zh-ex\">长</span> — '자라다/어른(长大)'에서의 발음은?","options":["cháng","zhǎng","chàng","zhāng"],"answer":1,"explain":"长大(자라다)·长辈(윗사람)에서는 <b>zhǎng</b>, 长(길다)·长城(만리장성)에서는 cháng."},{"q":"다음자 <span class=\"zh-ex\">重</span> — '중복하다(重复)'에서의 발음은?","options":["zhòng","chóng","zhōng","chōng"],"answer":1,"explain":"重复(중복)·重新(다시)에서는 <b>chóng</b>, 重要(중요)·重量(무게)에서는 zhòng."},{"q":"다음자 <span class=\"zh-ex\">得</span> — '~해야 한다(得 děi)'로 쓰일 때 발음은?","options":["de (경성)","dé","děi","dì"],"answer":2,"explain":"得는 세 가지로 읽힙니다: 조사 de(说得好), 얻다 dé(得到), <b>~해야 한다 děi(我得走了)</b>."},{"q":"다음자 <span class=\"zh-ex\">差</span> — '출장(出差)'에서의 발음은?","options":["chà","chā","chāi","cī"],"answer":2,"explain":"出差(출장)에서는 <b>chāi</b>, 差不多(비슷하다)는 chà, 差别(차이)은 chā."},{"q":"다음자 <span class=\"zh-ex\">着</span> — '불이 붙다(着火)'에서의 발음은?","options":["zhe (경성)","zháo","zhuó","zhāo"],"answer":1,"explain":"着火(불붙다)·睡着(잠들다)에서는 <b>zháo</b>, 진행·지속의 조사일 때는 zhe(看着)."},{"q":"다음자 <span class=\"zh-ex\">便</span> — '싸다(便宜)'에서의 발음은?","options":["biàn","pián","biǎn","piàn"],"answer":1,"explain":"便宜(싸다)에서는 <b>pián</b>, 方便(편리하다)·便利에서는 biàn."},{"q":"다음자 <span class=\"zh-ex\">空</span> — '짬/여유(有空)'에서의 발음은?","options":["kōng","kòng","kóng","kǒng"],"answer":1,"explain":"有空(짬이 있다)에서는 <b>kòng</b>, 空气(공기)·天空(하늘)에서는 kōng."},{"q":"다음자 <span class=\"zh-ex\">种</span> — '심다(种树)'에서의 발음은?","options":["zhǒng","zhòng","chóng","zhōng"],"answer":1,"explain":"种树(나무를 심다)에서는 동사로 <b>zhòng</b>, 一种(한 종류)에서는 명사로 zhǒng."},{"q":"다음자 <span class=\"zh-ex\">教</span> — '가르치다(教书)'에서의 발음은?","options":["jiāo","jiào","jiǎo","jiáo"],"answer":0,"explain":"教书(가르치다) 등 동사로는 <b>jiāo</b>, 教育(교육)·教室(교실)의 명사에서는 jiào."},{"q":"다음자 <span class=\"zh-ex\">弹</span> — '(악기를) 치다/연주하다(弹钢琴)'에서의 발음은?","options":["tán","dàn","tàn","dán"],"answer":0,"explain":"弹钢琴(피아노를 치다)에서는 <b>tán</b>, 子弹(총알)·炸弹(폭탄)에서는 dàn."}]}}
+  },
+  {
+    id: "grammar-quiz", cat: "📝 연습문제", tab: "📐 문법 문제",
+    quiz: {"title":"문법 연습문제","intro":"어순·양사·조사·구문을 익히는 문제입니다. 초급은 기본 문형, 중급은 了·把·비교문, 고급은 被·복합 구문을 다룹니다. <b>🔄 새로운 문제</b>로 계속 새 문제를 풀 수 있어요.","byLevel":{"beginner":[{"q":"<span class=\"zh-ex\">我 ___ 韩国人。</span> (나는 한국 사람이다) 빈칸은?","options":["是 shì","有 yǒu","在 zài","很 hěn"],"answer":0,"explain":"\"A는 B이다\"는 <span class=\"zh-ex\">A + 是 + B</span>. 따라서 我是韩国人. 有(있다), 在(~에 있다), 很(매우)."},{"q":"<span class=\"zh-ex\">我有两 ___ 书。</span> (책 두 권) 알맞은 양사는?","options":["个 gè","本 běn","只 zhī","张 zhāng"],"answer":1,"explain":"책을 세는 양사는 <b>本 běn</b>. 个(일반), 只(동물), 张(종이·평평한 것)."},{"q":"'나는 밥을 먹지 않았다'(과거)의 올바른 표현은?","options":["我不吃饭","我没吃饭","我吃饭没","我不有吃饭"],"answer":1,"explain":"과거 동작의 부정은 不이 아니라 <b>没</b>: 我没吃饭. 不은 현재·습관·의지의 부정에 씁니다."},{"q":"'나는 내일 학교에 간다'의 올바른 어순은?","options":["我去学校明天","明天我学校去","我明天去学校","学校我明天去"],"answer":2,"explain":"기본 어순은 <b>주어+시간+동사+장소</b>: 我明天去学校."},{"q":"'나의 책'을 바르게 쓴 것은?","options":["我书","我的书","书我的","的我书"],"answer":1,"explain":"소유는 <b>的</b>로 나타냅니다: 我的书(나의 책)."},{"q":"<span class=\"zh-ex\">你是学生 ___？</span> (너는 학생이니?) 빈칸은?","options":["了","吗","的","呢"],"answer":1,"explain":"평서문 끝에 <b>吗</b>를 붙이면 의문문이 됩니다: 你是学生吗?"},{"q":"<span class=\"zh-ex\">书 ___ 桌子上。</span> (책이 책상 위에 있다) 빈칸은?","options":["是","有","在","和"],"answer":2,"explain":"\"~에 있다\"는 <b>在</b>: 书在桌子上. 有는 \"~에 (무엇이) 있다\"의 어순(桌子上有书)에서 씁니다."},{"q":"나이를 물을 때 어린아이에게 흔히 쓰는 표현은?","options":["你多少岁?","你几岁?","你多大岁?","你什么岁?"],"answer":1,"explain":"10 미만을 예상할 땐 <b>几岁</b>(你几岁?), 어른에게는 你多大? 를 씁니다."},{"q":"'이것은 무엇입니까?'를 바르게 쓴 것은?","options":["这是什么？","那是谁？","这有什么？","什么这是？"],"answer":0,"explain":"가까운 것은 <b>这(zhè)</b>, 먼 것은 那(nà). '이것은 무엇?'은 这是什么?"},{"q":"<span class=\"zh-ex\">我 ___ 喝咖啡。</span> (커피를 마시고 싶다) 빈칸은?","options":["想","是","在","的"],"answer":0,"explain":"'~하고 싶다'는 <b>想 xiǎng</b> + 동사: 我想喝咖啡."},{"q":"<span class=\"zh-ex\">我 ___ 说一点儿中文。</span> (중국어를 조금 할 줄 안다) 빈칸은?","options":["会","有","是","在"],"answer":0,"explain":"배워서 할 줄 아는 능력은 <b>会 huì</b>: 我会说中文."},{"q":"<span class=\"zh-ex\">我 ___ 你都是学生。</span> (나와 너 모두 학생) 빈칸은?","options":["和","也","很","不"],"answer":0,"explain":"'~와/과'로 명사를 잇는 것은 <b>和 hé</b>: 我和你."},{"q":"<span class=\"zh-ex\">桌子上 ___ 一本书。</span> (책상 위에 책이 한 권 있다) 빈칸은?","options":["有","是","在","和"],"answer":0,"explain":"\"(어떤 장소)에 ~이 있다\"는 <b>장소+有+사물</b>: 桌子上有一本书. 특정 사물의 위치는 在(书在桌子上)."},{"q":"<span class=\"zh-ex\">我 ___ 是学生。</span> (나도 학생이다) 빈칸은?","options":["也","都","很","和"],"answer":0,"explain":"\"~도\"는 <b>也 yě</b>이며 동사 앞에 옵니다: 我也是学生."},{"q":"<span class=\"zh-ex\">他们 ___ 是中国人。</span> (그들은 모두 중국인이다) 빈칸은?","options":["也","都","和","很"],"answer":1,"explain":"\"모두\"는 <b>都 dōu</b>이며 주어 뒤·동사 앞: 他们都是中国人."},{"q":"<span class=\"zh-ex\">今天 ___ 冷了！</span> (오늘 너무 춥다!) 빈칸은?","options":["太…了","很","也","都"],"answer":0,"explain":"\"너무 ~하다\"는 <b>太…了</b>: 今天太冷了."},{"q":"가격을 물을 때 '이거 얼마예요?'로 알맞은 것은?","options":["这个几个钱？","这个多少钱？","这个什么钱？","这个怎么钱？"],"answer":1,"explain":"값은 <b>多少钱</b>으로 묻습니다: 这个多少钱? (几는 보통 10 미만의 적은 수에 씁니다.)"},{"q":"<span class=\"zh-ex\">你 ___ 名字？</span> (이름이 뭐예요?) 빈칸은?","options":["什么","叫什么","怎么","哪"],"answer":1,"explain":"이름을 물을 땐 <b>叫什么</b>: 你叫什么名字?"},{"q":"<span class=\"zh-ex\">你 ___ 去中国？</span> (왜 중국에 가?) 빈칸은?","options":["什么","怎么","为什么","哪儿"],"answer":2,"explain":"이유는 <b>为什么</b>(왜): 你为什么去中国?"},{"q":"<span class=\"zh-ex\">我 ___ 中国菜。</span> (나는 중국요리를 좋아한다) 빈칸은?","options":["喜欢","是","在","的"],"answer":0,"explain":"\"좋아하다\"는 <b>喜欢 xǐhuan</b>: 我喜欢中国菜."},{"q":"'책 두 권'에서 숫자로 알맞은 것은?","options":["二本书","两本书","双本书","第二书"],"answer":1,"explain":"양사 앞의 '2'는 二가 아니라 <b>两 liǎng</b>: 两本书."},{"q":"<span class=\"zh-ex\">妈妈 ___ 做饭。</span> (엄마가 밥을 하고 있다) 진행을 나타내는 빈칸은?","options":["正在","了","过","的"],"answer":0,"explain":"동작의 진행은 <b>正在…(呢)</b>: 妈妈正在做饭(呢)."},{"q":"<span class=\"zh-ex\">请 ___ ！</span> (들어오세요!) 빈칸은?","options":["进","坐","问","走"],"answer":0,"explain":"문맥이 \"들어오세요\"이므로 <b>请进</b>. 请坐(앉으세요), 请问(여쭙겠습니다)."},{"q":"<span class=\"zh-ex\">你 ___ 咖啡 ___ 茶？</span> (커피? 아니면 차?) 선택의문의 빈칸은?","options":["是…是","还是…还是","喝…还是","和…和"],"answer":2,"explain":"\"A 아니면 B?\"는 <b>还是</b>로 잇습니다: 你喝咖啡还是茶?"}],"intermediate":[{"q":"<span class=\"zh-ex\">我 ___ 作业了。</span> (숙제를 다 했다) 완료를 나타내는 빈칸은?","options":["做完","做","在做","想做"],"answer":0,"explain":"동작의 완료·결과는 결과보어+了로 나타냅니다: <b>做完了</b>(다 했다)."},{"q":"'把'자문의 올바른 어순은? (그 문을 닫아라)","options":["关门吧","把门关上","门把关上","关上把门"],"answer":1,"explain":"把자문은 <b>把+목적어+동사+기타성분</b>: 把门关上(그 문을 닫다)."},{"q":"<span class=\"zh-ex\">他 ___ 我高。</span> (그는 나보다 크다) 비교의 빈칸은?","options":["和","比","跟","像"],"answer":1,"explain":"비교는 <b>比</b>: A比B+형용사. 他比我高(그는 나보다 키가 크다)."},{"q":"<span class=\"zh-ex\">他说 ___ 很流利。</span> (그는 유창하게 말한다) 정도보어의 빈칸은?","options":["的","得","地","了"],"answer":1,"explain":"동사 뒤에서 정도·결과를 이어주는 것은 <b>得</b>: 说得很流利. (的=소유, 地=부사어 표시)"},{"q":"<span class=\"zh-ex\">我去 ___ 中国。</span> (중국에 가 본 적 있다) 경험을 나타내는 빈칸은?","options":["了","过","着","的"],"answer":1,"explain":"과거의 경험은 <b>过</b>: 我去过中国(중국에 가 본 적 있다)."},{"q":"<span class=\"zh-ex\">___ 下雨，___ 我没去。</span> (비가 와서 안 갔다) 알맞은 짝은?","options":["虽然…但是","因为…所以","不但…而且","如果…就"],"answer":1,"explain":"원인·결과는 <b>因为…所以…</b>: 因为下雨，所以我没去."},{"q":"<span class=\"zh-ex\">她 ___ 走 ___ 打电话。</span> (걸으면서 전화한다) 알맞은 짝은?","options":["一边…一边","越…越","一…就","又…又"],"answer":0,"explain":"두 동작을 동시에 할 때는 <b>一边…一边…</b>: 一边走一边打电话."},{"q":"<span class=\"zh-ex\">虽然很累，___ 他还在工作。</span> 빈칸은?","options":["所以","但是","因为","于是"],"answer":1,"explain":"虽然(비록 ~지만)은 <b>但是/可是</b>와 짝을 이룹니다: 虽然…但是…."},{"q":"<span class=\"zh-ex\">火车 ___ 开了。</span> (기차가 곧 출발한다) '곧 ~하다'의 빈칸은?","options":["就要…了","已经…了","正在","过"],"answer":0,"explain":"임박한 미래는 <b>(快)要…了 / 就要…了</b>: 火车就要开了(기차가 곧 떠난다)."},{"q":"<span class=\"zh-ex\">我 ___ 到家 ___ 给你打电话。</span> (집에 도착하자마자 전화할게) 알맞은 짝은?","options":["一…就","越…越","虽然…但","因为…所以"],"answer":0,"explain":"'~하자마자 곧'은 <b>一…就…</b>: 我一到家就给你打电话."},{"q":"<span class=\"zh-ex\">我们 ___ 九点 ___ 五点上班。</span> (9시부터 5시까지) 알맞은 짝은?","options":["从…到","离…到","在…到","由…往"],"answer":0,"explain":"'~부터 ~까지'는 <b>从…到…</b>: 从九点到五点."},{"q":"허가를 구할 때 '여기서 사진 찍어도 되나요?'로 알맞은 것은?","options":["这儿会拍照吗？","这儿可以拍照吗？","这儿要拍照吗？","这儿想拍照吗？"],"answer":1,"explain":"허가·가능은 <b>可以</b>: 这儿可以拍照吗? (会=능력, 要=의지/필요)."},{"q":"<span class=\"zh-ex\">我学中文 ___ 一年了。</span> (배운 지 1년 됐다) 빈칸은?","options":["已经","正在","刚才","曾经"],"answer":0,"explain":"\"이미/벌써\"는 <b>已经…了</b>: 已经一年了."},{"q":"<span class=\"zh-ex\">这个问题 ___ 那个 ___ 难。</span> (이게 저것보다 어렵다) 알맞은 짝은?","options":["比…更","跟…一样","没有…那么","和…都"],"answer":0,"explain":"비교 강조는 <b>比…更…</b>: 这个比那个更难."},{"q":"<span class=\"zh-ex\">他 ___ 我一样高。</span> (그는 나와 키가 같다) 빈칸은?","options":["比","跟","没有","比较"],"answer":1,"explain":"동등 비교는 <b>跟/和…一样</b>: 他跟我一样高."},{"q":"<span class=\"zh-ex\">他汉语说 ___ 越来越好。</span> (점점 잘한다) 빈칸은?","options":["得","的","地","了"],"answer":0,"explain":"동사+정도보어는 <b>得</b>: 说得越来越好."},{"q":"<span class=\"zh-ex\">我 ___ 没去过北京。</span> (아직 베이징에 못 가봤다) 빈칸은?","options":["还","就","才","都"],"answer":0,"explain":"\"아직 ~않다\"는 <b>还没…(过)</b>: 我还没去过北京."},{"q":"<span class=\"zh-ex\">只 ___ 努力，就能进步。</span> (노력하기만 하면) 빈칸은?","options":["要","有","是","好"],"answer":0,"explain":"충분조건 \"~하기만 하면\"은 <b>只要…就…</b>: 只要努力，就能进步."},{"q":"<span class=\"zh-ex\">除了苹果，我 ___ 喜欢香蕉。</span> (사과 외에 바나나도) 빈칸은?","options":["还","就","才","都"],"answer":0,"explain":"\"~외에 (또)\"의 포함은 除了…<b>还/也</b>…: 除了苹果，还喜欢香蕉."},{"q":"<span class=\"zh-ex\">时间 ___ 晚了，快回家吧。</span> (시간이 이미 늦었다) 빈칸은?","options":["已经","刚","正在","还"],"answer":0,"explain":"<b>已经…了</b>(이미 ~됐다): 时间已经晚了."},{"q":"<span class=\"zh-ex\">我把作业 ___ 了。</span> (숙제를 다 했다) 把자문에 알맞은 것은?","options":["做完","做","在做","想做"],"answer":0,"explain":"把자문의 동사 뒤엔 결과·완료 성분이 필요: 把作业<b>做完</b>了."},{"q":"<span class=\"zh-ex\">越 ___ 越 ___。</span> 형태로 옳게 쓴 문장은?","options":["越多越好","很多很好","都多都好","也多也好"],"answer":0,"explain":"\"~할수록 더~\"는 <b>越…越…</b>: 越多越好(많을수록 좋다)."},{"q":"<span class=\"zh-ex\">他一 ___ 家就睡觉了。</span> (집에 오자마자 잤다) 빈칸은?","options":["到","在","去","从"],"answer":0,"explain":"\"도착하다\"는 到: 一<b>到</b>家就…(집에 도착하자마자)."},{"q":"<span class=\"zh-ex\">如果明天不下雨，我们 ___ 去爬山。</span> (비 안 오면 등산 가자) 빈칸은?","options":["就","才","还","都"],"answer":0,"explain":"如果…<b>就</b>…(만약 ~라면 ~하겠다): 如果不下雨，就去爬山."}],"advanced":[{"q":"피동문 <span class=\"zh-ex\">杯子 ___ 弟弟打破了。</span> (컵이 동생에게 깨졌다) 빈칸은?","options":["把","被","让","给"],"answer":1,"explain":"피동은 <b>被</b>: 杯子被弟弟打破了. (让·叫도 구어 피동으로 쓰이지만 시험 정답은 被.)"},{"q":"<span class=\"zh-ex\">___ 你以外，大家都来了。</span> (너 말고 다들 왔다) 알맞은 짝은?","options":["除了…以外","不但…而且","连…都","即使…也"],"answer":0,"explain":"<b>除了…以外</b>는 \"~을 제외하고\"를 나타냅니다: 除了你以外，大家都来了."},{"q":"<span class=\"zh-ex\">___ 三岁的孩子 ___ 知道。</span> (세 살배기도 안다) 강조 구문은?","options":["除了…都","连…都","虽然…但","不是…而是"],"answer":1,"explain":"<b>连…都/也…</b>는 \"~조차도\"를 강조합니다: 连三岁的孩子都知道."},{"q":"<span class=\"zh-ex\">他 ___ 会说英语，___ 会说法语。</span> (영어도 프랑스어도) 알맞은 짝은?","options":["不但…而且","因为…所以","虽然…但是","除非…否则"],"answer":0,"explain":"점층은 <b>不但…而且…</b>: 不但会说英语，而且会说法语."},{"q":"강조 구문 '是…的' — '그는 어제 왔다'를 강조하면?","options":["他昨天来了","他是昨天来的","他的昨天来","他来是昨天"],"answer":1,"explain":"이미 일어난 일의 시간·장소·방식을 강조할 때 <b>是…的</b>: 他是昨天来的."},{"q":"<span class=\"zh-ex\">天气 ___ 热，我 ___ 不想出门。</span> (더울수록 더 나가기 싫다) 빈칸은?","options":["越…越","一…就","再…也","既…又"],"answer":0,"explain":"정비례 심화는 <b>越…越…</b>: 天气越热，我越不想出门."},{"q":"<span class=\"zh-ex\">___ 明天下雨，我 ___ 要去。</span> (내일 비가 와도 갈 거다) 알맞은 짝은?","options":["因为…所以","即使…也","只有…才","不管…就"],"answer":1,"explain":"양보·가정은 <b>即使…也…</b>: 即使明天下雨，我也要去."},{"q":"방향보어 <span class=\"zh-ex\">他跑 ___ 了。</span> (그가 뛰어 들어왔다) 빈칸은?","options":["进来","进去","出来","过去"],"answer":0,"explain":"화자 쪽으로 들어오면 <b>进来</b>, 화자에게서 멀어져 들어가면 进去. 문맥이 \"들어왔다\"이므로 进来."},{"q":"<span class=\"zh-ex\">这 ___ 我的错，___ 大家的责任。</span> (내 잘못이 아니라 모두의 책임) 알맞은 짝은?","options":["不是…而是","不但…而且","虽然…但是","除了…还"],"answer":0,"explain":"'A가 아니라 B다'는 <b>不是…而是…</b>: 不是我的错，而是大家的责任."},{"q":"<span class=\"zh-ex\">___ 努力，你 ___ 能成功。</span> (노력하기만 하면 성공할 수 있다) 알맞은 짝은?","options":["只要…就","只有…才","即使…也","无论…都"],"answer":0,"explain":"충분조건 '~하기만 하면'은 <b>只要…就…</b>: 只要努力，就能成功."},{"q":"가능보어 <span class=\"zh-ex\">这本书太难了，我看 ___。</span> (이해할 수 없다) 빈칸은?","options":["得懂","不懂","懂了","着懂"],"answer":1,"explain":"가능보어의 부정은 동사+<b>不+보어</b>: 看不懂(읽어도 이해 못 함). 긍정은 看得懂."},{"q":"<span class=\"zh-ex\">我 ___ 站着，___ 坐在脏地上。</span> (차라리 서 있을지언정 더러운 바닥엔 안 앉는다) 알맞은 짝은?","options":["宁可…也不","不管…都","除非…否则","与其…不如"],"answer":0,"explain":"'차라리 ~할지언정 ~하지 않는다'는 <b>宁可…也不…</b>: 宁可站着，也不坐在脏地上."},{"q":"<span class=\"zh-ex\">这么难的题，___ 老师 ___ 不一定会。</span> (이렇게 어려운 문제는 선생님조차 모를 수도) 알맞은 짝은?","options":["连…都","除了…都","不但…而且","虽然…但"],"answer":0,"explain":"강조 \"~조차도\"는 <b>连…都/也…</b>: 连老师都不一定会."},{"q":"<span class=\"zh-ex\">___ 你不同意，这件事也不能停。</span> (설령 반대해도) 빈칸은?","options":["即使","因为","只要","不但"],"answer":0,"explain":"양보·가정은 <b>即使…也…</b>: 即使你不同意，也不能停."},{"q":"<span class=\"zh-ex\">与其在家发呆，___ 出去走走。</span> (~하느니 차라리) 빈칸은?","options":["不如","不但","除非","尽管"],"answer":0,"explain":"\"A하느니 차라리 B가 낫다\"는 <b>与其A，不如B</b>: 与其发呆，不如出去走走."},{"q":"<span class=\"zh-ex\">___ 有决心，没有行动也是没用的。</span> (설령 결심이 있어도) 빈칸은?","options":["即使","只有","除非","幸亏"],"answer":0,"explain":"<b>即使…也…</b>(설령 ~일지라도): 即使有决心，(没有行动)也没用."},{"q":"<span class=\"zh-ex\">只有多练习，___ 能提高。</span> (연습해야만 향상된다) 빈칸은?","options":["就","才","还","都"],"answer":1,"explain":"유일조건 \"~해야만 비로소\"는 <b>只有…才…</b>: 只有多练习，才能提高."},{"q":"<span class=\"zh-ex\">这件事 ___ 他决定，我们无法改变。</span> (그에 의해 결정된다) 피동/처치의 빈칸은?","options":["由","被","把","让"],"answer":0,"explain":"\"~에 의해(주관·책임)\"는 <b>由</b>: 由他决定. (被는 피해·수동적 피동에 주로 씀.)"},{"q":"<span class=\"zh-ex\">他 ___ 学习好，___ 人品也好。</span> (공부도 인품도) 알맞은 짝은?","options":["不但…而且","虽然…但是","因为…所以","不是…而是"],"answer":0,"explain":"점층은 <b>不但…而且…</b>: 不但学习好，而且人品也好."},{"q":"가능보어 부정 <span class=\"zh-ex\">声音太小，我听 ___。</span> (안 들린다) 빈칸은?","options":["得见","不见","见了","着见"],"answer":1,"explain":"가능보어의 부정은 동사+不+보어: <b>听不见</b>(들으려 해도 안 들림). 긍정은 听得见."},{"q":"<span class=\"zh-ex\">尽管很忙，他 ___ 坚持每天运动。</span> (바쁨에도 불구하고) 빈칸은?","options":["还是","就是","于是","要是"],"answer":0,"explain":"尽管(비록 ~지만)은 <b>还是/仍然</b>과 호응: 尽管很忙，还是坚持运动."},{"q":"<span class=\"zh-ex\">除非你亲自去，___ 解决不了。</span> (네가 직접 가지 않는 한) 빈칸은?","options":["否则","而且","所以","不过"],"answer":0,"explain":"\"~하지 않는 한 그렇지 않으면\"은 <b>除非…否则…</b>: 除非你去，否则解决不了."},{"q":"<span class=\"zh-ex\">他把钥匙 ___ 在家里了。</span> (열쇠를 집에 두고 왔다) 빈칸은?","options":["忘","丢","放","拿"],"answer":2,"explain":"把자문+장소는 \"놓다\" 放이 자연스럽습니다: 把钥匙<b>放</b>在家里了. ('깜빡 두고 오다'는 忘在…도 가능.)"},{"q":"강조구문 <span class=\"zh-ex\">___ 我不想去，___ 没有时间。</span> (가기 싫은 게 아니라 시간이 없다) 알맞은 짝은?","options":["不是…而是","不但…而且","虽然…但是","即使…也"],"answer":0,"explain":"\"A가 아니라 B다\"는 <b>不是…而是…</b>: 不是不想去，而是没有时间."}]}}
+  },
+  {
+    id: "conv-quiz", cat: "📝 연습문제", tab: "💬 회화 문제",
+    quiz: {"title":"회화 연습문제","intro":"상황에 맞는 표현을 고르는 문제입니다. 초급은 인사·기본 대화, 중급은 식당·전화·길찾기, 고급은 격식·관용 표현을 다룹니다. <b>🔄 새로운 문제</b>로 다양한 상황을 연습하세요.","byLevel":{"beginner":[{"q":"A: <span class=\"zh-ex\">你好吗？</span> (잘 지내요?) 알맞은 대답은?","options":["谢谢","再见","我很好","对不起"],"answer":2,"explain":"안부에는 <b>我很好</b>(잘 지내요)로 답하고 你呢?(당신은요?)로 되물으면 자연스럽습니다."},{"q":"가격을 물을 때 쓰는 표현은?","options":["你好吗？","多少钱？","你叫什么？","你去哪儿？"],"answer":1,"explain":"가격은 <b>多少钱?</b>(얼마예요?)로 묻습니다."},{"q":"A: <span class=\"zh-ex\">谢谢！</span> 알맞은 대답은?","options":["不客气","对不起","没关系","再见"],"answer":0,"explain":"감사에는 <b>不客气</b>(천만에요)로 답합니다. 没关系는 사과에 대한 대답이에요."},{"q":"이름을 물을 때 쓰는 표현은?","options":["你几岁？","你叫什么名字？","你去哪儿？","你好吗？"],"answer":1,"explain":"이름은 <b>你叫什么名字?</b>로 묻고, 我叫…(저는 …입니다)로 답합니다."},{"q":"<span class=\"zh-ex\">再见</span> 의 뜻은?","options":["안녕(만남)","안녕히 가세요/또 봐요","고마워요","미안해요"],"answer":1,"explain":"<b>再见(zàijiàn)</b>은 헤어질 때 하는 인사로 \"또 봐요\"라는 뜻입니다."},{"q":"A: <span class=\"zh-ex\">对不起。</span> (미안해요) 알맞은 대답은?","options":["不客气","没关系","谢谢","再见"],"answer":1,"explain":"사과에는 <b>没关系</b>(괜찮아요)로 답합니다."},{"q":"누군가에게 정중히 물어볼 때 앞에 붙이는 말은?","options":["请问","谢谢","再见","不用"],"answer":0,"explain":"<b>请问</b>(실례합니다/여쭤보겠습니다)을 앞에 붙이면 정중해집니다: 请问，厕所在哪儿?"},{"q":"A: <span class=\"zh-ex\">你去哪儿？</span> (어디 가요?) 자연스러운 대답은?","options":["我很好","我去学校","谢谢你","多少钱"],"answer":1,"explain":"哪儿(어디)로 물었으니 장소로 답합니다: <b>我去学校</b>(학교에 가요)."},{"q":"아침에 하는 인사로 알맞은 것은?","options":["晚安","早上好","再见","谢谢"],"answer":1,"explain":"아침 인사는 <b>早上好</b>(좋은 아침). 晚安은 잘 자요, 再见은 안녕히 가세요."},{"q":"손님에게 '앉으세요'라고 권할 때 쓰는 말은?","options":["请坐","请进","请问","请客"],"answer":0,"explain":"<b>请坐 qǐng zuò</b>(앉으세요). 请进(들어오세요), 请问(여쭙겠습니다)."},{"q":"'우리 가자'를 자연스럽게 표현한 것은?","options":["我们走吧","我们来吧","我们看吧","我们吃吧"],"answer":0,"explain":"<b>我们走吧</b>(우리 가자). 문장 끝 吧는 권유·제안을 나타냅니다."},{"q":"A: <span class=\"zh-ex\">你叫什么名字？</span> 알맞은 대답은?","options":["我很好","我叫金民浩","我去学校","我是学生"],"answer":1,"explain":"이름을 물었으니 <b>我叫…</b>(제 이름은 …입니다)로 답합니다."},{"q":"저녁에 헤어지며 '안녕히 주무세요'는?","options":["早上好","晚安","你好","再见"],"answer":1,"explain":"<b>晚安 wǎn'ān</b>(잘 자요/안녕히 주무세요)."},{"q":"A: <span class=\"zh-ex\">你是哪国人？</span> 알맞은 대답은?","options":["我很好","我是韩国人","我去中国","我叫小明"],"answer":1,"explain":"국적을 물었으니 <b>我是…人</b>: 我是韩国人."},{"q":"'천천히 드세요'라고 권할 때는?","options":["慢慢吃","快点吃","不要吃","再见"],"answer":0,"explain":"식사 권유는 <b>慢慢吃 mànman chī</b>(천천히 드세요)."},{"q":"A: <span class=\"zh-ex\">你会说英语吗？</span> 아니라고 답할 때는?","options":["我不是英语","我不会说英语","我没有英语","我不英语"],"answer":1,"explain":"能力의 부정은 <b>不会</b>: 我不会说英语."},{"q":"'화장실이 어디예요?'로 알맞은 것은?","options":["厕所是什么？","厕所在哪儿？","厕所多少钱？","厕所怎么样？"],"answer":1,"explain":"위치는 <b>在哪儿</b>: 厕所在哪儿?"},{"q":"A: <span class=\"zh-ex\">今天几号？</span> (오늘 며칠?) 알맞은 대답 형태는?","options":["今天星期一","今天五号","今天很好","今天下雨"],"answer":1,"explain":"几号(며칠)에는 날짜로: <b>今天五号</b>. 요일은 星期几로 묻습니다."},{"q":"'만나서 반가워요'로 알맞은 것은?","options":["认识你很高兴","再见了你","谢谢你好","对不起你好"],"answer":0,"explain":"<b>认识你很高兴</b>(만나서 반갑습니다)."},{"q":"A: <span class=\"zh-ex\">现在几点？</span> (몇 시?) 알맞은 대답은?","options":["现在三点","现在三号","现在星期三","现在很好"],"answer":0,"explain":"시각은 <b>…点</b>: 现在三点(3시)."},{"q":"가게에서 '이거 주세요'로 알맞은 것은?","options":["我要这个","我是这个","我在这个","我的这个"],"answer":0,"explain":"\"~을 원하다/주세요\"는 <b>我要…</b>: 我要这个."},{"q":"A: <span class=\"zh-ex\">你家有几口人？</span> 알맞은 대답은?","options":["我家四口人","我家很好","我家在北京","我家两点"],"answer":0,"explain":"식구 수는 <b>…口人</b>: 我家(有)四口人."},{"q":"'다시 한번 말씀해 주세요'로 알맞은 것은?","options":["请再说一遍","请你走","请坐一下","请问一下"],"answer":0,"explain":"<b>请再说一遍</b>(다시 한번 말씀해 주세요). 遍은 처음부터 끝까지 반복을 세는 양사."},{"q":"A: <span class=\"zh-ex\">周末你想做什么？</span> 알맞은 대답은?","options":["我想去看电影","我很好","周末五号","我是学生"],"answer":0,"explain":"\"뭐 하고 싶어?\"엔 <b>我想…</b>: 我想去看电影."}],"intermediate":[{"q":"식당에서 주문할 때 종업원을 부르며 쓰는 표현은?","options":["老板，结账","服务员，我要点菜","师傅，走吧","同学，你好"],"answer":1,"explain":"<b>服务员，我要点菜</b>(종업원, 주문할게요)가 자연스럽습니다. 结账은 계산할 때 씁니다."},{"q":"전화를 받을 때 첫마디로 쓰는 말은?","options":["你好吗？","喂？","再见","请进"],"answer":1,"explain":"전화에서는 <b>喂 wéi?</b>(여보세요)로 시작합니다."},{"q":"길을 물을 때 알맞은 표현은?","options":["这个多少钱？","请问，去地铁站怎么走？","你叫什么名字？","你吃饭了吗？"],"answer":1,"explain":"길 안내는 <b>怎么走?</b>(어떻게 가요?)로 묻습니다: 请问，去地铁站怎么走?"},{"q":"오랜만에 만난 사람에게 하는 인사는?","options":["好久不见","慢走","请多关照","辛苦了"],"answer":0,"explain":"<b>好久不见</b>(오랜만이에요)이 알맞습니다."},{"q":"상대에게 부탁하며 미안함을 담는 표현은?","options":["麻烦你了","没关系","不客气","随便"],"answer":0,"explain":"<b>麻烦你了</b>(번거롭게 해서 미안/고마워요)로 부탁의 정중함을 표현합니다."},{"q":"생일 축하 표현으로 알맞은 것은?","options":["恭喜发财","祝你生日快乐","一路平安","新年快乐"],"answer":1,"explain":"생일에는 <b>祝你生日快乐</b>(생일 축하해요). 恭喜发财는 설 인사입니다."},{"q":"물건값을 깎을 때 자연스러운 표현은?","options":["可以便宜一点吗？","这是什么？","你好贵啊","我不买了"],"answer":0,"explain":"<b>可以便宜一点吗?</b>(좀 싸게 해 주실 수 있어요?)가 흥정에 자연스럽습니다."},{"q":"A: <span class=\"zh-ex\">你吃饭了吗？</span> — 이 인사의 실제 의미에 가장 가까운 것은?","options":["정말 밥 먹었는지 확인","가벼운 안부 인사","식사 초대","요리 실력 질문"],"answer":1,"explain":"<b>你吃饭了吗?</b>는 글자 그대로 묻기도 하지만, 흔히 \"잘 지내?\" 같은 <b>가벼운 안부 인사</b>로 씁니다."},{"q":"술자리에서 '건배!'라고 할 때 쓰는 말은?","options":["干杯","加油","保重","慢走"],"answer":0,"explain":"<b>干杯 gānbēi</b>(건배). 글자 그대로는 '잔을 비우다'입니다."},{"q":"시험을 앞둔 친구에게 '힘내!'라고 응원할 때는?","options":["辛苦了","加油","恭喜","对不起"],"answer":1,"explain":"<b>加油 jiāyóu</b>(힘내/파이팅). 응원의 대표 표현입니다."},{"q":"여행을 떠나는 사람에게 하는 인사로 알맞은 것은?","options":["一路平安","好久不见","恭喜发财","慢慢吃"],"answer":0,"explain":"<b>一路平安 yílù píng'ān</b>(가시는 길 평안하세요) — 여행·먼 길 떠나는 이에게."},{"q":"헤어지며 '몸조심해'라고 할 때 쓰는 말은?","options":["保重","干杯","请坐","打扰了"],"answer":0,"explain":"<b>保重 bǎozhòng</b>(몸조심하세요) — 한동안 못 볼 사람에게 하는 인사."},{"q":"식당에서 '계산해 주세요'로 알맞은 것은?","options":["结账","干杯","点菜","打包"],"answer":0,"explain":"<b>结账 jiézhàng</b>(계산이요). 点菜(주문), 打包(포장), 干杯(건배)."},{"q":"남은 음식을 '포장해 주세요'로 알맞은 것은?","options":["请打包","请结账","请上菜","请点菜"],"answer":0,"explain":"<b>打包 dǎbāo</b>(포장하다): 请帮我打包."},{"q":"전화에서 '실례지만 누구세요?'로 알맞은 것은?","options":["请问您是哪位？","你好吗？","你去哪儿？","你叫什么？"],"answer":0,"explain":"전화 예절로 <b>您是哪位?</b>(누구세요?)가 정중합니다."},{"q":"길에서 '저기까지 얼마나 걸려요?'로 알맞은 것은?","options":["到那儿要多长时间？","那儿多少钱？","那儿是什么？","那儿怎么样？"],"answer":0,"explain":"소요 시간은 <b>要多长时间</b>: 到那儿要多长时间?"},{"q":"아플 때 병원에서 '배가 아파요'로 알맞은 것은?","options":["我肚子疼","我很饿","我很累","我想吃"],"answer":0,"explain":"<b>肚子疼 dùzi téng</b>(배가 아프다). 疼=아프다."},{"q":"약속을 잡으며 '몇 시에 만날까요?'로 알맞은 것은?","options":["我们几点见面？","我们在哪儿？","我们多少钱？","我们怎么样？"],"answer":0,"explain":"약속 시간은 <b>几点见面</b>: 我们几点见面?"},{"q":"초대에 감사하며 '초대해 주셔서 감사합니다'로 알맞은 것은?","options":["谢谢你的邀请","对不起","没关系","不客气"],"answer":0,"explain":"<b>谢谢你的邀请</b>(초대 감사합니다). 邀请=초대."},{"q":"상대의 제안에 동의하며 '좋아요, 그렇게 해요'로 알맞은 것은?","options":["好的，就这么办","不行","随便","算了"],"answer":0,"explain":"<b>就这么办</b>(그렇게 합시다)는 합의·동의 표현입니다."},{"q":"늦어서 사과할 때 '차가 막혔어요'로 알맞은 것은?","options":["堵车了","下雨了","我饿了","我错了"],"answer":0,"explain":"<b>堵车 dǔchē</b>(차가 막히다): 对不起，堵车了."},{"q":"쇼핑에서 '입어봐도 될까요?'로 알맞은 것은?","options":["可以试试吗？","多少钱？","这是什么？","你好吗？"],"answer":0,"explain":"<b>试试 shìshi</b>(시도해 보다/입어 보다): 可以试试吗?"},{"q":"호텔에서 '방을 예약하고 싶어요'로 알맞은 것은?","options":["我想订一个房间","我想吃饭","我想回家","我想睡觉"],"answer":0,"explain":"<b>订 dìng</b>(예약하다): 我想订一个房间."},{"q":"헤어지며 '연락하고 지내요'로 알맞은 것은?","options":["保持联系","一路平安","干杯","慢走"],"answer":0,"explain":"<b>保持联系 bǎochí liánxì</b>(연락하고 지내요)."}],"advanced":[{"q":"처음 만난 상대에게 격식 있게 자기소개할 때 쓰는 표현은?","options":["你好吗？","请多关照","慢走","随便"],"answer":1,"explain":"<b>请多关照 qǐng duō guānzhào</b>(잘 부탁드립니다)는 첫 만남·비즈니스에서 정중한 표현입니다."},{"q":"상대의 노고를 위로하는 표현은?","options":["辛苦了","恭喜你","不好意思","慢走"],"answer":0,"explain":"<b>辛苦了 xīnkǔ le</b>(수고하셨어요)는 상대의 노고를 인정·위로하는 표현입니다."},{"q":"손님을 배웅하며 하는 인사로 알맞은 것은?","options":["慢走","喂","干杯","加油"],"answer":0,"explain":"<b>慢走 màn zǒu</b>(살펴 가세요)는 떠나는 손님에게 하는 인사입니다."},{"q":"제안을 완곡히 거절할 때 자연스러운 표현은?","options":["不行！","改天吧","你错了","别说了"],"answer":1,"explain":"<b>改天吧 gǎitiān ba</b>(다음에 하죠)는 부드럽게 거절·연기하는 표현입니다."},{"q":"<span class=\"zh-ex\">不好意思</span> 와 <span class=\"zh-ex\">对不起</span> 의 차이로 옳은 것은?","options":["둘 다 같은 무게","不好意思는 가벼운 미안/민망함, 对不起는 더 진지한 사과","不好意思는 감사 표현","对不起는 인사말"],"answer":1,"explain":"<b>不好意思</b>는 가벼운 실례·민망함에, <b>对不起</b>는 잘못에 대한 진지한 사과에 씁니다."},{"q":"축하할 일에 두루 쓰는 표현은?","options":["恭喜恭喜","辛苦了","麻烦了","算了"],"answer":0,"explain":"<b>恭喜恭喜 gōngxǐ gōngxǐ</b>(축하합니다)는 합격·결혼 등 경사에 두루 씁니다."},{"q":"상대의 의견에 정중히 반대 의견을 꺼낼 때의 표현은?","options":["恕我直言","随便你","别管我","算了吧"],"answer":0,"explain":"<b>恕我直言 shù wǒ zhíyán</b>(솔직히 말씀드리면)은 반대·직언을 정중히 꺼내는 표현입니다."},{"q":"상대가 무엇을 먹겠냐고 물을 때 '아무거나 좋아요'를 뜻하는 말은?","options":["随便","当然","不用","马上"],"answer":0,"explain":"<b>随便 suíbiàn</b>은 \"아무거나/편한 대로\"라는 뜻입니다. 다만 손윗사람에겐 다소 무성의하게 들릴 수 있어요."},{"q":"칭찬을 들었을 때 겸손하게 받는 표현으로 알맞은 것은?","options":["哪里哪里","当然当然","随便随便","算了算了"],"answer":0,"explain":"<b>哪里哪里 nǎli nǎli</b>는 칭찬에 \"별말씀을요\"라고 겸손히 답하는 관용 표현입니다."},{"q":"자리를 잠시 비울 때 정중하게 하는 말은?","options":["失陪一下","慢走","打扰了","恭喜"],"answer":0,"explain":"<b>失陪一下 shīpéi yíxià</b>(잠시 실례하겠습니다) — 자리를 잠깐 뜰 때 씁니다."},{"q":"오래 흠모하던 사람을 만났을 때의 격식 인사는?","options":["久仰久仰","好久不见","辛苦了","麻烦你"],"answer":0,"explain":"<b>久仰久仰 jiǔyǎng jiǔyǎng</b>(오래전부터 존함을 들었습니다) — 첫 대면의 격식 표현."},{"q":"방문 후 폐를 끼쳤다며 하는 인사로 알맞은 것은?","options":["打扰了","干杯","加油","请进"],"answer":0,"explain":"<b>打扰了 dǎrǎo le</b>(폐를 끼쳤습니다/실례했습니다) — 방문·부탁 후 예의 표현."},{"q":"도움을 받고 '덕분에 큰 도움이 됐습니다'로 정중히 표현하면?","options":["多亏了你的帮助","随便你","算了吧","别客气"],"answer":0,"explain":"<b>多亏(了)…</b>(~덕분에): 多亏了你的帮助. 감사·다행의 뉘앙스."},{"q":"상대의 성공을 축하하며 격식 있게 '축하드립니다'는?","options":["祝贺你","辛苦了","打扰了","慢走"],"answer":0,"explain":"<b>祝贺你 zhùhè nǐ</b>(축하드립니다)는 恭喜보다 다소 격식 있는 축하 표현입니다."},{"q":"부탁을 정중히 거절하며 '마음은 감사하지만 사양할게요'에 가까운 것은?","options":["谢谢你的好意，不过我就不用了","不行！","别管我","随便"],"answer":0,"explain":"<b>谢谢你的好意，不过…</b>(호의는 감사하지만…)로 완곡하게 거절합니다."},{"q":"회의에서 '제 생각을 말씀드리자면'으로 의견을 꺼낼 때 알맞은 것은?","options":["依我看","算了吧","别说了","随便说"],"answer":0,"explain":"<b>依我看 / 在我看来</b>(제가 보기엔)로 의견을 정중히 시작합니다."},{"q":"상대 의견에 부분 동의하며 '일리가 있습니다'로 알맞은 것은?","options":["你说得有道理","你错了","别提了","无所谓"],"answer":0,"explain":"<b>你说得有道理</b>(당신 말이 일리가 있다)로 상대를 존중하며 동의합니다."},{"q":"실수를 인정하며 '제 부주의였습니다'로 알맞은 것은?","options":["是我疏忽了","不关我的事","随便吧","你自己看"],"answer":0,"explain":"<b>疏忽 shūhu</b>(소홀·부주의): 是我疏忽了(제 불찰입니다)."},{"q":"오래 신세를 지고 '그동안 신세 많이 졌습니다'로 알맞은 것은?","options":["这段时间给您添麻烦了","干杯","慢走","加油"],"answer":0,"explain":"<b>添麻烦 tiān máfan</b>(폐를 끼치다): 给您添麻烦了(신세 졌습니다)."},{"q":"상대를 배려하며 '편하실 대로 하세요'로 알맞은 것은?","options":["您看着办吧","你必须这样","别动","快点"],"answer":0,"explain":"<b>您看着办吧</b>(알아서/편하실 대로 하세요) — 재량을 존중하는 표현."},{"q":"작별하며 '몸 건강하시고 다음에 또 뵙겠습니다'에 어울리는 것은?","options":["请多保重，后会有期","干杯","快走吧","随便"],"answer":0,"explain":"<b>后会有期 hòuhuì yǒuqī</b>(다음에 또 만날 날이 있을 것)는 격식 있는 작별 인사입니다."},{"q":"칭찬에 겸손히 '과찬이십니다'로 알맞은 것은?","options":["您过奖了","当然了","那是","随便说"],"answer":0,"explain":"<b>过奖 guòjiǎng</b>(지나치게 칭찬하다): 您过奖了(과찬이십니다)."},{"q":"상대의 수고에 '정말 고생 많으셨습니다'로 정중히 말하면?","options":["您受累了","你真棒","干杯","快点"],"answer":0,"explain":"<b>受累 shòulèi</b>(수고하다): 您受累了(고생하셨습니다) — 辛苦了보다 정중한 축."},{"q":"약속을 확인하며 '그럼 그렇게 정하겠습니다'로 격식 있게 말하면?","options":["那就这么说定了","随便你","算了","不知道"],"answer":0,"explain":"<b>说定了</b>(그렇게 확정하다): 那就这么说定了(그럼 그렇게 정하죠)."}]}}
+  },
+  {
+    id: "reading-quiz", cat: "📝 연습문제", tab: "📖 독해 문제",
+    quiz: {"title":"독해 연습문제","intro":"짧은 글을 읽고 내용을 파악하는 문제입니다. 초급은 한 문장, 중급은 짧은 단락, 고급은 조금 긴 글을 다룹니다. <b>🔄 새로운 문제</b>로 여러 지문을 읽어보세요.","byLevel":{"beginner":[{"q":"<span class=\"zh-ex\">我叫李明，我是学生。</span> — 이 사람의 직업은?","options":["선생님","학생","의사","기사"],"answer":1,"explain":"学生(xuésheng)은 \"학생\"입니다. 我是学生 = 나는 학생이다."},{"q":"<span class=\"zh-ex\">今天天气很好，我们去公园。</span> — 오늘 날씨는?","options":["좋다","나쁘다","비가 온다","춥다"],"answer":0,"explain":"天气很好 = 날씨가 아주 좋다. 그래서 공원에 간다고 했습니다."},{"q":"<span class=\"zh-ex\">我有一个哥哥和一个妹妹。</span> — 이 사람의 형제는 몇 명?","options":["1명","2명","3명","없다"],"answer":1,"explain":"哥哥(형/오빠) 한 명 + 妹妹(여동생) 한 명 = <b>2명</b>."},{"q":"<span class=\"zh-ex\">现在是八点，我要去上班。</span> — 지금 몇 시?","options":["6시","7시","8시","9시"],"answer":2,"explain":"八点 = 8시. 上班(출근)하러 간다고 했습니다."},{"q":"<span class=\"zh-ex\">这是我的书，那是他的。</span> — '那'가 가리키는 것은?","options":["나의 책","그의 책","우리 책","선생님 책"],"answer":1,"explain":"那是他的(=他的书) = 저것은 그의 것(책)입니다."},{"q":"<span class=\"zh-ex\">妈妈在厨房做饭。</span> — 엄마는 무엇을 하고 있나?","options":["잠을 잔다","밥을 한다","책을 읽는다","운동한다"],"answer":1,"explain":"做饭 = 밥을 짓다/요리하다. 엄마가 부엌(厨房)에서 요리 중입니다."},{"q":"<span class=\"zh-ex\">我喜欢喝茶，不喜欢喝咖啡。</span> — 이 사람이 좋아하는 것은?","options":["커피","차","물","주스"],"answer":1,"explain":"喜欢喝茶(차 마시기를 좋아한다), 不喜欢喝咖啡(커피는 싫어한다)."},{"q":"<span class=\"zh-ex\">星期六我不上课，我在家休息。</span> — 토요일에 무엇을 하나?","options":["수업을 듣는다","집에서 쉰다","회사에 간다","여행을 간다"],"answer":1,"explain":"不上课(수업 없음) + 在家休息(집에서 쉰다)."},{"q":"<span class=\"zh-ex\">我家有三口人：爸爸、妈妈和我。</span> — 가족은 몇 명?","options":["2명","3명","4명","5명"],"answer":1,"explain":"三口人(세 식구): 아빠·엄마·나 = <b>3명</b>. 口는 식구를 세는 양사입니다."},{"q":"<span class=\"zh-ex\">弟弟在图书馆看书。</span> — 동생은 어디에 있나?","options":["교실","도서관","집","식당"],"answer":1,"explain":"图书馆(túshūguǎn) = 도서관. 동생이 그곳에서 책을 봅니다."},{"q":"<span class=\"zh-ex\">今天我很忙，没有时间休息。</span> — 오늘 '나'는 어떤가?","options":["한가하다","바쁘다","아프다","즐겁다"],"answer":1,"explain":"很忙(아주 바쁘다) + 没有时间(시간이 없다) → <b>바쁘다</b>."},{"q":"<span class=\"zh-ex\">这个苹果两块钱，我买三个。</span> — 사과 하나의 값은?","options":["1块","2块","3块","6块"],"answer":1,"explain":"这个苹果两块钱 = 이 사과 하나에 <b>2块(위안)</b>. 세 개 사면 6块."},{"q":"<span class=\"zh-ex\">我早上七点起床，八点去上学。</span> — '나'는 몇 시에 등교하나?","options":["7시","8시","9시","10시"],"answer":1,"explain":"起床(기상)은 7시, 去上学(등교)은 <b>8시</b>."},{"q":"<span class=\"zh-ex\">这是我的猫，它很可爱。</span> — '它'가 가리키는 것은?","options":["나","고양이","친구","개"],"answer":1,"explain":"它는 사물·동물을 가리키는 대명사로, 여기서는 <b>고양이(猫)</b>."},{"q":"<span class=\"zh-ex\">爸爸是老师，妈妈是医生。</span> — 엄마의 직업은?","options":["선생님","의사","학생","기사"],"answer":1,"explain":"妈妈是医生 = 엄마는 <b>의사</b>."},{"q":"<span class=\"zh-ex\">我不喜欢下雨，我喜欢晴天。</span> — '나'가 좋아하는 날씨는?","options":["비 오는 날","맑은 날","흐린 날","눈 오는 날"],"answer":1,"explain":"喜欢晴天(맑은 날을 좋아함), 不喜欢下雨(비는 싫어함)."},{"q":"<span class=\"zh-ex\">今天是星期五，明天不用上班。</span> — 내일은 무슨 요일?","options":["목요일","금요일","토요일","일요일"],"answer":2,"explain":"오늘이 금요일(星期五)이니 내일은 <b>토요일</b>. 그래서 출근 안 함."},{"q":"<span class=\"zh-ex\">我喝了两杯咖啡，还想喝。</span> — '나'는 커피를 몇 잔 마셨나?","options":["1잔","2잔","3잔","안 마셨다"],"answer":1,"explain":"两杯 = <b>2잔</b>. 还想喝(더 마시고 싶다)."},{"q":"<span class=\"zh-ex\">书店在银行的旁边。</span> — 서점은 어디 있나?","options":["은행 안","은행 옆","은행 위","은행 뒤"],"answer":1,"explain":"旁边 = 옆. 서점은 은행 <b>옆</b>에 있습니다."},{"q":"<span class=\"zh-ex\">姐姐比我大三岁。</span> — 언니는 나보다?","options":["3살 어리다","3살 많다","같은 나이","5살 많다"],"answer":1,"explain":"A比我大三岁 = 나보다 <b>3살 많다</b>."},{"q":"<span class=\"zh-ex\">我每天坐地铁去公司。</span> — '나'의 출근 수단은?","options":["버스","지하철","자전거","택시"],"answer":1,"explain":"地铁 = 지하철. 매일 지하철로 출근합니다."},{"q":"<span class=\"zh-ex\">这件衣服很漂亮，可是太贵了。</span> — 이 옷의 문제는?","options":["안 예쁘다","너무 비싸다","너무 작다","색이 이상하다"],"answer":1,"explain":"漂亮(예쁘다)이지만 太贵了(<b>너무 비싸다</b>)가 문제입니다."},{"q":"<span class=\"zh-ex\">我的生日是十月一号。</span> — 내 생일은?","options":["1월 10일","10월 1일","10월 10일","1월 1일"],"answer":1,"explain":"十月一号 = <b>10월 1일</b>."},{"q":"<span class=\"zh-ex\">妹妹在房间里做作业。</span> — 여동생은 무엇을 하나?","options":["잠을 잔다","숙제를 한다","밥을 먹는다","논다"],"answer":1,"explain":"做作业 = 숙제를 하다. 여동생이 방에서 숙제 중입니다."}],"intermediate":[{"q":"<span class=\"zh-ex\">小王每天六点起床，先跑步，然后吃早饭。他很喜欢运动。</span> — 小王이 아침에 <u>가장 먼저</u> 하는 일은?","options":["아침 먹기","달리기","샤워","독서"],"answer":1,"explain":"先跑步，然后吃早饭 = 먼저 달리고, 그다음 아침을 먹습니다. 따라서 가장 먼저는 <b>달리기</b>."},{"q":"<span class=\"zh-ex\">这家餐厅的菜很好吃，但是有点儿贵。</span> — 이 식당에 대한 평가는?","options":["맛도 없고 비싸다","맛있지만 조금 비싸다","맛있고 싸다","맛없지만 싸다"],"answer":1,"explain":"好吃(맛있다) + 但是有点儿贵(그러나 조금 비싸다)."},{"q":"<span class=\"zh-ex\">因为下大雨，所以今天的比赛取消了。</span> — 경기가 취소된 이유는?","options":["선수가 아파서","큰비가 와서","표가 안 팔려서","날이 추워서"],"answer":1,"explain":"因为下大雨(큰비가 와서)…所以比赛取消(경기 취소). 원인은 <b>비</b>."},{"q":"<span class=\"zh-ex\">我学中文已经三年了，现在能看懂简单的报纸。</span> — 이 사람의 중국어는?","options":["이제 막 시작했다","간단한 신문을 읽을 수 있다","전혀 못 읽는다","소설을 쓸 수 있다"],"answer":1,"explain":"3년 배웠고 现在能看懂简单的报纸(간단한 신문을 읽을 수 있다)."},{"q":"<span class=\"zh-ex\">明天是妈妈的生日，我打算给她买一个蛋糕。</span> — 내일 무슨 날인가?","options":["나의 생일","엄마의 생일","아빠의 생일","명절"],"answer":1,"explain":"明天是妈妈的生日 = 내일은 엄마 생신. 케이크(蛋糕)를 사 드릴 계획입니다."},{"q":"<span class=\"zh-ex\">他虽然很累，但是还是坚持把工作做完了。</span> — 그는 결국 어떻게 했나?","options":["일을 그만뒀다","일을 끝까지 마쳤다","내일로 미뤘다","남에게 맡겼다"],"answer":1,"explain":"虽然累(피곤하지만) 还是…做完了(끝까지 다 해냈다)."},{"q":"<span class=\"zh-ex\">这件衣服太大了，能不能换一件小一点儿的？</span> — 손님이 원하는 것은?","options":["환불","더 작은 것으로 교환","더 큰 것으로 교환","수선"],"answer":1,"explain":"太大了(너무 크다) + 换一件小一点儿的(좀 작은 것으로 바꾸다) = <b>작은 것으로 교환</b>."},{"q":"<span class=\"zh-ex\">周末我一般在家看书或者看电影，很少出去。</span> — 이 사람의 주말은?","options":["주로 밖에서 논다","주로 집에서 보낸다","항상 일한다","여행을 자주 간다"],"answer":1,"explain":"在家看书或看电影(집에서 책/영화) + 很少出去(거의 안 나감) = <b>주로 집에서</b>."},{"q":"<span class=\"zh-ex\">小张的爱好是拍照，周末他常常去公园或者郊外拍风景。</span> — 小张의 취미는?","options":["그림 그리기","사진 찍기","등산","독서"],"answer":1,"explain":"爱好是拍照(취미는 사진 찍기). 주말에 공원·교외에서 풍경을 찍습니다."},{"q":"<span class=\"zh-ex\">医生说，感冒了要多喝水、多休息，很快就会好。</span> — 의사의 조언이 <u>아닌</u> 것은?","options":["물을 많이 마셔라","푹 쉬어라","약을 절대 먹지 마라","금방 나을 것이다"],"answer":2,"explain":"의사는 多喝水·多休息를 권했을 뿐, \"약을 먹지 말라\"는 말은 없습니다."},{"q":"<span class=\"zh-ex\">虽然这份工作工资不高，但是离家近，而且同事都很友好。</span> — 이 일의 장점이 <u>아닌</u> 것은?","options":["집에서 가깝다","동료가 친절하다","월급이 높다","분위기가 좋다"],"answer":2,"explain":"工资不高(월급이 높지 않다)라고 했으므로 '월급이 높다'는 장점이 아닙니다."},{"q":"<span class=\"zh-ex\">我打算暑假去中国旅行，所以现在每天都在学汉语。</span> — 지금 매일 중국어를 배우는 이유는?","options":["시험 때문에","여름방학 중국 여행 때문에","취업 때문에","이사 때문에"],"answer":1,"explain":"暑假去中国旅行(여름방학에 중국 여행) → 所以…学汉语. 이유는 <b>여행</b>."},{"q":"<span class=\"zh-ex\">这个周末我们本来要去海边，但因为天气不好，改成了在家看电影。</span> — 결국 주말에 한 일은?","options":["바다에 갔다","집에서 영화를 봤다","쇼핑했다","등산했다"],"answer":1,"explain":"本来要去海边(원래 바다) but 天气不好 → 改成在家看电影(집에서 영화로 변경)."},{"q":"<span class=\"zh-ex\">李老师教我们汉语，她的课非常有意思，大家都很喜欢。</span> — 학생들이 李선생님 수업을 좋아하는 이유는?","options":["숙제가 없어서","수업이 재미있어서","시험이 쉬워서","일찍 끝나서"],"answer":1,"explain":"课非常有意思(수업이 아주 재미있다) → 大家都喜欢."},{"q":"<span class=\"zh-ex\">他为了准备考试，最近每天学习到很晚，有点儿累。</span> — 그가 요즘 피곤한 이유는?","options":["운동을 많이 해서","시험 준비로 늦게까지 공부해서","아파서","일이 많아서"],"answer":1,"explain":"为了准备考试…学习到很晚(시험 준비로 늦게까지) → 累."},{"q":"<span class=\"zh-ex\">这家店的咖啡不错，环境也很安静，很适合看书。</span> — 이 가게는 무엇을 하기에 좋다고 했나?","options":["운동","독서","회의","파티"],"answer":1,"explain":"安静…适合看书(조용해서 독서에 적합)."},{"q":"<span class=\"zh-ex\">小明想买手机，可是钱不够，所以决定再存两个月。</span> — 小明의 결정은?","options":["지금 산다","두 달 더 저축한다","안 산다","빌린다"],"answer":1,"explain":"钱不够(돈 부족) → 决定再存两个月(두 달 더 모으기로)."},{"q":"<span class=\"zh-ex\">我家离公司很远，坐车要一个小时,所以我常常很早出门。</span> — '나'가 일찍 나가는 이유는?","options":["운동하려고","회사가 멀어서","아침을 먹으려고","친구를 만나려고"],"answer":1,"explain":"离公司很远…一个小时 → 常常很早出门(멀어서 일찍 나감)."},{"q":"<span class=\"zh-ex\">虽然他年纪不大，但是做事很认真，大家都很信任他。</span> — 사람들이 그를 신뢰하는 이유는?","options":["나이가 많아서","일을 성실히 해서","돈이 많아서","말을 잘해서"],"answer":1,"explain":"做事很认真(일을 성실히) → 大家都信任他."},{"q":"<span class=\"zh-ex\">请大家把手机关了，电影马上就要开始了。</span> — 지금 무엇을 하라고 했나?","options":["휴대폰을 끄라","자리를 옮겨라","표를 사라","조용히 나가라"],"answer":0,"explain":"把手机关了(휴대폰을 끄세요) — 영화가 곧 시작하기 때문."},{"q":"<span class=\"zh-ex\">这次旅行我玩得很开心，可惜时间太短了。</span> — 이번 여행의 아쉬운 점은?","options":["재미없었다","시간이 너무 짧았다","돈이 많이 들었다","날씨가 나빴다"],"answer":1,"explain":"玩得开心(즐거웠다)지만 可惜时间太短(<b>시간이 짧아 아쉽다</b>)."},{"q":"<span class=\"zh-ex\">医生说他需要多运动，少吃油腻的东西。</span> — 의사의 조언은?","options":["운동을 줄여라","운동을 늘리고 기름진 음식을 줄여라","약을 많이 먹어라","잠을 줄여라"],"answer":1,"explain":"多运动(운동 늘리기) + 少吃油腻(기름진 것 줄이기)."},{"q":"<span class=\"zh-ex\">她一边工作一边照顾孩子，真的很辛苦。</span> — 그녀가 힘든 이유는?","options":["공부하면서 일해서","일과 육아를 동시에 해서","여행을 많이 해서","운동을 많이 해서"],"answer":1,"explain":"一边工作一边照顾孩子(일과 육아를 병행) → 很辛苦."},{"q":"<span class=\"zh-ex\">这本小说太长了，我看了一半就看不下去了。</span> — '나'는 이 소설을?","options":["다 읽었다","절반만 읽고 그만뒀다","안 읽었다","두 번 읽었다"],"answer":1,"explain":"看了一半就看不下去(절반 보고 더는 못 읽음)."}],"advanced":[{"q":"<span class=\"zh-ex\">随着科技的发展，网上购物越来越流行。它不仅方便，而且常常比商店便宜，所以受到很多年轻人的欢迎。</span> — 온라인 쇼핑이 인기 있는 이유로 <u>글에 없는</u> 것은?","options":["편리하다","가게보다 저렴한 경우가 많다","품질이 항상 더 좋다","젊은 층에게 환영받는다"],"answer":2,"explain":"글은 方便(편리)·比商店便宜(더 쌈)·受年轻人欢迎(젊은층 환영)을 말합니다. \"품질이 항상 더 좋다\"는 언급이 없습니다."},{"q":"<span class=\"zh-ex\">小李本来打算周末去爬山，可是天气预报说要下雨，他只好改变了计划，留在家里整理房间。</span> — 小李가 실제로 주말에 한 일은?","options":["등산을 갔다","집에서 방을 정리했다","여행을 떠났다","친구를 만났다"],"answer":1,"explain":"비 예보 때문에 只好改变计划(어쩔 수 없이 계획 변경) + 留在家里整理房间(집에서 방 정리). 本来打算(원래 계획)은 등산이었지만 실제로는 아닙니다."},{"q":"<span class=\"zh-ex\">很多人认为，只要努力就一定能成功。其实，努力固然重要，但方法和机会也不可忽视。</span> — 글쓴이의 주장에 가장 가까운 것은?","options":["노력만으로 반드시 성공한다","노력은 중요하지 않다","노력 외에 방법과 기회도 중요하다","성공은 운에 달렸다"],"answer":2,"explain":"努力固然重要，但方法和机会也不可忽视 = 노력도 중요하지만 방법·기회도 무시할 수 없다. 노력만능론에 대한 반론입니다."},{"q":"<span class=\"zh-ex\">这家公司规定，员工每周至少要在办公室工作三天，其余时间可以在家办公。</span> — 이 회사의 근무 방식은?","options":["매일 반드시 출근","완전 재택근무","주 3일 출근 + 나머지 재택 가능","출근 여부 자유"],"answer":2,"explain":"每周至少三天在办公室(주 최소 3일 출근) + 其余可以在家办公(나머지는 재택 가능). 혼합 근무입니다."},{"q":"<span class=\"zh-ex\">他说话总是先听别人把话说完，再表达自己的看法，因此大家都愿意和他讨论问题。</span> — 사람들이 그와 토론을 즐기는 이유는?","options":["그가 항상 이겨서","남의 말을 끝까지 듣고 말해서","말수가 적어서","지위가 높아서"],"answer":1,"explain":"先听别人说完，再表达自己的看法(남 말을 다 듣고 자기 의견을 말함) → 그래서 사람들이 그와 토론을 원합니다."},{"q":"<span class=\"zh-ex\">这本书虽然有点儿难，但是内容非常有意思，我一口气就读完了。</span> — 밑줄 <span class=\"zh-ex\">一口气</span> 의 뜻에 가장 가까운 것은?","options":["단숨에/쉬지 않고","한 페이지씩 천천히","억지로","여러 날에 걸쳐"],"answer":0,"explain":"<b>一口气</b>는 \"단숨에, 쉬지 않고\"라는 뜻입니다. 재미있어서 단숨에 다 읽었다는 의미."},{"q":"<span class=\"zh-ex\">节约用水不是一个人的事，而是需要大家共同努力。</span> — 이 문장이 강조하는 것은?","options":["물 절약은 개인의 문제다","물 절약은 모두의 공동 노력이 필요하다","물은 부족하지 않다","물값을 올려야 한다"],"answer":1,"explain":"不是…而是… 구문으로 \"개인의 일이 아니라, 모두의 공동 노력이 필요하다\"를 강조합니다."},{"q":"<span class=\"zh-ex\">刚到北京时，我连一句中文都不会说，现在却能和当地人聊天了。</span> — 이 사람의 변화는?","options":["중국어가 오히려 나빠졌다","전혀 못 하다가 현지인과 대화하게 됐다","처음부터 유창했다","아직 한마디도 못 한다"],"answer":1,"explain":"连一句都不会(한마디도 못 함) → 现在能和当地人聊天(이제 현지인과 대화). 큰 향상을 보여줍니다."},{"q":"<span class=\"zh-ex\">很多年轻人喜欢住在大城市，因为那里工作机会多，生活也方便；但也有人觉得大城市压力太大，更愿意回到家乡。</span> — 글의 태도로 알맞은 것은?","options":["대도시가 무조건 좋다고 주장","고향이 무조건 좋다고 주장","양쪽 입장을 모두 소개","도시를 비판만 함"],"answer":2,"explain":"대도시 선호 이유와 고향 선호 이유를 <b>둘 다</b> 균형 있게 소개하고 있습니다."},{"q":"<span class=\"zh-ex\">这次考试他虽然没考好，但并不灰心，反而更加努力地复习，准备下次再考。</span> — 그의 태도는?","options":["포기했다","낙심하지 않고 더 노력한다","남을 탓한다","시험을 미룬다"],"answer":1,"explain":"没考好(잘 못 봄)지만 并不灰心(낙심하지 않음), 反而更加努力(오히려 더 노력)."},{"q":"<span class=\"zh-ex\">手机给我们的生活带来了方便，但如果过度依赖，也会影响面对面的交流。</span> — 이 글의 핵심은?","options":["휴대폰은 백해무익하다","휴대폰은 편리하기만 하다","휴대폰은 편리하지만 과의존은 문제","휴대폰을 쓰지 말아야 한다"],"answer":2,"explain":"带来方便(편리를 줌) + 但过度依赖会影响交流(과의존은 대면 소통에 악영향). <b>양면성</b>을 지적합니다."},{"q":"<span class=\"zh-ex\">俗话说'活到老，学到老'，意思是学习是一辈子的事，不管年纪多大都应该继续学习。</span> — '活到老，学到老'의 뜻은?","options":["젊을 때만 배워라","늙으면 배울 필요 없다","평생 배워야 한다","배움은 학교에서만"],"answer":2,"explain":"活到老，学到老 = 늙도록 살면 늙도록 배운다 → \"배움은 <b>평생</b>의 일\"이라는 뜻입니다."},{"q":"<span class=\"zh-ex\">读书不仅能增长知识，还能让人在忙碌的生活中获得片刻的安静。</span> — 글이 말하는 독서의 효용이 <u>아닌</u> 것은?","options":["지식을 늘린다","잠깐의 고요를 준다","돈을 벌게 해준다","바쁜 삶 속 휴식"],"answer":2,"explain":"增长知识 + 获得片刻安静을 말할 뿐, \"돈을 벌게 해준다\"는 언급이 없습니다."},{"q":"<span class=\"zh-ex\">与其抱怨环境,不如改变自己。只有先改变态度,才可能改变结果。</span> — 글의 핵심 주장은?","options":["환경을 탓해야 한다","결과는 바꿀 수 없다","자신의 태도를 먼저 바꿔라","남을 바꿔라"],"answer":2,"explain":"与其抱怨，不如改变自己 + 先改变态度才能改变结果 → <b>자신의 태도부터</b>."},{"q":"<span class=\"zh-ex\">这家公司之所以成功,是因为它始终把顾客的需要放在第一位。</span> — 이 회사가 성공한 이유는?","options":["광고를 많이 해서","고객의 필요를 최우선에 둬서","가격이 싸서","규모가 커서"],"answer":1,"explain":"之所以…是因为… 구문: 把顾客的需要放在第一位(고객 필요를 최우선)가 성공 이유."},{"q":"<span class=\"zh-ex\">刚开始学游泳时,他很害怕水,但经过反复练习,现在已经游得很好了。</span> — 그의 변화 과정으로 옳은 것은?","options":["처음부터 잘했다","물을 무서워하다 연습 끝에 잘하게 됐다","지금도 못한다","수영을 포기했다"],"answer":1,"explain":"害怕水(물 공포) → 反复练习(반복 연습) → 现在游得很好(이제 잘함)."},{"q":"<span class=\"zh-ex\">网络让信息传播得更快,但也让虚假消息更容易扩散,因此我们要学会分辨真假。</span> — 글쓴이가 강조하는 것은?","options":["인터넷을 쓰지 말자","정보의 진위를 가리는 능력이 필요하다","뉴스는 모두 거짓이다","정보는 느릴수록 좋다"],"answer":1,"explain":"虚假消息更容易扩散 → 要学会分辨真假(진위 분별 능력 필요)를 강조."},{"q":"<span class=\"zh-ex\">他做事总是三分钟热度,刚开始很努力,没过多久就放弃了。</span> — 밑줄 <span class=\"zh-ex\">三分钟热度</span> 의 뜻은?","options":["꾸준히 노력함","금세 식어버리는 열정","매우 신중함","점점 나아짐"],"answer":1,"explain":"<b>三分钟热度</b>는 \"작심삼일\" 같은, 처음만 열심이고 <b>금세 식는 열정</b>을 뜻합니다."},{"q":"<span class=\"zh-ex\">虽然科技越来越发达,但真正的幸福并不取决于我们拥有多少,而在于我们是否懂得知足。</span> — 글이 말하는 행복의 조건은?","options":["많이 가질수록 행복","기술이 발달할수록 행복","만족할 줄 아는 것","돈이 많은 것"],"answer":2,"explain":"不取决于拥有多少，而在于懂得知足 → 행복은 <b>만족할 줄 아는 것</b>에 달림."},{"q":"<span class=\"zh-ex\">这次失败虽然让他很失望,但也让他明白了自己的不足,可以说是一件好事。</span> — 글쓴이가 이번 실패를 보는 시각은?","options":["완전한 손해","실망스럽지만 배울 점이 있는 일","남의 탓","의미 없는 일"],"answer":1,"explain":"失望하지만 明白了自己的不足(부족함을 깨달음) → 可以说是一件好事(오히려 좋은 일)."},{"q":"<span class=\"zh-ex\">父母的言行对孩子的影响很大,所以想教育好孩子,首先要以身作则。</span> — 밑줄 <span class=\"zh-ex\">以身作则</span> 의 뜻은?","options":["말로만 가르친다","스스로 모범을 보인다","엄하게 벌한다","아이에게 맡긴다"],"answer":1,"explain":"<b>以身作则</b>는 \"자신이 먼저 <b>모범을 보이다</b>\"라는 뜻입니다."},{"q":"<span class=\"zh-ex\">这份工作看起来很轻松,其实需要很强的耐心和责任心。</span> — 이 일에 대한 설명으로 옳은 것은?","options":["정말로 쉽다","겉보기와 달리 인내와 책임감이 필요하다","아무나 할 수 있다","책임이 없다"],"answer":1,"explain":"看起来轻松，其实需要耐心和责任心 → 겉보기와 달리 <b>인내·책임감</b>이 필요."},{"q":"<span class=\"zh-ex\">机会总是留给有准备的人,所以平时的积累非常重要。</span> — 글의 교훈은?","options":["기회는 운에 달렸다","평소의 준비와 축적이 중요하다","준비는 필요 없다","기회는 오지 않는다"],"answer":1,"explain":"机会留给有准备的人 → 平时的积累非常重要(평소 <b>준비·축적</b>이 중요)."},{"q":"<span class=\"zh-ex\">遇到问题时,与其一个人烦恼,不如向别人请教,也许很快就能解决。</span> — 글이 권하는 것은?","options":["혼자 고민하라","남에게 조언을 구하라","문제를 무시하라","포기하라"],"answer":1,"explain":"与其一个人烦恼，不如向别人请教(혼자 고민 말고 남에게 물어라)."}]}}
   }
 ];
 
 let guideCurrent = 0;
 let guideBuilt = false;
+
+/* ===== 연습문제(인터랙티브 퀴즈) 로직 ===== */
+const QUIZ_N = 5;                 // 한 번에 출제할 문제 수
+const QUIZ_QUEUE = {};           // 과목·레벨별 남은 문제 순환 큐 (소진 전까지 반복 안 함)
+const QUIZ_PICK = {};            // 현재 화면에 출제된 문제 상태 { questions, sel, graded }
+const QZ_NUM = ['①','②','③','④','⑤','⑥'];
+function qzLevelKO(lv){ return lv === 'beginner' ? '초급' : lv === 'intermediate' ? '중급' : '고급'; }
+function qzShuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// 과목·레벨별 은행에서 "아직 안 나온 문제부터" 순서대로 뽑는다.
+// 큐가 비면 다시 섞어 새 사이클을 시작하되, 방금 낸 문제가 이어서 또 나오지 않게 한다.
+function qzPick(quizId, bank){
+  const n = Math.min(QUIZ_N, bank.length);
+  const key = quizId + '@' + currentLevel;
+  if (!QUIZ_QUEUE[key] || QUIZ_QUEUE[key].length === 0) {
+    QUIZ_QUEUE[key] = qzShuffle(bank.map((_, i) => i));
+  }
+  const picked = [];
+  while (picked.length < n) {
+    if (QUIZ_QUEUE[key].length === 0) {
+      // 사이클 소진 → 다시 섞기 (이번에 이미 뽑힌 문제는 뒤로 미뤄 연속 중복 방지)
+      const rest = qzShuffle(bank.map((_, i) => i).filter(i => !picked.includes(i)));
+      const dup = qzShuffle(picked.slice());
+      QUIZ_QUEUE[key] = rest.concat(dup);
+    }
+    picked.push(QUIZ_QUEUE[key].shift());
+  }
+  return picked.map(i => bank[i]);
+}
+
+/* ===== 어휘·발음 문제 실시간 생성 (단어 DB 기반, 사실상 무제한) ===== */
+const QUIZ_USED = {};             // 과목·레벨별 최근 사용 단어(연속 중복 방지 버퍼)
+const TONE_KO = { 1:'제1성(ˉ)', 2:'제2성(ˊ)', 3:'제3성(ˇ)', 4:'제4성(ˋ)', 0:'경성(·)' };
+// 현재 레벨의 전체 단어 목록(뜻·성조 있는 것만)
+function qzWordPool(){
+  const d = DATA[currentLevel];
+  const pool = [];
+  (d && d.vocabThemes || []).forEach(t => (t.words || []).forEach(w => {
+    if (w && w.zh && w.ko) pool.push(w);
+  }));
+  return pool;
+}
+// 뜻(ko)에서 한국어 부분만 깔끔히 추출
+function qzMeaning(w){ return (w.ko || '').split(' (')[0].trim() || w.ko; }
+// 최근 쓴 것 빼고 n개 무작위로 뽑기 (연속 새로고침에도 안 겹치도록)
+function qzSampleWords(subject, n){
+  const pool = qzWordPool();
+  if (pool.length <= n) return qzShuffle(pool).slice(0, n);
+  const key = subject + '@' + currentLevel;
+  const used = QUIZ_USED[key] || (QUIZ_USED[key] = []);
+  let avail = pool.filter(w => !used.includes(w.zh));
+  if (avail.length < n) { QUIZ_USED[key] = []; avail = pool.slice(); }
+  const chosen = qzShuffle(avail).slice(0, n);
+  chosen.forEach(w => QUIZ_USED[key].push(w.zh));
+  // 버퍼 크기: 최근 (pool-n) 또는 최대 200개까지 기억 → 수십 번 눌러도 안 겹침
+  const cap = Math.min(pool.length - n, 200);
+  while (QUIZ_USED[key].length > cap) QUIZ_USED[key].shift();
+  return chosen;
+}
+// 어휘 문제 생성: "X의 뜻은?" (오답은 다른 단어의 뜻)
+function genVocabQ(n){
+  const pool = qzWordPool();
+  const picks = qzSampleWords('vocab', n);
+  return picks.map(w => {
+    const correct = qzMeaning(w);
+    const distract = [];
+    const seen = new Set([correct]);
+    let guard = 0;
+    while (distract.length < 3 && guard++ < 100) {
+      const cand = qzMeaning(pool[Math.floor(Math.random() * pool.length)]);
+      if (cand && !seen.has(cand)) { seen.add(cand); distract.push(cand); }
+    }
+    const opts = qzShuffle([correct, ...distract]);
+    return {
+      q: `<span class="zh-ex">${w.zh}${w.py ? ' ' + w.py : ''}</span> 의 뜻으로 알맞은 것은?`,
+      options: opts,
+      answer: opts.indexOf(correct),
+      explain: `<b>${w.zh}${w.py ? ' (' + w.py + ')' : ''}</b> 는 "${w.ko}" 입니다.`
+    };
+  });
+}
+// 발음 문제 생성: "X의 성조는?" (오답은 다른 성조 조합)
+function genPronQ(n){
+  const picks = qzSampleWords('pron', n).filter(w => w.tones && w.tones.length);
+  const toneStr = t => t.map(x => TONE_KO[x] || x).join(' + ');
+  return picks.map(w => {
+    const correct = toneStr(w.tones);
+    const len = w.tones.length;
+    const distract = [];
+    const seen = new Set([correct]);
+    let guard = 0;
+    while (distract.length < 3 && guard++ < 200) {
+      const t = [];
+      for (let i = 0; i < len; i++) {
+        // 경성 자리(0)는 그대로 두어 자연스러운 오답을 만든다
+        t.push(w.tones[i] === 0 && Math.random() < 0.5 ? 0 : (1 + Math.floor(Math.random() * 4)));
+      }
+      const s = toneStr(t);
+      if (!seen.has(s)) { seen.add(s); distract.push(s); }
+    }
+    const opts = qzShuffle([correct, ...distract]);
+    return {
+      q: `<span class="zh-ex">${w.zh}</span> (${qzMeaning(w)}) 의 성조로 알맞은 것은?`,
+      options: opts,
+      answer: opts.indexOf(correct),
+      explain: `<b>${w.zh}</b> 의 병음은 <span class="zh-ex">${w.py}</span> 이고, 성조는 <b>${correct}</b> 입니다.`
+    };
+  });
+}
+function genDynamic(kind, n){ return kind === 'pron' ? genPronQ(n) : genVocabQ(n); }
+
+// 특정 퀴즈 글을 현재 레벨에 맞춰 렌더링 (매 호출마다 새 문제)
+function renderQuiz(idx){
+  const a = GUIDE_ARTICLES[idx];
+  if (!a || !a.quiz) return;
+  const host = document.getElementById('quiz-host-' + idx);
+  if (!host) return;
+  let qs, countLabel;
+  if (a.quiz.dynamic) {
+    // 어휘·발음: 단어 DB에서 실시간 생성 (사실상 무제한)
+    qs = genDynamic(a.quiz.dynamic, QUIZ_N).filter(Boolean);
+    countLabel = `단어 DB에서 매번 새 문제 출제 · 무제한`;
+    if (!qs.length){ host.innerHTML = '<p style="color:var(--text3)">이 레벨의 문제가 준비 중입니다.</p>'; return; }
+  } else {
+    const bank = (a.quiz.byLevel && a.quiz.byLevel[currentLevel]) || [];
+    if (!bank.length){ host.innerHTML = '<p style="color:var(--text3)">이 레벨의 문제가 준비 중입니다.</p>'; return; }
+    qs = qzPick(a.id, bank);
+    countLabel = `전체 ${bank.length}문제 중 ${qs.length}문제 무작위 출제`;
+  }
+  QUIZ_PICK[idx] = { questions: qs, sel: new Array(qs.length).fill(-1), graded: false };
+  const lv = currentLevel;
+  let h = '';
+  h += `<div class="qz-toolbar">
+    <span class="qz-badge badge-${lv}">${qzLevelKO(lv)}</span>
+    <span class="qz-count">${countLabel}</span>
+    <button class="qz-btn qz-new" onclick="qzNew(${idx})">🔄 새로운 문제</button>
+  </div>`;
+  h += '<div class="qz-list">';
+  qs.forEach((q, qi) => {
+    h += `<div class="qz-q" id="qz-${idx}-${qi}">
+      <div class="qz-qhead"><span class="qz-qno">문제 ${qi+1}</span> ${q.q}</div>
+      <div class="qz-opts">`;
+    q.options.forEach((opt, oi) => {
+      h += `<button type="button" class="qz-opt" data-oi="${oi}" onclick="qzSelect(${idx},${qi},${oi})">${QZ_NUM[oi]} ${opt}</button>`;
+    });
+    h += `</div><div class="qz-explain" hidden></div></div>`;
+  });
+  h += '</div>';
+  h += `<div class="qz-actions">
+    <button class="qz-btn qz-grade" onclick="qzGrade(${idx})">✅ 채점하기</button>
+    <button class="qz-btn qz-reset" onclick="qzReset(${idx})">↻ 답 지우기</button>
+  </div>
+  <div class="qz-score" id="qz-score-${idx}" hidden></div>`;
+  host.innerHTML = h;
+}
+function qzSelect(idx, qi, oi){
+  const st = QUIZ_PICK[idx];
+  if (!st || st.graded) return;
+  st.sel[qi] = oi;
+  const qEl = document.getElementById(`qz-${idx}-${qi}`);
+  qEl.querySelectorAll('.qz-opt').forEach(b => b.classList.toggle('selected', +b.dataset.oi === oi));
+}
+function qzGrade(idx){
+  const st = QUIZ_PICK[idx];
+  if (!st || st.graded) return;
+  st.graded = true;
+  let correct = 0;
+  st.questions.forEach((q, qi) => {
+    const qEl = document.getElementById(`qz-${idx}-${qi}`);
+    const opts = qEl.querySelectorAll('.qz-opt');
+    opts.forEach(b => {
+      const oi = +b.dataset.oi;
+      b.disabled = true;
+      if (oi === q.answer) b.classList.add('correct');
+      else if (oi === st.sel[qi]) b.classList.add('wrong');
+    });
+    if (st.sel[qi] === q.answer) correct++;
+    const ex = qEl.querySelector('.qz-explain');
+    const mark = st.sel[qi] === q.answer ? '<b class="qz-ok">정답 ✅</b>' : (st.sel[qi] === -1 ? '<b class="qz-na">미선택 ⚠️</b>' : '<b class="qz-no">오답 ❌</b>');
+    ex.innerHTML = `${mark} <span class="qz-ans">정답: ${QZ_NUM[q.answer]}</span><br>${q.explain}`;
+    ex.hidden = false;
+  });
+  const total = st.questions.length;
+  let msg;
+  const rate = correct / total;
+  if (rate === 1) msg = '완벽해요! 🎉';
+  else if (rate >= 0.6) msg = '잘하고 있어요! 👍';
+  else if (rate >= 0.3) msg = '조금만 더 힘내요! 💪';
+  else msg = '해설을 보며 복습해봐요! 🦦';
+  const sc = document.getElementById('qz-score-' + idx);
+  sc.innerHTML = `${total}문제 중 <b>${correct}개</b> 정답 &nbsp;·&nbsp; ${msg}`;
+  sc.hidden = false;
+  sc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function qzReset(idx){
+  // 같은 문제를 그대로 두고 답만 지움
+  const st = QUIZ_PICK[idx];
+  if (!st) { renderQuiz(idx); return; }
+  st.sel = new Array(st.questions.length).fill(-1);
+  st.graded = false;
+  const host = document.getElementById('quiz-host-' + idx);
+  st.questions.forEach((q, qi) => {
+    const qEl = document.getElementById(`qz-${idx}-${qi}`);
+    qEl.querySelectorAll('.qz-opt').forEach(b => { b.disabled = false; b.classList.remove('selected','correct','wrong'); });
+    const ex = qEl.querySelector('.qz-explain'); ex.hidden = true; ex.innerHTML = '';
+  });
+  const sc = document.getElementById('qz-score-' + idx); if (sc){ sc.hidden = true; sc.innerHTML=''; }
+}
+function qzNew(idx){ renderQuiz(idx); }
+
 function initGuide() {
   const bar = document.getElementById('guide-tab-bar');
   if (bar) {
@@ -6962,8 +7153,23 @@ function initGuide() {
   const wrap = document.getElementById('guide-articles');
   if (wrap && !guideBuilt) {
     // 모든 글을 DOM에 넣어 검색엔진이 전부 읽을 수 있게 하고, 화면에는 선택한 글만 표시
-    wrap.innerHTML = GUIDE_ARTICLES.map((a, i) =>
-      `<article class="guide-article" data-idx="${i}"${i === guideCurrent ? '' : ' hidden'}>${a.html}</article>`).join('');
+    wrap.innerHTML = GUIDE_ARTICLES.map((a, i) => {
+      if (a.quiz) {
+        // 퀴즈 글: 인터랙티브 호스트 + (SEO용) 전체 문제 텍스트 숨김 포함
+        let seo = '';
+        ['beginner','intermediate','advanced'].forEach(lv => {
+          const bank = (a.quiz.byLevel && a.quiz.byLevel[lv]) || [];
+          bank.forEach(q => { seo += `<p>${q.q} ${q.options.join(' ')} — ${q.explain}</p>`; });
+        });
+        return `<article class="guide-article quiz-article" data-idx="${i}"${i === guideCurrent ? '' : ' hidden'}>
+          <h1>${a.quiz.title}</h1>
+          <p class="guide-lead">${a.quiz.intro}</p>
+          <div class="quiz-host" id="quiz-host-${i}"></div>
+          <div class="qz-seo" hidden>${seo}</div>
+        </article>`;
+      }
+      return `<article class="guide-article" data-idx="${i}"${i === guideCurrent ? '' : ' hidden'}>${a.html}</article>`;
+    }).join('');
     guideBuilt = true;
   }
   showGuide(guideCurrent);
@@ -6973,6 +7179,8 @@ function showGuide(i) {
   document.querySelectorAll('#guide-tab-bar .guide-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
   const arts = document.querySelectorAll('#guide-articles .guide-article');
   arts.forEach((a, idx) => { a.hidden = (idx !== i); });
+  // 선택한 글이 퀴즈면 현재 레벨에 맞춰 새 문제로 렌더 (레벨 탭 전환 시에도 여기로 들어옴)
+  if (GUIDE_ARTICLES[i] && GUIDE_ARTICLES[i].quiz) renderQuiz(i);
   const wrap = document.getElementById('guide-articles');
   if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
