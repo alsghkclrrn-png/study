@@ -6380,9 +6380,22 @@ async function callGemini(systemText, userText, history) {
     };
   }
 
-  const res = await fetch(url, options);
-  if (!res.ok) {
+  // 일시적 오류(네트워크/서버 깨우기 등)는 한 번만 자동 재시도. 단, 429(한도)·인증 오류는 재시도 안 함(할당량 낭비 방지)
+  let res;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      res = await fetch(url, options);
+    } catch (netErr) {
+      if (attempt === 0) { await new Promise(r => setTimeout(r, 1200)); continue; }
+      throw new Error('network');
+    }
+    if (res.ok) break;
     if (res.status === 400 || res.status === 403) throw new Error('bad-key');
+    if (res.status === 429) throw new Error('rate-limit');
+    if ((res.status === 502 || res.status === 503) && attempt === 0) {
+      await new Promise(r => setTimeout(r, 1500)); continue; // 서버 절전 깨우기 등 → 한 번 재시도
+    }
+    if (res.status === 503) throw new Error('waking');
     throw new Error('gemini-http-' + res.status);
   }
   const data = await res.json();
@@ -6451,12 +6464,20 @@ async function searchDictAI(q) {
     }
   } catch(e) {
     typing.classList.remove('active');
-    const msg = (e && (e.message === 'no-key' || e.message === 'bad-key'))
-      ? 'AI 검색을 사용하려면 Gemini API 키가 필요해요.<br>아래 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey'
-      : 'AI 검색에 연결하지 못했어요. 🦦<br>잠시 후 다시 시도하거나, API 키를 확인해 주세요.';
+    const code = e && e.message;
+    let msg;
+    if (code === 'no-key' || code === 'bad-key') {
+      msg = 'AI 검색을 사용하려면 Gemini API 키가 필요해요.<br>아래 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+    } else if (code === 'rate-limit') {
+      msg = '오늘 AI 사용량을 다 썼어요. 🦦<br>구글 무료 이용 한도에 도달했어요. <b>잠시 후(또는 내일) 다시</b> 시도해 주세요.';
+    } else if (code === 'waking') {
+      msg = 'AI 서버가 절전 모드에서 깨어나는 중이에요. 😴<br><b>30초~1분 뒤에 다시</b> 눌러 주세요.';
+    } else {
+      msg = 'AI 검색에 연결하지 못했어요. 🦦<br>잠시 후 다시 시도하거나, API 키를 확인해 주세요.';
+    }
     resultBox.innerHTML = `<div class="dict-card"><div class="dict-raw" style="color:var(--red);line-height:1.7;">${msg}</div></div>`;
   }
-  if (btn) btn.disabled = false;
+  if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
 }
 
 /* ---- CHAT ---- */
@@ -6536,12 +6557,20 @@ async function sendChat() {
     addAiMsg(html);
   } catch(e) {
     typing.classList.remove('active');
-    const msg = (e && (e.message === 'no-key' || e.message === 'bad-key'))
-      ? 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey'
-      : 'AI 선생님에 연결하지 못했어요. 🦦<br>잠시 후 다시 시도하거나, API 키를 확인해 주세요.';
+    const code = e && e.message;
+    let msg;
+    if (code === 'no-key' || code === 'bad-key') {
+      msg = 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+    } else if (code === 'rate-limit') {
+      msg = '오늘 AI 사용량을 다 썼어요. 🦦<br>구글 무료 이용 한도에 도달했어요. <b>잠시 후(또는 내일) 다시</b> 말 걸어 주세요.';
+    } else if (code === 'waking') {
+      msg = 'AI 서버가 절전 모드에서 깨어나는 중이에요. 😴<br><b>30초~1분 뒤에 다시</b> 보내 주세요.';
+    } else {
+      msg = 'AI 선생님에 연결하지 못했어요. 🦦<br>잠시 후 다시 시도하거나, API 키를 확인해 주세요.';
+    }
     addAiMsg(`<div class="msg-ko" style="color:var(--red);line-height:1.7">${msg}</div>`);
   }
-  btn.disabled = false;
+  setTimeout(() => { btn.disabled = false; }, 1500);
 }
 
 /* ===== 하단 정보 팝업 (애드센스 승인용) ===== */
