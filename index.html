@@ -249,6 +249,34 @@
   .flashcard-wrap {
     display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
   }
+  .fc-playall-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 1.2rem;
+  }
+  .fc-playall {
+    border: 1.5px solid var(--purple);
+    background: var(--purple-bg);
+    color: var(--purple);
+    font-weight: 700; font-size: 0.9rem;
+    padding: 8px 16px; border-radius: 999px;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .fc-playall:hover { filter: brightness(1.05); }
+  .fc-playall.playing {
+    background: var(--purple); color: #fff;
+    animation: fcpulse 1.2s ease-in-out infinite;
+  }
+  @keyframes fcpulse { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .fc-playall-hint { font-size: 0.78rem; color: var(--text3); text-align: center; margin-bottom: 1.2rem; }
+  .fc-opt-group { display: flex; align-items: center; gap: 4px; }
+  .fc-opt-label { font-size: 0.78rem; color: var(--text3); margin-right: 2px; }
+  .fc-opt {
+    border: 1px solid var(--border2); background: var(--card2); color: var(--text2);
+    font-size: 0.8rem; font-weight: 600; padding: 5px 12px; border-radius: 999px;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .fc-opt:hover { filter: brightness(1.08); }
+  .fc-opt.active { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); }
   .flashcard {
     width: 100%; max-width: 420px;
     min-height: 220px;
@@ -913,6 +941,17 @@
       <div class="card">
         <div class="card-title">단어 학습 <span id="vocab-level-badge"></span></div>
         <div id="vocab-theme-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem;"></div>
+        <div class="fc-playall-bar">
+          <button class="fc-playall" id="fc-playall" onclick="togglePlayAll()">🔊 전체 듣기</button>
+          <div class="fc-opt-group">
+            <span class="fc-opt-label">속도</span>
+            <button class="fc-opt" data-spd="0.6" onclick="setFcSpeed(0.6)">느리게</button>
+            <button class="fc-opt active" data-spd="0.85" onclick="setFcSpeed(0.85)">보통</button>
+            <button class="fc-opt" data-spd="1.1" onclick="setFcSpeed(1.1)">빠르게</button>
+          </div>
+          <button class="fc-opt fc-toggle active" id="fc-meaning-toggle" onclick="toggleFcMeaning()">🔤 뜻까지 듣기</button>
+        </div>
+        <div class="fc-playall-hint" id="fc-playall-hint">카드를 자동으로 넘기며 발음과 뜻을 읽어줘요</div>
         <div class="flashcard-wrap">
           <div class="fc-progress">
             <span id="fc-count">1 / 10</span>
@@ -5322,12 +5361,14 @@ function renderModules() {
 
 function setLevel(lv) {
   if (typeof stopSpeed === 'function') stopSpeed();
+  if (typeof stopPlayAll === 'function') stopPlayAll();
   currentLevel = lv;
   document.querySelectorAll('.level-tab').forEach(t => t.classList.toggle('active', t.dataset.lv === lv));
   setModule(currentModule);
 }
 
 function setModule(mod) {
+  if (typeof stopPlayAll === 'function') stopPlayAll();
   currentModule = mod;
   document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -5385,6 +5426,7 @@ function initVocab() {
 }
 
 function selectTheme(i) {
+  stopPlayAll();
   currentThemeIdx = i; fcIndex = 0; fcScore = 0;
   document.querySelectorAll('.theme-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
   DATA[currentLevel].vocab = DATA[currentLevel].vocabThemes[i].words;
@@ -5437,6 +5479,85 @@ function nextCard(correct) {
     return;
   }
   loadCard();
+}
+
+/* ---- VOCAB 전체 듣기 (카드 자동 넘김 + 발음·뜻 읽기) ---- */
+let fcPlayAll = false;
+let fcPlayTimer = null;
+let fcSpeed = 0.85;          // 전체 듣기 재생 속도(중국어 기준 rate)
+let fcReadMeaning = true;    // true=뜻까지, false=발음만
+function setFcSpeed(s) {
+  fcSpeed = s;
+  document.querySelectorAll('.fc-opt-group .fc-opt').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.dataset.spd) === s);
+  });
+}
+function toggleFcMeaning() {
+  fcReadMeaning = !fcReadMeaning;
+  const btn = document.getElementById('fc-meaning-toggle');
+  const hint = document.getElementById('fc-playall-hint');
+  if (btn) {
+    btn.classList.toggle('active', fcReadMeaning);
+    btn.textContent = fcReadMeaning ? '🔤 뜻까지 듣기' : '🔤 발음만 듣기';
+  }
+  if (hint) hint.textContent = fcReadMeaning
+    ? '카드를 자동으로 넘기며 발음과 뜻을 읽어줘요'
+    : '카드를 자동으로 넘기며 발음만 읽어줘요';
+}
+function stopPlayAll() {
+  fcPlayAll = false;
+  if (fcPlayTimer) { clearTimeout(fcPlayTimer); fcPlayTimer = null; }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  const btn = document.getElementById('fc-playall');
+  if (btn) { btn.classList.remove('playing'); btn.textContent = '🔊 전체 듣기'; }
+}
+function togglePlayAll() {
+  if (fcPlayAll) { stopPlayAll(); return; }
+  if (!('speechSynthesis' in window)) {
+    alert('이 브라우저는 발음 듣기를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.');
+    return;
+  }
+  fcPlayAll = true;
+  const btn = document.getElementById('fc-playall');
+  if (btn) { btn.classList.add('playing'); btn.textContent = '⏸ 멈춤'; }
+  fcIndex = 0; fcScore = 0;
+  playAllStep();
+}
+function playAllStep() {
+  if (!fcPlayAll) return;
+  const cards = DATA[currentLevel].vocab;
+  if (!cards || fcIndex >= cards.length) { stopPlayAll(); fcIndex = 0; loadCard(); return; }
+  loadCard();
+  // 카드를 뒤집어 병음·뜻을 함께 보여준다
+  document.getElementById('flashcard').classList.add('revealed');
+  const c = cards[fcIndex];
+  speechSynthesis.cancel();
+  // 잠깐 쉬고 다음 카드로 넘어가는 공통 처리
+  const goNext = () => {
+    if (!fcPlayAll) return;
+    fcPlayTimer = setTimeout(() => {
+      if (!fcPlayAll) return;
+      fcIndex++;
+      playAllStep();
+    }, 650);
+  };
+  // 1) 중국어 발음 읽기 (속도 반영)
+  const uZh = new SpeechSynthesisUtterance(c.zh);
+  uZh.lang = 'zh-CN';
+  if (zhVoice) uZh.voice = zhVoice;
+  uZh.rate = fcSpeed; uZh.pitch = 1.0;
+  uZh.onend = uZh.onerror = () => {
+    if (!fcPlayAll) return;
+    if (!fcReadMeaning) { goNext(); return; }  // 발음만 듣기
+    // 2) 한국어 뜻 읽기 (속도 반영)
+    const meaning = (c.ko || '').split(' (')[0].trim() || c.ko || '';
+    const uKo = new SpeechSynthesisUtterance(meaning);
+    uKo.lang = 'ko-KR';
+    uKo.rate = Math.min(fcSpeed * 1.1, 1.4); uKo.pitch = 1.0;
+    uKo.onend = uKo.onerror = goNext;
+    speechSynthesis.speak(uKo);
+  };
+  speechSynthesis.speak(uZh);
 }
 
 /* ---- TONES ---- */
