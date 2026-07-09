@@ -46,7 +46,7 @@ const server = http.createServer(async (req, res) => {
       let payload;
       try { payload = JSON.parse(raw || '{}'); } catch (e) { return sendJson(res, 400, { error: 'bad json' }); }
 
-      const model = (payload && payload.model) || 'gemini-2.0-flash';
+      const model = (payload && payload.model) || 'gemini-2.0-flash-lite';
       const body = (payload && payload.body) || payload;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
 
