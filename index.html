@@ -471,6 +471,9 @@
   .conv-ko { font-size: 0.88rem; color: var(--orange); margin-top: 6px; display: none; }
   .conv-item.expanded .conv-ko { display: block; }
   .conv-item.active-grammar .conv-ko { display: block; }
+  .conv-en { font-size: 0.82rem; color: var(--text3); font-style: italic; margin-top: 3px; display: none; }
+  .conv-item.expanded .conv-en { display: block; }
+  .conv-item.active-grammar .conv-en { display: block; }
   .conv-expand { font-size: 0.72rem; color: var(--text3); margin-top: 4px; }
   .conv-item.expanded .conv-expand { display: none; }
   .conv-item.active-grammar .conv-expand { display: none; }
@@ -505,6 +508,10 @@
   }
   .grammar-ko {
     font-size: 0.88rem; color: var(--orange);
+    margin-bottom: 6px;
+  }
+  .grammar-en {
+    font-size: 0.83rem; color: var(--text3); font-style: italic;
     margin-bottom: 14px; padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
   }
@@ -1159,6 +1166,7 @@
             </div>
             <div class="grammar-pinyin" id="gp-py"></div>
             <div class="grammar-ko" id="gp-ko"></div>
+            <div class="grammar-en" id="gp-en"></div>
             <div class="grammar-points" id="gp-points"></div>
           </div>
         </div>
@@ -5779,6 +5787,7 @@ function initConv() {
       </div>
       <div class="conv-pinyin">${c.py}</div>
       <div class="conv-ko">${c.ko}</div>
+      ${cvEnglish(c) ? `<div class="conv-en">${cvEnglish(c)}</div>` : ''}
       <div class="conv-expand">눌러서 번역·문법 보기 ▼</div>
     </div>`).join('');
 }
@@ -5871,6 +5880,12 @@ function showGrammar(i) {
   document.getElementById('gp-zh').textContent = d.zh;
   document.getElementById('gp-py').textContent = d.py;
   document.getElementById('gp-ko').textContent = d.ko;
+  const gpEn = document.getElementById('gp-en');
+  if (gpEn) {
+    const en = cvEnglish(d);
+    gpEn.textContent = en;
+    gpEn.style.display = en ? '' : 'none';
+  }
   const pts = d.grammar || [];
   document.getElementById('gp-points').innerHTML = pts.map(p => `
     <div class="grammar-point">
