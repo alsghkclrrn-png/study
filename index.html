@@ -318,6 +318,18 @@
   .fc-wb-add.in-wb { border-color: var(--green); background: var(--green-bg); color: var(--green); }
   .theme-btn.wb-theme-btn { border-color: var(--yellow); }
   .theme-btn.srs-theme-btn { border-color: var(--blue); }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; }
+  .stat-card { background: var(--card2); border: 1px solid var(--border); border-radius: 16px; padding: 18px 12px; text-align: center; }
+  .stat-num { font-size: 1.9rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+  .stat-label { font-size: 0.78rem; color: var(--text3); margin-top: 5px; }
+  .heatmap { display: flex; gap: 7px; flex-wrap: wrap; }
+  .hm-cell { width: 42px; text-align: center; }
+  .hm-box { height: 42px; border-radius: 9px; background: var(--card2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; color: var(--text); }
+  .hm-day { font-size: 0.62rem; color: var(--text3); margin-top: 3px; }
+  .hm-date { font-size: 0.6rem; color: var(--text3); }
+  .stats-mini { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.9rem; color: var(--text2); }
+  .stats-mini b { color: var(--text); font-size: 1.05rem; }
   .btn {
     padding: 10px 22px; border-radius: 8px; font-size: 0.88rem;
     font-weight: 600; cursor: pointer; border: 1px solid var(--border2);
@@ -1368,6 +1380,33 @@
       </div>
     </div>
 
+    <!-- 학습 통계 -->
+    <div class="section" id="sec-stats">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">📊 학습 통계</div>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;">공부할수록 아래 기록이 쌓여요. 매일 조금씩 꾸준히!</p>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="st-streak">0</div><div class="stat-label">🔥 연속 학습일</div></div>
+          <div class="stat-card"><div class="stat-num" id="st-today">0</div><div class="stat-label">📆 오늘 학습</div></div>
+          <div class="stat-card"><div class="stat-num" id="st-due">0</div><div class="stat-label">🔁 복습 대기</div></div>
+          <div class="stat-card"><div class="stat-num" id="st-learned">0</div><div class="stat-label">🌱 배운 단어</div></div>
+          <div class="stat-card"><div class="stat-num" id="st-mastered">0</div><div class="stat-label">🏆 완전 암기</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="font-size:1rem;">최근 14일 활동</div>
+        <div id="st-heatmap" class="heatmap"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:1rem;">누적 기록</div>
+        <div class="stats-mini">
+          <span>총 학습일 <b id="st-total-days">0</b>일</span>
+          <span>최고 연속 <b id="st-best">0</b>일</span>
+          <span>총 복습 횟수 <b id="st-total-rev">0</b>회</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 5. AI CHAT -->
     <div class="section" id="sec-chat">
       <div class="chat-container">
@@ -1434,6 +1473,7 @@ const MODULES = [
   { id:'story',  icon:'📚', name:'이야기·시',   sub:'동요·동화·고전시', color:'var(--green)',  bg:'var(--green-bg)' },
   { id:'dict',   icon:'🔮', name:'통역·사전',   sub:'단어·문법 검색', color:'var(--red)',    bg:'var(--red-bg)' },
   { id:'games',  icon:'🎲', name:'학습 놀이',   sub:'게임으로 복습',  color:'var(--yellow)', bg:'var(--yellow-bg)' },
+  { id:'stats',  icon:'📊', name:'학습 통계',   sub:'출석·진도·복습',  color:'var(--blue)',   bg:'var(--blue-bg)' },
   { id:'chat',   icon:'🦦', name:'AI 채팅',     sub:'수달 선생님과 대화', color:'var(--purple)', bg:'var(--purple-bg)' },
 ];
 
@@ -5417,6 +5457,7 @@ function setModule(mod) {
   else if (mod === 'guide') initGuide();
   else if (mod === 'dict') initDict();
   else if (mod === 'games') { showGamesMenu(); }
+  else if (mod === 'stats') initStats();
   else if (mod === 'chat') initChat();
 }
 
@@ -5556,6 +5597,7 @@ function srsGrade(q) {
   const card = currentCard();
   if (!card) return;
   srsRecord(card, q);
+  statsRecord();
   srsRefreshBtn();
   const cards = DATA[currentLevel].vocab;
   if (q < 3) cards.push(card);   // 틀리면 세션 뒤쪽에서 다시
@@ -5580,6 +5622,74 @@ function showSrsDone() {
   btn.style.display = '';
   btn.onclick = () => { btn.textContent = '뒤집기 👁'; btn.onclick = revealCard; selectTheme(0); };
   srsRefreshBtn();
+}
+
+/* ===== 학습 통계 · 스트릭 ===== */
+const STATS_KEY = 'zh_stats_v1';
+let statsMem = null;
+function dstr(dt) {
+  return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+}
+function statsLoad() {
+  try { const s = localStorage.getItem(STATS_KEY); return s ? JSON.parse(s) : { days: {}, best: 0 }; }
+  catch (e) { return statsMem || { days: {}, best: 0 }; }
+}
+function statsSave(o) { statsMem = o; try { localStorage.setItem(STATS_KEY, JSON.stringify(o)); } catch (e) {} }
+// 카드 하나를 학습할 때마다 호출 (오늘 카운트 +1, 스트릭 최고기록 갱신)
+function statsRecord() {
+  const o = statsLoad();
+  if (!o.days) o.days = {};
+  const t = dstr(new Date());
+  o.days[t] = (o.days[t] || 0) + 1;
+  const s = statsStreak(o);
+  if (s > (o.best || 0)) o.best = s;
+  statsSave(o);
+}
+function statsStreak(o) {
+  o = o || statsLoad();
+  const days = o.days || {};
+  const cursor = new Date();
+  if (!days[dstr(cursor)]) {              // 오늘 기록이 없으면 어제부터 확인
+    cursor.setDate(cursor.getDate() - 1);
+    if (!days[dstr(cursor)]) return 0;
+  }
+  let streak = 0;
+  while (days[dstr(cursor)]) { streak++; cursor.setDate(cursor.getDate() - 1); }
+  return streak;
+}
+function initStats() {
+  const o = statsLoad();
+  const days = o.days || {};
+  const srs = srsLoad();
+  const entries = Object.values(srs);
+  const today = dstr(new Date());
+  const learned = entries.length;
+  const mastered = entries.filter(e => (e.reps || 0) >= 3).length;
+  const totalRev = Object.values(days).reduce((a, b) => a + b, 0);
+  document.getElementById('st-streak').textContent = statsStreak(o);
+  document.getElementById('st-today').textContent = days[today] || 0;
+  document.getElementById('st-due').textContent = srsDueCount();
+  document.getElementById('st-learned').textContent = learned;
+  document.getElementById('st-mastered').textContent = mastered;
+  document.getElementById('st-total-days').textContent = Object.keys(days).length;
+  document.getElementById('st-best').textContent = o.best || statsStreak(o);
+  document.getElementById('st-total-rev').textContent = totalRev;
+  // 최근 14일 히트맵
+  const dayNames = ['일','월','화','수','목','금','토'];
+  const counts = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); counts.push({ d, n: days[dstr(d)] || 0 }); }
+  const max = Math.max(1, ...counts.map(c => c.n));
+  const hm = document.getElementById('st-heatmap');
+  hm.innerHTML = counts.map(c => {
+    const ratio = c.n === 0 ? 0 : 0.25 + 0.75 * (c.n / max);
+    const bg = c.n === 0 ? 'var(--card2)' : `rgba(127,181,230,${ratio.toFixed(2)})`;
+    const border = c.n === 0 ? 'var(--border)' : 'var(--blue)';
+    return `<div class="hm-cell">
+      <div class="hm-box" style="background:${bg};border-color:${border};" title="${dstr(c.d)}: ${c.n}회">${c.n || ''}</div>
+      <div class="hm-day">${dayNames[c.d.getDay()]}</div>
+      <div class="hm-date">${c.d.getMonth()+1}/${c.d.getDate()}</div>
+    </div>`;
+  }).join('');
 }
 
 function initVocab() {
@@ -5681,6 +5791,7 @@ function nextCard(correct) {
   const cur = currentCard();
   if (srsMode) { srsGrade(correct ? 4 : 2); return; }   // 복습 모드: SRS 채점
   srsRecord(cur, correct ? 4 : 2);                        // 일반 학습도 복습 일정에 반영
+  statsRecord();
   srsRefreshBtn();
   if (correct) fcScore++;
   else { wbAdd(cur); wbRefreshThemeBtn(); }   // 모르는 단어는 단어장에 자동 저장
