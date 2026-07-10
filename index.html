@@ -950,6 +950,7 @@
             <button class="fc-opt" data-spd="1.1" onclick="setFcSpeed(1.1)">빠르게</button>
           </div>
           <button class="fc-opt fc-toggle active" id="fc-meaning-toggle" onclick="toggleFcMeaning()">🔤 뜻까지 듣기</button>
+          <button class="fc-opt fc-toggle" id="fc-eng-toggle" onclick="toggleFcEng()">🔠 영어도 듣기</button>
         </div>
         <div class="fc-playall-hint" id="fc-playall-hint">카드를 자동으로 넘기며 발음과 뜻을 읽어줘요</div>
         <div class="flashcard-wrap">
@@ -5486,6 +5487,30 @@ let fcPlayAll = false;
 let fcPlayTimer = null;
 let fcSpeed = 0.85;          // 전체 듣기 재생 속도(중국어 기준 rate)
 let fcReadMeaning = true;    // true=뜻까지, false=발음만
+let fcReadEng = false;       // true=영어도 읽기
+// 뜻(ko)의 괄호 안에서 영어만 추출 (없으면 빈 문자열)
+function fcEnglish(c) {
+  const ko = c.ko || '';
+  const hangul = /[\uAC00-\uD7A3]/;
+  const parens = [...ko.matchAll(/\(([^)]*)\)/g)].map(m => m[1]);
+  for (let j = parens.length - 1; j >= 0; j--) {
+    const t = parens[j];
+    if (/[a-zA-Z]/.test(t) && !hangul.test(t)) return t.trim();
+  }
+  // 괄호가 없고 전체가 영어인 경우
+  if (!parens.length && /[a-zA-Z]/.test(ko) && !hangul.test(ko)) return ko.trim();
+  return '';
+}
+function updateFcHint() {
+  const hint = document.getElementById('fc-playall-hint');
+  if (!hint) return;
+  const parts = ['발음'];
+  if (fcReadMeaning) parts.push('뜻');
+  if (fcReadEng) parts.push('영어');
+  hint.textContent = parts.length === 1
+    ? '카드를 자동으로 넘기며 발음만 읽어줘요'
+    : '카드를 자동으로 넘기며 ' + parts.join(' → ') + ' 순으로 읽어줘요';
+}
 function setFcSpeed(s) {
   fcSpeed = s;
   document.querySelectorAll('.fc-opt-group .fc-opt').forEach(b => {
@@ -5495,14 +5520,20 @@ function setFcSpeed(s) {
 function toggleFcMeaning() {
   fcReadMeaning = !fcReadMeaning;
   const btn = document.getElementById('fc-meaning-toggle');
-  const hint = document.getElementById('fc-playall-hint');
   if (btn) {
     btn.classList.toggle('active', fcReadMeaning);
     btn.textContent = fcReadMeaning ? '🔤 뜻까지 듣기' : '🔤 발음만 듣기';
   }
-  if (hint) hint.textContent = fcReadMeaning
-    ? '카드를 자동으로 넘기며 발음과 뜻을 읽어줘요'
-    : '카드를 자동으로 넘기며 발음만 읽어줘요';
+  updateFcHint();
+}
+function toggleFcEng() {
+  fcReadEng = !fcReadEng;
+  const btn = document.getElementById('fc-eng-toggle');
+  if (btn) {
+    btn.classList.toggle('active', fcReadEng);
+    btn.textContent = fcReadEng ? '🔠 영어 끄기' : '🔠 영어도 듣기';
+  }
+  updateFcHint();
 }
 function stopPlayAll() {
   fcPlayAll = false;
@@ -5532,7 +5563,17 @@ function playAllStep() {
   document.getElementById('flashcard').classList.add('revealed');
   const c = cards[fcIndex];
   speechSynthesis.cancel();
-  // 잠깐 쉬고 다음 카드로 넘어가는 공통 처리
+  // 옵션에 따라 읽어줄 항목 순서대로 구성
+  const seq = [];
+  seq.push({ text: c.zh, lang: 'zh-CN', rate: fcSpeed, voice: zhVoice });      // 1) 중국어 발음
+  if (fcReadMeaning) {
+    const meaning = (c.ko || '').split(' (')[0].trim() || c.ko || '';
+    if (meaning) seq.push({ text: meaning, lang: 'ko-KR', rate: Math.min(fcSpeed * 1.1, 1.4) }); // 2) 한국어 뜻
+  }
+  if (fcReadEng) {
+    const eng = fcEnglish(c);
+    if (eng) seq.push({ text: eng, lang: 'en-US', rate: Math.min(fcSpeed * 1.05, 1.3) });        // 3) 영어
+  }
   const goNext = () => {
     if (!fcPlayAll) return;
     fcPlayTimer = setTimeout(() => {
@@ -5541,23 +5582,22 @@ function playAllStep() {
       playAllStep();
     }, 650);
   };
-  // 1) 중국어 발음 읽기 (속도 반영)
-  const uZh = new SpeechSynthesisUtterance(c.zh);
-  uZh.lang = 'zh-CN';
-  if (zhVoice) uZh.voice = zhVoice;
-  uZh.rate = fcSpeed; uZh.pitch = 1.0;
-  uZh.onend = uZh.onerror = () => {
+  playAllSpeak(seq, 0, goNext);
+}
+// 시퀀스의 항목을 순서대로 하나씩 읽고, 끝나면 done() 호출
+function playAllSpeak(seq, i, done) {
+  if (!fcPlayAll) return;
+  if (i >= seq.length) { done(); return; }
+  const it = seq[i];
+  const u = new SpeechSynthesisUtterance(it.text);
+  u.lang = it.lang;
+  if (it.voice) u.voice = it.voice;
+  u.rate = it.rate; u.pitch = 1.0;
+  u.onend = u.onerror = () => {
     if (!fcPlayAll) return;
-    if (!fcReadMeaning) { goNext(); return; }  // 발음만 듣기
-    // 2) 한국어 뜻 읽기 (속도 반영)
-    const meaning = (c.ko || '').split(' (')[0].trim() || c.ko || '';
-    const uKo = new SpeechSynthesisUtterance(meaning);
-    uKo.lang = 'ko-KR';
-    uKo.rate = Math.min(fcSpeed * 1.1, 1.4); uKo.pitch = 1.0;
-    uKo.onend = uKo.onerror = goNext;
-    speechSynthesis.speak(uKo);
+    playAllSpeak(seq, i + 1, done);
   };
-  speechSynthesis.speak(uZh);
+  speechSynthesis.speak(u);
 }
 
 /* ---- TONES ---- */
