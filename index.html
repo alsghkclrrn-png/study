@@ -1405,6 +1405,16 @@
           <span>총 복습 횟수 <b id="st-total-rev">0</b>회</span>
         </div>
       </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title" style="font-size:1rem;">💾 데이터 백업 · 기기 이동</div>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:12px;">단어장·복습 일정·통계는 이 브라우저에만 저장돼요. 파일로 백업해 두거나, 다른 기기의 백업을 불러와 <b>현재 데이터와 합칠</b> 수 있어요.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn" onclick="exportData()">⬇️ 내보내기 (백업 저장)</button>
+          <button class="btn" onclick="triggerImport()">⬆️ 가져오기 (합치기)</button>
+          <input type="file" id="import-file" accept="application/json,.json" style="display:none" onchange="importData(this)">
+        </div>
+        <div id="data-status" style="font-size:0.82rem;color:var(--text2);margin-top:10px;"></div>
+      </div>
     </div>
 
     <!-- 5. AI CHAT -->
@@ -5690,6 +5700,84 @@ function initStats() {
       <div class="hm-date">${c.d.getMonth()+1}/${c.d.getDate()}</div>
     </div>`;
   }).join('');
+}
+
+function setDataStatus(msg) {
+  const el = document.getElementById('data-status');
+  if (el) el.textContent = msg;
+}
+function exportData() {
+  const payload = {
+    app: 'sudal-chinese', version: 1, exportedAt: new Date().toISOString(),
+    wordbook: wbLoad(), srs: srsLoad(), stats: statsLoad()
+  };
+  try {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `sudal-chinese-backup-${dstr(new Date())}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setDataStatus(`✅ 백업을 저장했어요. (단어장 ${payload.wordbook.length}개 · 복습 ${Object.keys(payload.srs).length}개)`);
+  } catch (e) {
+    setDataStatus('❌ 내보내기에 실패했어요.');
+  }
+}
+function triggerImport() {
+  const el = document.getElementById('import-file');
+  if (el) el.click();
+}
+function importData(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || (data.wordbook === undefined && data.srs === undefined && data.stats === undefined)) {
+        throw new Error('형식 오류');
+      }
+      mergeWordbook(data.wordbook || []);
+      mergeSrs(data.srs || {});
+      mergeStats(data.stats || {});
+      wbRefreshThemeBtn(); srsRefreshBtn(); initStats();
+      setDataStatus('✅ 백업을 현재 데이터와 합쳤어요.');
+    } catch (e) {
+      setDataStatus('❌ 불러오기 실패: 올바른 백업 파일이 아니에요.');
+    }
+    input.value = '';
+  };
+  reader.onerror = () => { setDataStatus('❌ 파일을 읽을 수 없어요.'); input.value = ''; };
+  reader.readAsText(file);
+}
+// 단어장 병합: zh 기준 합집합
+function mergeWordbook(imported) {
+  if (!Array.isArray(imported)) return;
+  const cur = wbLoad();
+  const seen = new Set(cur.map(w => w.zh));
+  imported.forEach(w => { if (w && w.zh && !seen.has(w.zh)) { cur.push(w); seen.add(w.zh); } });
+  wbSave(cur);
+}
+// 복습 일정 병합: 더 많이 학습한 쪽(reps 큰 것, 같으면 due 늦은 것) 우선
+function mergeSrs(imported) {
+  if (!imported || typeof imported !== 'object') return;
+  const cur = srsLoad();
+  Object.keys(imported).forEach(k => {
+    const a = cur[k], b = imported[k];
+    if (!a) { cur[k] = b; return; }
+    if ((b.reps || 0) > (a.reps || 0) || ((b.reps || 0) === (a.reps || 0) && (b.due || 0) > (a.due || 0))) cur[k] = b;
+  });
+  srsSave(cur);
+}
+// 통계 병합: 날짜별 최댓값, 최고 스트릭 유지
+function mergeStats(imported) {
+  if (!imported || typeof imported !== 'object') return;
+  const cur = statsLoad();
+  if (!cur.days) cur.days = {};
+  const idays = imported.days || {};
+  Object.keys(idays).forEach(d => { cur.days[d] = Math.max(cur.days[d] || 0, idays[d] || 0); });
+  cur.best = Math.max(cur.best || 0, imported.best || 0, statsStreak(cur));
+  statsSave(cur);
 }
 
 function initVocab() {
