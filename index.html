@@ -310,6 +310,13 @@
     font-weight: 600;
   }
   .fc-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .fc-wb-add {
+    display: block; margin: 0.9rem auto 0;
+    border: 1.5px solid var(--yellow); background: var(--yellow-bg); color: var(--yellow);
+  }
+  .fc-wb-add.in-wb { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .theme-btn.wb-theme-btn { border-color: var(--yellow); }
   .btn {
     padding: 10px 22px; border-radius: 8px; font-size: 0.88rem;
     font-weight: 600; cursor: pointer; border: 1px solid var(--border2);
@@ -970,10 +977,12 @@
             <div class="fc-hint">눌러서 확인</div>
           </div>
           <div class="fc-controls">
+            <button class="btn" onclick="prevCard()" id="btn-prev">◀ 이전</button>
             <button class="btn btn-danger" id="btn-wrong" onclick="nextCard(false)" style="display:none">몰라요 ✗</button>
             <button class="btn btn-success" id="btn-correct" onclick="nextCard(true)" style="display:none">알아요 ✓</button>
             <button class="btn" onclick="revealCard()" id="btn-reveal">뒤집기 👁</button>
           </div>
+          <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
         </div>
       </div>
     </div>
@@ -1122,6 +1131,18 @@
       <div class="card" style="margin-bottom:0">
         <div class="card-title">회화 문장 학습 <span id="conv-level-badge"></span></div>
         <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem;">문장을 눌러 번역과 문법 설명을 확인하세요</p>
+        <div class="fc-playall-bar" style="justify-content:flex-start;margin-bottom:0.6rem;">
+          <button class="fc-playall" id="cv-playall" onclick="toggleConvPlay()">🔊 전체 듣기</button>
+          <div class="fc-opt-group">
+            <span class="fc-opt-label">속도</span>
+            <button class="fc-opt" data-cvspd="0.6" onclick="setCvSpeed(0.6)">느리게</button>
+            <button class="fc-opt active" data-cvspd="0.85" onclick="setCvSpeed(0.85)">보통</button>
+            <button class="fc-opt" data-cvspd="1.1" onclick="setCvSpeed(1.1)">빠르게</button>
+          </div>
+          <button class="fc-opt fc-toggle active" id="cv-meaning-toggle" onclick="toggleCvMeaning()">🔤 뜻까지 듣기</button>
+          <button class="fc-opt fc-toggle" id="cv-eng-toggle" onclick="toggleCvEng()">🔠 영어도 듣기</button>
+        </div>
+        <div class="fc-playall-hint" id="cv-playall-hint" style="text-align:left;margin-bottom:0;">문장을 자동으로 넘기며 발음과 뜻을 읽어줘요</div>
       </div>
       <div class="conv-layout">
         <div class="conv-list" id="conv-list"></div>
@@ -5363,6 +5384,7 @@ function renderModules() {
 function setLevel(lv) {
   if (typeof stopSpeed === 'function') stopSpeed();
   if (typeof stopPlayAll === 'function') stopPlayAll();
+  if (typeof stopConvPlay === 'function') stopConvPlay();
   currentLevel = lv;
   document.querySelectorAll('.level-tab').forEach(t => t.classList.toggle('active', t.dataset.lv === lv));
   setModule(currentModule);
@@ -5370,6 +5392,7 @@ function setLevel(lv) {
 
 function setModule(mod) {
   if (typeof stopPlayAll === 'function') stopPlayAll();
+  if (typeof stopConvPlay === 'function') stopConvPlay();
   currentModule = mod;
   document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -5391,8 +5414,77 @@ function setModule(mod) {
 let currentThemeIdx = 0;
 
 /* ---- VOCAB ---- */
+/* ---- 단어장(Wordbook): 모르는 단어 저장·복습 ---- */
+const WB_KEY = 'zh_wordbook_v1';
+let wbMem = [];              // localStorage 사용 불가 시 임시 저장
+let wbMode = false;         // 현재 단어장 복습 모드 여부
+function wbLoad() {
+  try { const s = localStorage.getItem(WB_KEY); return s ? JSON.parse(s) : []; }
+  catch (e) { return wbMem.slice(); }
+}
+function wbSave(list) {
+  wbMem = list.slice();
+  try { localStorage.setItem(WB_KEY, JSON.stringify(list)); } catch (e) {}
+}
+function wbCount() { return wbLoad().length; }
+function wbHas(c) { return !!c && wbLoad().some(w => w.zh === c.zh); }
+function wbAdd(c) {
+  if (!c) return;
+  const list = wbLoad();
+  if (list.some(w => w.zh === c.zh)) return;
+  list.push({ zh: c.zh, py: c.py, ko: c.ko, tones: c.tones, level: currentLevel });
+  wbSave(list);
+}
+function wbRemove(c) {
+  if (!c) return;
+  wbSave(wbLoad().filter(w => w.zh !== c.zh));
+}
+function currentCard() {
+  const cards = DATA[currentLevel].vocab;
+  return (cards && cards.length) ? cards[fcIndex] : null;
+}
+function wbRefreshThemeBtn() {
+  const b = document.getElementById('tbtn-wb');
+  if (b) b.textContent = `📒 단어장 (${wbCount()})`;
+}
+function updateWbBtn() {
+  const btn = document.getElementById('btn-wordbook');
+  if (!btn) return;
+  const inWb = wbHas(currentCard());
+  btn.textContent = inWb ? '📒 단어장에서 빼기' : '📒 단어장에 추가';
+  btn.classList.toggle('in-wb', inWb);
+}
+function toggleWordbook() {
+  const c = currentCard();
+  if (!c) return;
+  if (wbHas(c)) wbRemove(c); else wbAdd(c);
+  wbRefreshThemeBtn();
+  if (wbMode) {
+    // 복습 모드에서 빼면 목록이 바뀌므로 다시 불러온다
+    stopPlayAll();
+    DATA[currentLevel].vocab = wbLoad();
+    if (fcIndex >= DATA[currentLevel].vocab.length) {
+      fcIndex = Math.max(0, DATA[currentLevel].vocab.length - 1);
+    }
+    loadCard();
+  } else {
+    updateWbBtn();
+  }
+}
+function selectWordbook() {
+  stopPlayAll();
+  wbMode = true;
+  fcIndex = 0; fcScore = 0;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.id === 'tbtn-wb'));
+  DATA[currentLevel].vocab = wbLoad();
+  loadCard();
+}
+function prevCard() {
+  if (fcIndex > 0) { fcIndex--; loadCard(); }
+}
+
 function initVocab() {
-  fcIndex = 0; fcScore = 0; currentThemeIdx = 0;
+  fcIndex = 0; fcScore = 0; currentThemeIdx = 0; wbMode = false;
   const d = DATA[currentLevel];
   const badge = document.getElementById('vocab-level-badge');
   badge.className = `level-badge badge-${currentLevel}`;
@@ -5404,6 +5496,7 @@ function initVocab() {
   bar.innerHTML = d.vocabThemes.map((t, i) =>
     `<button class="theme-btn ${i===0?'active':''}" id="tbtn-${i}" onclick="selectTheme(${i})">${t.name}</button>`
   ).join('');
+  bar.innerHTML += `<button class="theme-btn wb-theme-btn" id="tbtn-wb" onclick="selectWordbook()">📒 단어장 (${wbCount()})</button>`;
   // Apply level-specific active color inline
   document.querySelectorAll('.theme-btn').forEach(b => {
     b.addEventListener('click', () => {
@@ -5428,6 +5521,7 @@ function initVocab() {
 
 function selectTheme(i) {
   stopPlayAll();
+  wbMode = false;
   currentThemeIdx = i; fcIndex = 0; fcScore = 0;
   document.querySelectorAll('.theme-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
   DATA[currentLevel].vocab = DATA[currentLevel].vocabThemes[i].words;
@@ -5436,6 +5530,24 @@ function selectTheme(i) {
 
 function loadCard() {
   const cards = DATA[currentLevel].vocab;
+  if (!cards || !cards.length) {
+    // 단어장이 비어 있을 때
+    document.getElementById('flashcard').classList.remove('revealed');
+    document.getElementById('fc-char').textContent = '📒';
+    document.getElementById('fc-pinyin').textContent = '';
+    document.getElementById('fc-meaning').textContent = '단어장이 비어 있어요. 학습 중 "📒 단어장에 추가"로 모르는 단어를 담아보세요.';
+    document.getElementById('fc-tone-bar').innerHTML = '';
+    document.getElementById('fc-count').textContent = '0 / 0';
+    document.getElementById('fc-bar').style.width = '0%';
+    document.getElementById('fc-score').textContent = '';
+    document.getElementById('btn-wrong').style.display = 'none';
+    document.getElementById('btn-correct').style.display = 'none';
+    document.getElementById('btn-reveal').style.display = 'none';
+    document.getElementById('fc-speak').style.display = 'none';
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-wordbook').style.display = 'none';
+    return;
+  }
   const c = cards[fcIndex];
   document.getElementById('flashcard').classList.remove('revealed');
   document.getElementById('fc-char').textContent = c.zh;
@@ -5451,6 +5563,9 @@ function loadCard() {
   document.getElementById('btn-correct').style.display = 'none';
   document.getElementById('btn-reveal').style.display = '';
   document.getElementById('fc-speak').style.display = '';
+  document.getElementById('btn-prev').disabled = (fcIndex === 0);
+  document.getElementById('btn-wordbook').style.display = '';
+  updateWbBtn();
 }
 
 function revealCard() {
@@ -5461,7 +5576,9 @@ function revealCard() {
 }
 
 function nextCard(correct) {
+  const cur = currentCard();
   if (correct) fcScore++;
+  else { wbAdd(cur); wbRefreshThemeBtn(); }   // 모르는 단어는 단어장에 자동 저장
   fcIndex++;
   const cards = DATA[currentLevel].vocab;
   if (fcIndex >= cards.length) {
@@ -5473,6 +5590,8 @@ function nextCard(correct) {
     document.getElementById('btn-correct').style.display = 'none';
     document.getElementById('fc-speak').style.display = 'none';
     document.getElementById('fc-tone-bar').innerHTML = '';
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-wordbook').style.display = 'none';
     const btn = document.getElementById('btn-reveal');
     btn.textContent = '다시 시작';
     btn.style.display = '';
@@ -5668,6 +5787,77 @@ function speakConv(i, btn) {
   const c = DATA[currentLevel].conv[i];
   speak(c.zh, btn);
 }
+
+/* ===== 회화 전체 듣기 (속도 / 뜻 / 영어) ===== */
+/* 회화 영어 번역 (전체 듣기 영어 옵션용) */
+const CONV_EN = {"你好！":"Hello!","你好吗？":"How are you?","我很好，谢谢。":"I'm fine, thank you.","你叫什么名字？":"What's your name?","我叫李明。":"My name is Li Ming.","认识你很高兴。":"Nice to meet you.","你是哪国人？":"What country are you from?","我是韩国人。":"I'm Korean.","你今年多大？":"How old are you this year?","我二十五岁。":"I'm twenty-five years old.","现在几点？":"What time is it now?","现在三点半。":"It's half past three.","今天星期几？":"What day is it today?","这个多少钱？":"How much is this?","太贵了，便宜一点儿吧。":"That's too expensive, could you lower the price a bit?","我要这个。":"I'll take this one.","请问，洗手间在哪儿？":"Excuse me, where is the restroom?","一直往前走。":"Go straight ahead.","你会说中文吗？":"Can you speak Chinese?","我会说一点儿。":"I can speak a little.","请再说一遍。":"Please say that again.","我听不懂。":"I don't understand.","没关系。":"It's okay.","你喜欢吃什么？":"What do you like to eat?","我想喝咖啡。":"I'd like to drink coffee.","今天天气怎么样？":"How's the weather today?","今天很热。":"It's hot today.","你家有几口人？":"How many people are in your family?","我有一个哥哥。":"I have an older brother.","你周末做什么？":"What do you do on weekends?","我们一起去吧。":"Let's go together.","好的，没问题。":"Okay, no problem.","我吃饱了。":"I'm full.","我们走吧，时间不早了。":"Let's go, it's getting late.","明天见！":"See you tomorrow!","你是做什么工作的？":"What do you do for work?","我在一家贸易公司上班。":"I work at a trading company.","你做这个工作多久了？":"How long have you been doing this job?","已经三年了。":"It's been three years already.","你平时有什么爱好？":"What hobbies do you usually have?","我喜欢一边听音乐一边运动。":"I like to exercise while listening to music.","周末你一般怎么过？":"How do you usually spend your weekends?","我打算下个月去旅游。":"I'm planning to travel next month.","你去过中国吗？":"Have you ever been to China?","去过两次。":"I've been twice.","能帮我个忙吗？":"Could you do me a favor?","当然可以，你说吧。":"Of course, go ahead.","我想预订一个房间。":"I'd like to reserve a room.","请问有没有空房？":"Do you have any vacant rooms?","这附近有好吃的饭馆吗？":"Is there a good restaurant nearby?","我对中国文化很感兴趣。":"I'm very interested in Chinese culture.","虽然有点儿难，但是很有意思。":"It's a bit difficult, but very interesting.","你觉得这个怎么样？":"What do you think of this?","我觉得还不错。":"I think it's pretty good.","比起昨天，今天暖和多了。":"Compared to yesterday, it's much warmer today.","我比他高一点儿。":"I'm a little taller than him.","你最好早点儿休息。":"You'd better rest early.","我有点儿不舒服。":"I feel a little unwell.","你应该去看医生。":"You should see a doctor.","多穿点儿衣服，别感冒了。":"Wear more clothes so you don't catch a cold.","听说那部电影很好看。":"I heard that movie is really good.","我们要不要一起去看？":"Shall we go see it together?","随便，你决定吧。":"Anything's fine, you decide.","对不起，我来晚了。":"Sorry, I'm late.","没事，我也刚到。":"It's fine, I just got here too.","这是我的电话号码。":"This is my phone number.","有空给我打电话。":"Call me when you're free.","好久不见，你最近怎么样？":"Long time no see, how have you been lately?","还是老样子。":"Same as always.","您对这个问题怎么看？":"What's your view on this issue?","依我看，这件事没那么简单。":"In my opinion, this matter isn't that simple.","这个方案有利也有弊。":"This plan has both advantages and disadvantages.","我们需要从长远来考虑。":"We need to consider it from a long-term perspective.","随着科技的发展，生活越来越方便。":"As technology develops, life becomes more and more convenient.","这不仅是钱的问题，更是态度问题。":"This isn't just a matter of money, but even more a matter of attitude.","无论如何，我们都要试一试。":"In any case, we have to give it a try.","只要努力，就一定会成功。":"As long as you work hard, you'll definitely succeed.","除非你亲自去，否则解决不了。":"Unless you go in person, it can't be solved.","尽管困难重重，他还是坚持了下来。":"Despite many difficulties, he still persevered.","据统计，去年的销量增长了百分之十。":"According to statistics, last year's sales grew by ten percent.","换句话说，我们别无选择。":"In other words, we have no choice.","这件事说起来容易，做起来难。":"This is easier said than done.","恐怕这个计划行不通。":"I'm afraid this plan won't work.","我倒是觉得值得一试。":"I actually think it's worth a try.","话虽如此，但风险也不小。":"That said, the risk is not small either.","凡事都要三思而后行。":"In everything, think carefully before you act.","这正是问题的关键所在。":"This is exactly where the key to the problem lies.","总的来说，结果还是令人满意的。":"Overall, the result is fairly satisfactory.","希望我们能达成共识。":"I hope we can reach a consensus.","万一出了问题，谁负责？":"If something goes wrong, who takes responsibility?","与其抱怨，不如想办法。":"Rather than complaining, it's better to find a solution.","这件事影响深远，不容忽视。":"This matter has far-reaching effects and cannot be ignored.","据我所知，他早就辞职了。":"As far as I know, he resigned long ago.","再怎么忙，也要注意身体。":"No matter how busy you are, you should take care of your health.","这件事至今仍没有定论。":"There's still no conclusion on this matter to this day.","恰恰相反，我完全赞同。":"On the contrary, I completely agree.","归根结底，还是钱的问题。":"In the end, it comes down to money.","我建议你慎重考虑。":"I suggest you consider it carefully.","毫无疑问，这是最佳选择。":"Without a doubt, this is the best choice.","综上所述，我们应当采取行动。":"In summary, we should take action.","感谢您抽空与我会面。":"Thank you for taking the time to meet with me.","后会有期，多多保重。":"We'll meet again someday; take good care."};
+let cvPlay = false, cvPlayTimer = null, cvIndex = 0;
+let cvSpeed = 0.85, cvReadMeaning = true, cvReadEng = false;
+function cvEnglish(c) { return (c && CONV_EN[c.zh]) ? CONV_EN[c.zh] : ''; }
+function setCvSpeed(s) {
+  cvSpeed = s;
+  document.querySelectorAll('[data-cvspd]').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.cvspd) === s));
+}
+function updateCvHint() {
+  const hint = document.getElementById('cv-playall-hint'); if (!hint) return;
+  const parts = ['발음']; if (cvReadMeaning) parts.push('뜻'); if (cvReadEng) parts.push('영어');
+  hint.textContent = parts.length === 1 ? '문장을 자동으로 넘기며 발음만 읽어줘요'
+    : '문장을 자동으로 넘기며 ' + parts.join(' → ') + ' 순으로 읽어줘요';
+}
+function toggleCvMeaning() {
+  cvReadMeaning = !cvReadMeaning;
+  const b = document.getElementById('cv-meaning-toggle');
+  if (b) { b.classList.toggle('active', cvReadMeaning); b.textContent = cvReadMeaning ? '🔤 뜻까지 듣기' : '🔤 발음만 듣기'; }
+  updateCvHint();
+}
+function toggleCvEng() {
+  cvReadEng = !cvReadEng;
+  const b = document.getElementById('cv-eng-toggle');
+  if (b) { b.classList.toggle('active', cvReadEng); b.textContent = cvReadEng ? '🔠 영어 끄기' : '🔠 영어도 듣기'; }
+  updateCvHint();
+}
+function stopConvPlay() {
+  cvPlay = false;
+  if (cvPlayTimer) { clearTimeout(cvPlayTimer); cvPlayTimer = null; }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  const b = document.getElementById('cv-playall');
+  if (b) { b.classList.remove('playing'); b.textContent = '🔊 전체 듣기'; }
+}
+function toggleConvPlay() {
+  if (cvPlay) { stopConvPlay(); return; }
+  if (!('speechSynthesis' in window)) { alert('이 브라우저는 발음 듣기를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.'); return; }
+  cvPlay = true; cvIndex = 0;
+  const b = document.getElementById('cv-playall');
+  if (b) { b.classList.add('playing'); b.textContent = '⏸ 멈춤'; }
+  convPlayStep();
+}
+function convPlayStep() {
+  if (!cvPlay) return;
+  const list = DATA[currentLevel].conv;
+  if (!list || cvIndex >= list.length) { stopConvPlay(); return; }
+  const c = list[cvIndex];
+  // 현재 문장 강조 + 화면에 보이도록 스크롤
+  document.querySelectorAll('.conv-item').forEach((el, idx) => el.classList.toggle('expanded', idx === cvIndex));
+  const el = document.getElementById('ci-' + cvIndex);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  speechSynthesis.cancel();
+  const seq = [];
+  seq.push({ text: c.zh, lang: 'zh-CN', rate: cvSpeed, voice: zhVoice });
+  if (cvReadMeaning && c.ko) seq.push({ text: c.ko, lang: 'ko-KR', rate: Math.min(cvSpeed * 1.1, 1.4) });
+  if (cvReadEng) { const e = cvEnglish(c); if (e) seq.push({ text: e, lang: 'en-US', rate: Math.min(cvSpeed * 1.05, 1.3) }); }
+  const goNext = () => { if (!cvPlay) return; cvPlayTimer = setTimeout(() => { if (!cvPlay) return; cvIndex++; convPlayStep(); }, 700); };
+  convPlaySpeak(seq, 0, goNext);
+}
+function convPlaySpeak(seq, i, done) {
+  if (!cvPlay) return;
+  if (i >= seq.length) { done(); return; }
+  const it = seq[i];
+  const u = new SpeechSynthesisUtterance(it.text);
+  u.lang = it.lang; if (it.voice) u.voice = it.voice; u.rate = it.rate; u.pitch = 1.0;
+  u.onend = u.onerror = () => { if (!cvPlay) return; convPlaySpeak(seq, i + 1, done); };
+  speechSynthesis.speak(u);
+}
+
 
 function showGrammar(i) {
   const d = DATA[currentLevel].conv[i];
