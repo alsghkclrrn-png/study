@@ -10,6 +10,13 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://study-3ne.pages.dev/">
 <meta name="theme-color" content="#fdf6f0">
+<!-- PWA (홈화면 설치 · 오프라인) -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="수달중국어">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <!-- Open Graph (SNS 공유용) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="수달 중국어">
@@ -856,6 +863,16 @@
   .info-modal p, .info-modal li { font-size: 0.9rem; line-height: 1.8; color: var(--text2); }
   .info-modal ul { padding-left: 1.2rem; margin: 0.4rem 0; }
   .info-modal a { color: var(--blue); }
+  .stroke-target { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 0.8rem; min-height: 130px; align-items: center; }
+  .stroke-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .stroke-box {
+    width: 120px; height: 120px; border: 1px solid var(--border); border-radius: 12px;
+    background:
+      linear-gradient(var(--border), var(--border)) center / 1px 100% no-repeat,
+      linear-gradient(var(--border), var(--border)) center / 100% 1px no-repeat,
+      var(--card2);
+  }
+  .stroke-label { font-size: 0.95rem; color: var(--text2); font-weight: 700; }
   .info-close {
     float: right; background: var(--card2); border: 1px solid var(--border);
     border-radius: 10px; padding: 4px 12px; cursor: pointer; color: var(--text2); font-size: 0.9rem;
@@ -1001,6 +1018,7 @@
             <button class="btn btn-danger" id="btn-wrong" onclick="nextCard(false)" style="display:none">몰라요 ✗</button>
             <button class="btn btn-success" id="btn-correct" onclick="nextCard(true)" style="display:none">알아요 ✓</button>
             <button class="btn" onclick="revealCard()" id="btn-reveal">뒤집기 👁</button>
+            <button class="btn" onclick="showStrokeOrder()" id="btn-stroke">✍️ 필순</button>
           </div>
           <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
         </div>
@@ -1411,6 +1429,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn" onclick="exportData()">⬇️ 내보내기 (백업 저장)</button>
           <button class="btn" onclick="triggerImport()">⬆️ 가져오기 (합치기)</button>
+          <button class="btn" id="btn-install" onclick="installApp()" style="display:none;border-color:var(--green);background:var(--green-bg);color:var(--green);">📲 앱 설치</button>
           <input type="file" id="import-file" accept="application/json,.json" style="display:none" onchange="importData(this)">
         </div>
         <div id="data-status" style="font-size:0.82rem;color:var(--text2);margin-top:10px;"></div>
@@ -1467,12 +1486,28 @@
 </footer>
 
 <!-- ===== 정보 팝업 ===== -->
+<div class="info-overlay" id="stroke-overlay" onclick="if(event.target===this)closeStroke()">
+  <div class="info-modal" style="max-width:560px;text-align:center;">
+    <button class="info-close" onclick="closeStroke()">✕ 닫기</button>
+    <h2 style="clear:both;">✍️ 한자 필순 <span id="stroke-title" style="font-size:0.95rem;color:var(--text3);font-weight:400;"></span></h2>
+    <div id="stroke-target" class="stroke-target"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:1.2rem;flex-wrap:wrap;">
+      <button class="btn" onclick="strokeAnimateAll()">▶ 다시 재생</button>
+      <button class="btn" onclick="strokeQuizAll()">✏️ 따라쓰기</button>
+    </div>
+    <p style="font-size:0.78rem;color:var(--text3);margin-top:0.9rem;">획순을 보여준 뒤, 따라쓰기로 직접 순서대로 그려볼 수 있어요. (필순 데이터는 인터넷 연결 필요)</p>
+  </div>
+</div>
+
 <div class="info-overlay" id="info-overlay" onclick="if(event.target===this)closeInfo()">
   <div class="info-modal">
     <button class="info-close" onclick="closeInfo()">✕ 닫기</button>
     <div id="info-content"></div>
   </div>
 </div>
+
+<!-- 한자 필순 애니메이션 라이브러리 (브라우저에서 CDN 로드) -->
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3/dist/hanzi-writer.min.js"></script>
 
 <script>
 const MODULES = [
@@ -5548,6 +5583,67 @@ function prevCard() {
   if (fcIndex > 0) { fcIndex--; loadCard(); }
 }
 
+/* ===== 한자 필순 애니메이션 (HanziWriter) ===== */
+let strokeWriters = [];
+function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function isCJK(ch) { return /[\u4e00-\u9fff\u3400-\u4dbf]/.test(ch); }
+function showStrokeOrder() {
+  const c = currentCard();
+  if (!c) return;
+  const chars = [...c.zh].filter(isCJK);
+  const target = document.getElementById('stroke-target');
+  const overlay = document.getElementById('stroke-overlay');
+  document.getElementById('stroke-title').textContent = c.zh + (c.py ? '  ·  ' + c.py : '');
+  target.innerHTML = '';
+  strokeWriters = [];
+  overlay.classList.add('open');
+  if (typeof HanziWriter === 'undefined') {
+    target.innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">필순 데이터를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.</p>';
+    return;
+  }
+  if (chars.length === 0) {
+    target.innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">이 항목에는 필순을 보여줄 한자가 없어요.</p>';
+    return;
+  }
+  const strokeColor = cssVar('--text') || '#333';
+  const radicalColor = cssVar('--blue') || '#4a90d9';
+  const outlineColor = cssVar('--border') || '#ddd';
+  chars.forEach((ch, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'stroke-tile';
+    const box = document.createElement('div');
+    box.className = 'stroke-box';
+    box.id = 'sw-' + i;
+    const label = document.createElement('div');
+    label.className = 'stroke-label';
+    label.textContent = ch;
+    tile.appendChild(box); tile.appendChild(label);
+    target.appendChild(tile);
+    try {
+      const w = HanziWriter.create(box, ch, {
+        width: 120, height: 120, padding: 8,
+        strokeColor: strokeColor, radicalColor: radicalColor, outlineColor: outlineColor,
+        showOutline: true, strokeAnimationSpeed: 1, delayBetweenStrokes: 200, strokeFadeDuration: 0
+      });
+      strokeWriters.push(w);
+    } catch (e) { /* 개별 글자 로드 실패는 무시 */ }
+  });
+  strokeAnimateAll();
+}
+function strokeAnimateAll() {
+  strokeWriters.forEach((w, i) => { setTimeout(() => { try { w.animateCharacter(); } catch (e) {} }, i * 450); });
+}
+function strokeQuizAll() {
+  strokeWriters.forEach(w => { try { w.quiz(); } catch (e) {} });
+}
+function closeStroke() {
+  const overlay = document.getElementById('stroke-overlay');
+  if (overlay) overlay.classList.remove('open');
+  strokeWriters = [];
+  const target = document.getElementById('stroke-target');
+  if (target) target.innerHTML = '';
+}
+
 /* ===== SRS: 간격 반복 복습 (SM-2 간소화) ===== */
 function srsLoad() {
   try { const s = localStorage.getItem(SRS_KEY); return s ? JSON.parse(s) : {}; }
@@ -7997,6 +8093,39 @@ if (usingProxy()) {
   try { const b = document.getElementById('dict-key-btn'); if (b) b.style.display = 'none'; } catch (e) {}
 }
 init();
+</script>
+
+<script>
+/* ===== PWA: 서비스워커 등록 + 설치 안내 ===== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const b = document.getElementById('btn-install');
+  if (b) b.style.display = '';
+});
+function installApp() {
+  if (!deferredInstallPrompt) {
+    alert('이미 설치되었거나, 브라우저 메뉴의 "홈 화면에 추가"로 설치할 수 있어요.');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => {
+    deferredInstallPrompt = null;
+    const b = document.getElementById('btn-install');
+    if (b) b.style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const b = document.getElementById('btn-install');
+  if (b) b.style.display = 'none';
+});
 </script>
 </body>
 </html>
