@@ -10,6 +10,13 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://study-3ne.pages.dev/">
 <meta name="theme-color" content="#fdf6f0">
+<!-- PWA (홈화면 설치 · 오프라인) -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="수달중국어">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <!-- Open Graph (SNS 공유용) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="수달 중국어">
@@ -45,6 +52,7 @@
 <!-- ================= Google AdSense =================
      게시자 ID(ca-pub-1969247209463048)가 적용되었습니다.
      (애드센스 가입 후 발급받는 pub-... 로 시작하는 번호)         -->
+<meta name="google-adsense-account" content="ca-pub-1969247209463048">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1969247209463048"
         crossorigin="anonymous"></script>
 <!-- =================================================== -->
@@ -277,6 +285,17 @@
   }
   .fc-opt:hover { filter: brightness(1.08); }
   .fc-opt.active { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); }
+  .fc-ex-btn { display: block; margin: 0.6rem auto 0; border: 1.5px solid var(--blue); background: var(--blue-bg); color: var(--blue); }
+  .fc-example {
+    max-width: 460px; margin: 0.9rem auto 0; padding: 14px 16px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 14px; text-align: left;
+  }
+  .fc-example .ex-row { display: flex; align-items: center; gap: 8px; }
+  .fc-example .ex-zh { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .fc-example .ex-py { font-size: 0.86rem; color: var(--text2); margin-top: 4px; }
+  .fc-example .ex-ko { font-size: 0.92rem; color: var(--orange); margin-top: 4px; }
+  .fc-example .ex-loading { font-size: 0.9rem; color: var(--text3); }
+  .fc-example .ex-err { font-size: 0.88rem; color: var(--text2); }
   .flashcard {
     width: 100%; max-width: 420px;
     min-height: 220px;
@@ -1014,6 +1033,8 @@
             <button class="btn" onclick="showStrokeOrder()" id="btn-stroke">✍️ 필순</button>
           </div>
           <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
+          <button class="btn fc-ex-btn" id="btn-example" onclick="showExample()">✨ 예문 보기</button>
+          <div class="fc-example" id="fc-example" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -1422,6 +1443,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn" onclick="exportData()">⬇️ 내보내기 (백업 저장)</button>
           <button class="btn" onclick="triggerImport()">⬆️ 가져오기 (합치기)</button>
+          <button class="btn" id="btn-install" onclick="installApp()" style="display:none;border-color:var(--green);background:var(--green-bg);color:var(--green);">📲 앱 설치</button>
           <input type="file" id="import-file" accept="application/json,.json" style="display:none" onchange="importData(this)">
         </div>
         <div id="data-status" style="font-size:0.82rem;color:var(--text2);margin-top:10px;"></div>
@@ -5715,6 +5737,7 @@ function showSrsDone() {
   document.getElementById('fc-speak').style.display = 'none';
   document.getElementById('btn-prev').disabled = true;
   document.getElementById('btn-wordbook').style.display = 'none';
+  { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
   const btn = document.getElementById('btn-reveal');
   btn.textContent = '확인';
   btn.style.display = '';
@@ -5868,6 +5891,58 @@ function mergeStats(imported) {
   statsSave(cur);
 }
 
+
+/* ===== 단어 예문 (Gemini 생성 + 캐시) ===== */
+const EX_KEY = 'zh_ex_v1';
+let exMem = {};
+function exLoad() { try { const s = localStorage.getItem(EX_KEY); return s ? JSON.parse(s) : {}; } catch (e) { return exMem; } }
+function exSave(o) { exMem = o; try { localStorage.setItem(EX_KEY, JSON.stringify(o)); } catch (e) {} }
+function exEscape(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function exErrorMsg(err) {
+  const m = (err && err.message) || '';
+  if (m === 'no-key' || m === 'bad-key') return '<span class="ex-err">예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)</span>';
+  if (m === 'rate-limit') return '<span class="ex-err">요청이 많아요. 잠시 후 다시 눌러 주세요.</span>';
+  if (m === 'network' || m === 'waking') return '<span class="ex-err">네트워크 오류예요. 인터넷 연결을 확인해 주세요.</span>';
+  return '<span class="ex-err">예문 생성에 실패했어요. 다시 시도해 주세요.</span>';
+}
+function renderExample(o) {
+  const box = document.getElementById('fc-example');
+  if (!box) return;
+  box.style.display = '';
+  box.innerHTML =
+    '<div class="ex-row"><span class="ex-zh" id="ex-zh-text">' + exEscape(o.zh) + '</span>' +
+    '<button class="speak-btn" onclick="speak(document.getElementById(\'ex-zh-text\').textContent, this)" title="예문 듣기">🔊</button></div>' +
+    (o.py ? '<div class="ex-py">' + exEscape(o.py) + '</div>' : '') +
+    (o.ko ? '<div class="ex-ko">' + exEscape(o.ko) + '</div>' : '');
+}
+async function showExample() {
+  const c = currentCard();
+  if (!c) return;
+  const box = document.getElementById('fc-example');
+  if (!box) return;
+  const cache = exLoad();
+  if (cache[c.zh]) { renderExample(cache[c.zh]); return; }
+  box.style.display = '';
+  box.innerHTML = '<span class="ex-loading">예문 생성 중… ✨</span>';
+  try {
+    const sys = '당신은 친절한 중국어 교사입니다. 주어진 단어를 사용해 초급 학습자도 이해할 아주 쉽고 짧은 예문 1개를 만드세요. 반드시 아래 JSON 형식으로만 답하고 다른 말이나 코드블록은 쓰지 마세요: {"zh":"중국어 예문","py":"병음(성조기호 포함)","ko":"한국어 번역"}';
+    const user = '단어: ' + c.zh + '（' + (c.py || '') + '） 뜻: ' + (c.ko || '');
+    let txt = await callGemini(sys, user);
+    txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
+    let obj;
+    try { obj = JSON.parse(txt); }
+    catch (e) {
+      const mm = txt.match(/\{[\s\S]*\}/);
+      try { obj = JSON.parse(mm ? mm[0] : txt); } catch (e2) { obj = { zh: txt, py: '', ko: '' }; }
+    }
+    if (!obj || !obj.zh) obj = { zh: txt, py: '', ko: '' };
+    cache[c.zh] = obj; exSave(cache);
+    renderExample(obj);
+  } catch (err) {
+    box.innerHTML = exErrorMsg(err);
+  }
+}
+
 function initVocab() {
   fcIndex = 0; fcScore = 0; currentThemeIdx = 0; wbMode = false; srsMode = false;
   const d = DATA[currentLevel];
@@ -5934,6 +6009,7 @@ function loadCard() {
     document.getElementById('fc-speak').style.display = 'none';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
+    { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
     return;
   }
   const c = cards[fcIndex];
@@ -5953,6 +6029,7 @@ function loadCard() {
   document.getElementById('fc-speak').style.display = '';
   document.getElementById('btn-prev').disabled = srsMode || (fcIndex === 0);
   document.getElementById('btn-wordbook').style.display = '';
+  { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display=''; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
   updateWbBtn();
 }
 
@@ -5984,6 +6061,7 @@ function nextCard(correct) {
     document.getElementById('fc-tone-bar').innerHTML = '';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
+    { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
     const btn = document.getElementById('btn-reveal');
     btn.textContent = '다시 시작';
     btn.style.display = '';
@@ -8085,6 +8163,39 @@ if (usingProxy()) {
   try { const b = document.getElementById('dict-key-btn'); if (b) b.style.display = 'none'; } catch (e) {}
 }
 init();
+</script>
+
+<script>
+/* ===== PWA: 서비스워커 등록 + 설치 안내 ===== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const b = document.getElementById('btn-install');
+  if (b) b.style.display = '';
+});
+function installApp() {
+  if (!deferredInstallPrompt) {
+    alert('이미 설치되었거나, 브라우저 메뉴의 "홈 화면에 추가"로 설치할 수 있어요.');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => {
+    deferredInstallPrompt = null;
+    const b = document.getElementById('btn-install');
+    if (b) b.style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const b = document.getElementById('btn-install');
+  if (b) b.style.display = 'none';
+});
 </script>
 </body>
 </html>
