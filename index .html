@@ -296,6 +296,15 @@
   .fc-example .ex-ko { font-size: 0.92rem; color: var(--orange); margin-top: 4px; }
   .fc-example .ex-loading { font-size: 0.9rem; color: var(--text3); }
   .fc-example .ex-err { font-size: 0.88rem; color: var(--text2); }
+  .fc-gram-btn { display:block; margin:0.6rem auto 0; border:1.5px solid var(--purple, #9b8cff); background:rgba(155,140,255,0.12); color:var(--purple, #7a6cf0); }
+  .fc-grammar { max-width:460px; margin:0.9rem auto 0; padding:14px 16px; background:var(--card2); border:1px solid var(--border); border-radius:14px; text-align:left; }
+  .fc-grammar .gr-struct { font-size:1rem; font-weight:800; color:var(--purple, #7a6cf0); background:rgba(155,140,255,0.10); padding:8px 10px; border-radius:10px; }
+  .fc-grammar .gr-desc { font-size:0.92rem; color:var(--text); margin-top:10px; line-height:1.6; }
+  .fc-grammar .gr-eg { margin-top:12px; padding-top:10px; border-top:1px dashed var(--border); }
+  .fc-grammar .gr-zh { font-size:1.08rem; font-weight:700; color:var(--text); }
+  .fc-grammar .gr-eg-py { font-size:0.84rem; color:var(--text2); margin-top:3px; }
+  .fc-grammar .gr-eg-ko { font-size:0.9rem; color:var(--orange); margin-top:2px; }
+  .fc-grammar .gr-tip { font-size:0.86rem; color:var(--text2); margin-top:12px; padding:8px 10px; background:var(--warn-bg, rgba(255,180,80,0.12)); border-radius:10px; line-height:1.6; }
   .fc-example .ex-retry { margin-left: 6px; padding: 3px 10px; font-size: 0.82rem; border: 1px solid var(--blue); background: var(--blue-bg); color: var(--blue); border-radius: 8px; cursor: pointer; }
   .flashcard {
     width: 100%; max-width: 420px;
@@ -1036,6 +1045,8 @@
           <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
           <button class="btn fc-ex-btn" id="btn-example" onclick="showExample()">✨ 예문 보기</button>
           <div class="fc-example" id="fc-example" style="display:none"></div>
+          <button class="btn fc-gram-btn" id="btn-grammar" onclick="showWordGrammar()" style="display:none">📖 문법 설명</button>
+          <div class="fc-grammar" id="fc-grammar" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -5775,6 +5786,7 @@ function showSrsDone() {
   document.getElementById('btn-prev').disabled = true;
   document.getElementById('btn-wordbook').style.display = 'none';
   { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
   const btn = document.getElementById('btn-reveal');
   btn.textContent = '확인';
   btn.style.display = '';
@@ -6209,6 +6221,61 @@ function exportExamples() {
   } catch (e) { alert('내보내기에 실패했어요: ' + e.message); }
 }
 
+/* ===== 문법 노트 (고정, API 미사용) ===== */
+const GRAM_DATA = {
+  "比": { s:"A + 比 + B + 형용사 (+ 차이)", d:"A가 B보다 더 ~하다. (비교의 결과)", e:[["我比他高。","Wǒ bǐ tā gāo.","나는 그보다 키가 크다."],["今天比昨天冷。","Jīntiān bǐ zuótiān lěng.","오늘이 어제보다 춥다."],["他比我大三岁。","Tā bǐ wǒ dà sān suì.","그는 나보다 세 살 많다."]], t:"형용사 앞에 很·非常을 못 씀(✗我比他很高). 차이는 뒤에: 高一点儿 / 高得多 / 高多了. 부정은 「A 没有 B ~」." },
+  "没有": { s:"A + 没有 + B + (那么) + 형용사", d:"A는 B만큼 ~하지 않다. (比 비교문의 부정)", e:[["我没有他高。","Wǒ méiyǒu tā gāo.","나는 그만큼 크지 않다."],["今天没有昨天热。","Jīntiān méiyǒu zuótiān rè.","오늘은 어제만큼 덥지 않다."]], t:"「不比」와 다름: A 不比 B 高 = A가 B보다 더 크진 않다(비슷하거나 작음)." },
+  "更": { s:"(A 比 B) 更 + 형용사", d:"더욱, 한층. 이미 어떤 성질이 있는데 \"더\"를 강조.", e:[["他比我更高。","Tā bǐ wǒ gèng gāo.","그는 나보다 더 크다."],["今天更冷了。","Jīntiān gèng lěng le.","오늘은 더 추워졌다."]] },
+  "最": { s:"最 + 형용사/동사", d:"가장, 제일. (최상급)", e:[["他是我最好的朋友。","Tā shì wǒ zuì hǎo de péngyou.","그는 내 가장 친한 친구다."],["我最喜欢夏天。","Wǒ zuì xǐhuan xiàtiān.","나는 여름을 제일 좋아한다."]] },
+  "一样": { s:"A + 跟/和 + B + 一样 (+ 형용사)", d:"A는 B와 같다 / 똑같이 ~하다. (동등 비교)", e:[["我跟他一样高。","Wǒ gēn tā yíyàng gāo.","나는 그와 키가 같다."],["这个和那个一样。","Zhège hé nàge yíyàng.","이것은 저것과 같다."]], t:"부정: 「A 跟 B 不一样」 = A는 B와 다르다." },
+  "跟": { s:"A + 跟 + B + 一样 / A + 跟 + B + 동사", d:"~와/과. 비교(一样)나 동반(\"~와 함께\").", e:[["我跟你一样。","Wǒ gēn nǐ yíyàng.","나는 너와 같다."],["我跟朋友一起去。","Wǒ gēn péngyou yìqǐ qù.","나는 친구와 함께 간다."]] },
+  "像": { s:"A + 像 + B + (一样)", d:"~와 닮다 / ~같다. (비유·유사)", e:[["她像妈妈。","Tā xiàng māma.","그녀는 엄마를 닮았다."],["他像孩子一样。","Tā xiàng háizi yíyàng.","그는 아이 같다."]] },
+  "越": { s:"越 A 越 B / 越来越 + 형용사", d:"A할수록 더 B하다 / 점점 더 ~해지다.", e:[["天气越来越热。","Tiānqì yuèláiyuè rè.","날씨가 점점 더워진다."],["我越学越喜欢。","Wǒ yuè xué yuè xǐhuan.","배울수록 더 좋아진다."]] },
+  "从": { s:"从 + 장소/시간 (+ 到 …)", d:"~에서(부터). 출발점(장소·시간).", e:[["我从北京来。","Wǒ cóng Běijīng lái.","나는 베이징에서 왔다."],["从九点到五点。","Cóng jiǔ diǎn dào wǔ diǎn.","9시부터 5시까지."]] },
+  "离": { s:"A + 离 + B + 远/近", d:"A는 B에서 (거리가) 멀다/가깝다. (두 지점 사이 거리)", e:[["我家离学校很近。","Wǒ jiā lí xuéxiào hěn jìn.","우리 집은 학교에서 가깝다."],["这儿离火车站远吗？","Zhèr lí huǒchēzhàn yuǎn ma?","여기서 기차역이 머니?"]] },
+  "让": { s:"주어 + 让 + 사람 + 동사", d:"(사람)에게 ~하게 하다/시키다. (사역)", e:[["妈妈让我早点回家。","Māma ràng wǒ zǎo diǎn huí jiā.","엄마가 나에게 일찍 오라고 하셨다."],["老师让我们读课文。","Lǎoshī ràng wǒmen dú kèwén.","선생님이 우리에게 본문을 읽게 하셨다."]] },
+  "得": { s:"동사 + 得 + 정도보어(형용사)", d:"~하는 정도가 …하다. (동작의 정도·평가)", e:[["他说得很好。","Tā shuō de hěn hǎo.","그는 (말을) 잘한다."],["你来得太早了。","Nǐ lái de tài zǎo le.","너 너무 일찍 왔다."]], t:"得(děi)로 읽으면 \"~해야 한다\": 我得走了 (가야 해)." },
+  "会": { s:"会 + 동사", d:"(배워서) ~할 줄 알다 / (미래에) ~할 것이다.", e:[["我会游泳。","Wǒ huì yóuyǒng.","나는 수영할 줄 안다."],["明天会下雨。","Míngtiān huì xià yǔ.","내일 비가 올 것이다."]] },
+  "能": { s:"能 + 동사", d:"(능력·조건상) ~할 수 있다.", e:[["我能帮你。","Wǒ néng bāng nǐ.","내가 도와줄 수 있다."],["你能来吗？","Nǐ néng lái ma?","올 수 있어?"]] },
+  "可以": { s:"可以 + 동사", d:"~해도 된다(허가) / ~할 수 있다.", e:[["我可以进来吗？","Wǒ kěyǐ jìnlái ma?","들어가도 될까요?"],["这里可以拍照。","Zhèlǐ kěyǐ pāizhào.","여기서 사진 찍어도 된다."]] },
+  "要": { s:"要 + 동사 / 要 + 명사", d:"~하려고 하다(의지)·~할 것이다 / ~을 원하다.", e:[["我要学汉语。","Wǒ yào xué Hànyǔ.","나는 중국어를 배우려고 한다."],["我要一杯咖啡。","Wǒ yào yì bēi kāfēi.","커피 한 잔 주세요."]] },
+  "太": { s:"太 + 형용사 + 了", d:"너무 ~하다. (정도가 지나침·감탄)", e:[["太好了！","Tài hǎo le!","너무 좋다!"],["今天太冷了。","Jīntiān tài lěng le.","오늘 너무 춥다."]] },
+  "非常": { s:"非常 + 형용사/동사", d:"매우, 대단히. (정도 강조)", e:[["我非常高兴。","Wǒ fēicháng gāoxìng.","나는 매우 기쁘다."],["这个非常重要。","Zhège fēicháng zhòngyào.","이건 매우 중요하다."]] },
+  "就": { s:"주어 + 就 + 동사", d:"바로/곧/이미. (이르거나 즉시임을 강조)", e:[["我马上就来。","Wǒ mǎshàng jiù lái.","곧 갈게."],["他六点就起床了。","Tā liù diǎn jiù qǐchuáng le.","그는 6시에 벌써 일어났다."]] },
+  "还": { s:"还 + 동사/형용사", d:"아직·여전히 / 또·더. (지속·추가)", e:[["我还没吃饭。","Wǒ hái méi chī fàn.","나 아직 밥 안 먹었다."],["我还要一个。","Wǒ hái yào yí ge.","하나 더 주세요."]], t:"발음 주의: 여기선 hái. \"돌려주다\"는 huán (还书 책을 반납하다)." },
+  "别": { s:"别 + 동사", d:"~하지 마라. (금지 명령)", e:[["别走。","Bié zǒu.","가지 마."],["别说话。","Bié shuōhuà.","말하지 마."]] },
+  "虽然": { s:"虽然 A，但是 B", d:"비록 A지만 B하다. (양보)", e:[["虽然很累，但是很开心。","Suīrán hěn lèi, dànshì hěn kāixīn.","비록 피곤하지만 즐겁다."]] },
+  "但是": { s:"(虽然) A，但是 B", d:"그러나, 하지만. (역접)", e:[["我想去，但是没有时间。","Wǒ xiǎng qù, dànshì méiyǒu shíjiān.","가고 싶지만 시간이 없다."]] },
+  "因为": { s:"因为 A，所以 B", d:"A하기 때문에 B하다. (원인 → 결과)", e:[["因为下雨，所以我没去。","Yīnwèi xià yǔ, suǒyǐ wǒ méi qù.","비가 와서 안 갔다."]] },
+  "所以": { s:"因为 A，所以 B", d:"그래서, 그러므로. (결과)", e:[["我很累，所以早点睡了。","Wǒ hěn lèi, suǒyǐ zǎo diǎn shuì le.","피곤해서 일찍 잤다."]] },
+  "过": { s:"동사 + 过", d:"~한 적이 있다. (과거의 경험)", e:[["我去过中国。","Wǒ qùguo Zhōngguó.","중국에 가본 적 있다."],["你吃过北京烤鸭吗？","Nǐ chīguo Běijīng kǎoyā ma?","베이징 오리 먹어봤어?"]] },
+  "了": { s:"동사 + 了 / 문장 + 了", d:"동작의 완료 / 상황의 변화.", e:[["我吃饭了。","Wǒ chī fàn le.","밥을 먹었다."],["天冷了。","Tiān lěng le.","날이 추워졌다."]] },
+  "的": { s:"A + 的 + 명사", d:"~의 (소유·수식). 명사를 꾸밈.", e:[["这是我的书。","Zhè shì wǒ de shū.","이건 내 책이다."],["红色的衣服","hóngsè de yīfu","빨간색 옷"]] },
+  "给": { s:"给 + 사람 + 동사/사물", d:"~에게 (주다/해 주다).", e:[["我给你打电话。","Wǒ gěi nǐ dǎ diànhuà.","너한테 전화할게."],["他给我一本书。","Tā gěi wǒ yì běn shū.","그가 나에게 책을 줬다."]] },
+  "把": { s:"주어 + 把 + 목적어 + 동사 + 기타", d:"(목적어)를 ~하다. 목적어에 대한 처치·결과 강조.", e:[["请把门关上。","Qǐng bǎ mén guānshàng.","문을 닫아 주세요."],["我把作业做完了。","Wǒ bǎ zuòyè zuòwán le.","나는 숙제를 다 했다."]] },
+  "被": { s:"주어 + 被 + (행위자) + 동사", d:"~에게 …당하다. (피동)", e:[["我的手机被偷了。","Wǒ de shǒujī bèi tōu le.","내 휴대폰을 도둑맞았다."],["蛋糕被弟弟吃了。","Dàngāo bèi dìdi chī le.","케이크를 남동생이 먹어버렸다."]] },
+  "两": { s:"两 + 양사 + 명사", d:"둘(2). 수량으로 \"2개\"를 셀 때 二 대신 两을 씀.", e:[["两个人","liǎng ge rén","두 사람"],["我要两杯咖啡。","Wǒ yào liǎng bēi kāfēi.","커피 두 잔 주세요."]], t:"二는 순서·숫자 읽기(第二, 二月), 两은 수량(两个) 앞에." },
+  "二": { s:"二 (숫자) / 第二 (서수)", d:"2, 둘. 숫자 읽기·서수에 씀.", e:[["一、二、三","yī, èr, sān","1, 2, 3"],["二月","èr yuè","2월"]], t:"수량을 셀 땐 两: ✗二个人 → ○两个人." }
+};
+function renderGrammar(g){
+  const box=document.getElementById('fc-grammar'); if(!box) return;
+  let h='<div class="gr-struct">'+exEscape(g.s)+'</div>';
+  h+='<div class="gr-desc">'+exEscape(g.d)+'</div>';
+  (g.e||[]).forEach(function(a){
+    h+='<div class="gr-eg"><span class="gr-zh">'+exEscape(a[0])+'</span> <button class="speak-btn" onclick="speak(this.parentNode.querySelector(\'.gr-zh\').textContent, this)">🔊</button>'+
+      '<div class="gr-eg-py">'+exEscape(a[1])+'</div><div class="gr-eg-ko">'+exEscape(a[2])+'</div></div>';
+  });
+  if(g.t) h+='<div class="gr-tip">💡 '+exEscape(g.t)+'</div>';
+  box.innerHTML=h; box.style.display='';
+}
+function showWordGrammar(){
+  const c=currentCard(); if(!c) return;
+  const g=GRAM_DATA[c.zh]; if(!g) return;
+  const box=document.getElementById('fc-grammar'); if(!box) return;
+  if(box.style.display!=='none' && box.innerHTML){ box.style.display='none'; return; }
+  renderGrammar(g);
+}
+
 function exErrorMsg(err) {
   const m = (err && err.message) || '';
   let msg;
@@ -6342,6 +6409,8 @@ function loadCard() {
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
     { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
+    { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
     return;
   }
   const c = cards[fcIndex];
@@ -6362,6 +6431,7 @@ function loadCard() {
   document.getElementById('btn-prev').disabled = srsMode || (fcIndex === 0);
   document.getElementById('btn-wordbook').style.display = '';
   { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display=''; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display = (typeof GRAM_DATA!=='undefined' && GRAM_DATA[c.zh]) ? '' : 'none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
   updateWbBtn();
 }
 
@@ -6394,6 +6464,8 @@ function nextCard(correct) {
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
     { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
+    { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
     const btn = document.getElementById('btn-reveal');
     btn.textContent = '다시 시작';
     btn.style.display = '';
