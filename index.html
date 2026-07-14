@@ -296,6 +296,15 @@
   .fc-example .ex-ko { font-size: 0.92rem; color: var(--orange); margin-top: 4px; }
   .fc-example .ex-loading { font-size: 0.9rem; color: var(--text3); }
   .fc-example .ex-err { font-size: 0.88rem; color: var(--text2); }
+  .fc-gram-btn { display:block; margin:0.6rem auto 0; border:1.5px solid var(--purple, #9b8cff); background:rgba(155,140,255,0.12); color:var(--purple, #7a6cf0); }
+  .fc-grammar { max-width:460px; margin:0.9rem auto 0; padding:14px 16px; background:var(--card2); border:1px solid var(--border); border-radius:14px; text-align:left; }
+  .fc-grammar .gr-struct { font-size:1rem; font-weight:800; color:var(--purple, #7a6cf0); background:rgba(155,140,255,0.10); padding:8px 10px; border-radius:10px; }
+  .fc-grammar .gr-desc { font-size:0.92rem; color:var(--text); margin-top:10px; line-height:1.6; }
+  .fc-grammar .gr-eg { margin-top:12px; padding-top:10px; border-top:1px dashed var(--border); }
+  .fc-grammar .gr-zh { font-size:1.08rem; font-weight:700; color:var(--text); }
+  .fc-grammar .gr-eg-py { font-size:0.84rem; color:var(--text2); margin-top:3px; }
+  .fc-grammar .gr-eg-ko { font-size:0.9rem; color:var(--orange); margin-top:2px; }
+  .fc-grammar .gr-tip { font-size:0.86rem; color:var(--text2); margin-top:12px; padding:8px 10px; background:var(--warn-bg, rgba(255,180,80,0.12)); border-radius:10px; line-height:1.6; }
   .fc-example .ex-retry { margin-left: 6px; padding: 3px 10px; font-size: 0.82rem; border: 1px solid var(--blue); background: var(--blue-bg); color: var(--blue); border-radius: 8px; cursor: pointer; }
   .flashcard {
     width: 100%; max-width: 420px;
@@ -1036,6 +1045,8 @@
           <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
           <button class="btn fc-ex-btn" id="btn-example" onclick="showExample()">✨ 예문 보기</button>
           <div class="fc-example" id="fc-example" style="display:none"></div>
+          <button class="btn fc-gram-btn" id="btn-grammar" onclick="showWordGrammar()" style="display:none">📖 문법 설명</button>
+          <div class="fc-grammar" id="fc-grammar" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -5775,6 +5786,7 @@ function showSrsDone() {
   document.getElementById('btn-prev').disabled = true;
   document.getElementById('btn-wordbook').style.display = 'none';
   { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
   const btn = document.getElementById('btn-reveal');
   btn.textContent = '확인';
   btn.style.display = '';
@@ -6071,7 +6083,127 @@ const EX_DATA = {
   '字': { zh:'这个字怎么写？', py:'Zhège zì zěnme xiě?', ko:'이 글자 어떻게 써?' },
   '昨天': { zh:'昨天我很忙。', py:'Zuótiān wǒ hěn máng.', ko:'어제 나는 바빴어.' },
   '坐': { zh:'我们坐公共汽车去吧。', py:'Wǒmen zuò gōnggòng qìchē qù ba.', ko:'우리 버스 타고 가자.' },
-  '做': { zh:'你在做什么？', py:'Nǐ zài zuò shénme?', ko:'너 뭐 하고 있어?' }
+  '做': { zh:'你在做什么？', py:'Nǐ zài zuò shénme?', ko:'너 뭐 하고 있어?' },
+  "后面": { zh: "学校在银行后面。", py: "Xuéxiào zài yínháng hòumian.", ko: "학교는 은행 뒤에 있어." },
+  "回": { zh: "我要回家了。", py: "Wǒ yào huí jiā le.", ko: "나 이제 집에 가려고 해." },
+  "会": { zh: "我会说汉语。", py: "Wǒ huì shuō Hànyǔ.", ko: "나는 중국어를 할 줄 알아." },
+  "看见": { zh: "我看见他了。", py: "Wǒ kànjiàn tā le.", ko: "나는 그를 봤어." },
+  "了": { zh: "我吃饭了。", py: "Wǒ chī fàn le.", ko: "나 밥 먹었어." },
+  "里": { zh: "钱在包里。", py: "Qián zài bāo lǐ.", ko: "돈은 가방 안에 있어." },
+  "六": { zh: "现在六点。", py: "Xiànzài liù diǎn.", ko: "지금 6시야." },
+  "哪": { zh: "你是哪国人？", py: "Nǐ shì nǎ guó rén?", ko: "어느 나라 사람이야?" },
+  "前面": { zh: "前面有一家商店。", py: "Qiánmiàn yǒu yì jiā shāngdiàn.", ko: "앞에 상점이 하나 있어." },
+  "上": { zh: "请上车。", py: "Qǐng shàng chē.", ko: "차에 타세요." },
+  "少": { zh: "今天人很少。", py: "Jīntiān rén hěn shǎo.", ko: "오늘 사람이 적어." },
+  "时候": { zh: "小时候我住在北京。", py: "Xiǎo shíhou wǒ zhù zài Běijīng.", ko: "어릴 때 나는 베이징에 살았어." },
+  "说": { zh: "请再说一遍。", py: "Qǐng zài shuō yí biàn.", ko: "다시 한 번 말해 주세요." },
+  "下": { zh: "请下车。", py: "Qǐng xià chē.", ko: "차에서 내리세요." },
+  "小姐": { zh: "那位小姐是老师。", py: "Nà wèi xiǎojie shì lǎoshī.", ko: "저 아가씨는 선생님이야." },
+  "些": { zh: "我买了一些水果。", py: "Wǒ mǎi le yìxiē shuǐguǒ.", ko: "나는 과일을 좀 샀어." },
+  "一点儿": { zh: "请慢一点儿。", py: "Qǐng màn yìdiǎnr.", ko: "조금 천천히 해 주세요." },
+  "吧": { zh: "我们走吧。", py: "Wǒmen zǒu ba.", ko: "우리 가자." },
+  "白": { zh: "她穿了一件白衣服。", py: "Tā chuān le yí jiàn bái yīfu.", ko: "그녀는 흰옷을 입었어." },
+  "百": { zh: "这本书一百块。", py: "Zhè běn shū yìbǎi kuài.", ko: "이 책은 100위안이야." },
+  "帮助": { zh: "谢谢你的帮助。", py: "Xièxie nǐ de bāngzhù.", ko: "도와줘서 고마워." },
+  "报纸": { zh: "爸爸在看报纸。", py: "Bàba zài kàn bàozhǐ.", ko: "아빠가 신문을 보고 계셔." },
+  "比": { zh: "我比他高。", py: "Wǒ bǐ tā gāo.", ko: "나는 그보다 키가 커." },
+  "别": { zh: "别走。", py: "Bié zǒu.", ko: "가지 마." },
+  "宾馆": { zh: "我们住在宾馆。", py: "Wǒmen zhù zài bīnguǎn.", ko: "우리는 호텔에 묵어." },
+  "长": { zh: "这条路很长。", py: "Zhè tiáo lù hěn cháng.", ko: "이 길은 길어." },
+  "唱歌": { zh: "她唱歌很好听。", py: "Tā chànggē hěn hǎotīng.", ko: "그녀는 노래를 잘 불러." },
+  "出": { zh: "他出去了。", py: "Tā chūqù le.", ko: "그는 나갔어." },
+  "穿": { zh: "今天冷，多穿点。", py: "Jīntiān lěng, duō chuān diǎn.", ko: "오늘 추우니 따뜻하게 입어." },
+  "次": { zh: "我去过一次北京。", py: "Wǒ qùguo yí cì Běijīng.", ko: "나는 베이징에 한 번 가봤어." },
+  "从": { zh: "我从韩国来。", py: "Wǒ cóng Hánguó lái.", ko: "나는 한국에서 왔어." },
+  "错": { zh: "对不起，是我错了。", py: "Duìbuqǐ, shì wǒ cuò le.", ko: "미안해, 내가 틀렸어." },
+  "打篮球": { zh: "我们一起打篮球吧。", py: "Wǒmen yìqǐ dǎ lánqiú ba.", ko: "우리 같이 농구하자." },
+  "大家": { zh: "大家好！", py: "Dàjiā hǎo!", ko: "여러분 안녕하세요!" },
+  "到": { zh: "我到家了。", py: "Wǒ dào jiā le.", ko: "나 집에 도착했어." },
+  "得": { zh: "你得多休息。", py: "Nǐ děi duō xiūxi.", ko: "너는 푹 쉬어야 해." },
+  "等": { zh: "请等我一下。", py: "Qǐng děng wǒ yíxià.", ko: "잠깐만 기다려 줘." },
+  "弟弟": { zh: "我有一个弟弟。", py: "Wǒ yǒu yí ge dìdi.", ko: "나는 남동생이 하나 있어." },
+  "第一": { zh: "他是第一名。", py: "Tā shì dì-yī míng.", ko: "그가 1등이야." },
+  "懂": { zh: "我听懂了。", py: "Wǒ tīng dǒng le.", ko: "나는 알아들었어." },
+  "对": { zh: "你说得对。", py: "Nǐ shuō de duì.", ko: "네 말이 맞아." },
+  "房间": { zh: "我的房间很干净。", py: "Wǒ de fángjiān hěn gānjìng.", ko: "내 방은 깨끗해." },
+  "非常": { zh: "今天非常热。", py: "Jīntiān fēicháng rè.", ko: "오늘 무척 더워." },
+  "服务员": { zh: "服务员，买单！", py: "Fúwùyuán, mǎidān!", ko: "저기요, 계산해 주세요!" },
+  "高": { zh: "他个子很高。", py: "Tā gèzi hěn gāo.", ko: "그는 키가 커." },
+  "告诉": { zh: "请告诉我你的名字。", py: "Qǐng gàosu wǒ nǐ de míngzi.", ko: "이름을 알려 주세요." },
+  "哥哥": { zh: "我哥哥是医生。", py: "Wǒ gēge shì yīshēng.", ko: "우리 형은 의사야." },
+  "给": { zh: "我给你打电话。", py: "Wǒ gěi nǐ dǎ diànhuà.", ko: "내가 너한테 전화할게." },
+  "公共汽车": { zh: "我坐公共汽车上班。", py: "Wǒ zuò gōnggòng qìchē shàngbān.", ko: "나는 버스로 출근해." },
+  "公司": { zh: "我在一家公司工作。", py: "Wǒ zài yì jiā gōngsī gōngzuò.", ko: "나는 한 회사에서 일해." },
+  "贵": { zh: "这个太贵了。", py: "Zhège tài guì le.", ko: "이건 너무 비싸." },
+  "过": { zh: "我去过中国。", py: "Wǒ qùguo Zhōngguó.", ko: "나는 중국에 가본 적이 있어." },
+  "还": { zh: "我还没吃饭。", py: "Wǒ hái méi chī fàn.", ko: "나 아직 밥 안 먹었어." },
+  "孩子": { zh: "他有两个孩子。", py: "Tā yǒu liǎng ge háizi.", ko: "그는 아이가 둘 있어." },
+  "好吃": { zh: "妈妈做的饭很好吃。", py: "Māma zuò de fàn hěn hǎochī.", ko: "엄마가 만든 밥은 맛있어." },
+  "黑": { zh: "天黑了。", py: "Tiān hēi le.", ko: "날이 어두워졌어." },
+  "红": { zh: "她喜欢红色。", py: "Tā xǐhuan hóngsè.", ko: "그녀는 빨간색을 좋아해." },
+  "火车站": { zh: "火车站离这儿很远。", py: "Huǒchēzhàn lí zhèr hěn yuǎn.", ko: "기차역은 여기서 멀어." },
+  "机场": { zh: "我去机场接朋友。", py: "Wǒ qù jīchǎng jiē péngyou.", ko: "나는 공항에 친구 마중 가." },
+  "鸡蛋": { zh: "我早上吃了两个鸡蛋。", py: "Wǒ zǎoshang chī le liǎng ge jīdàn.", ko: "나는 아침에 계란 두 개를 먹었어." },
+  "件": { zh: "我买了一件衣服。", py: "Wǒ mǎi le yí jiàn yīfu.", ko: "나는 옷 한 벌을 샀어." },
+  "教室": { zh: "教室里有很多学生。", py: "Jiàoshì lǐ yǒu hěn duō xuésheng.", ko: "교실에 학생이 많아." },
+  "姐姐": { zh: "我姐姐很漂亮。", py: "Wǒ jiějie hěn piàoliang.", ko: "우리 언니는 예뻐." },
+  "介绍": { zh: "我来介绍一下。", py: "Wǒ lái jièshào yíxià.", ko: "제가 소개할게요." },
+  "进": { zh: "请进。", py: "Qǐng jìn.", ko: "들어오세요." },
+  "近": { zh: "我家离学校很近。", py: "Wǒ jiā lí xuéxiào hěn jìn.", ko: "우리 집은 학교에서 가까워." },
+  "就": { zh: "我马上就来。", py: "Wǒ mǎshàng jiù lái.", ko: "나 곧 갈게." },
+  "觉得": { zh: "我觉得很好。", py: "Wǒ juéde hěn hǎo.", ko: "나는 좋다고 생각해." },
+  "咖啡": { zh: "我想喝咖啡。", py: "Wǒ xiǎng hē kāfēi.", ko: "나는 커피를 마시고 싶어." },
+  "开始": { zh: "我们开始上课吧。", py: "Wǒmen kāishǐ shàngkè ba.", ko: "수업 시작하자." },
+  "考试": { zh: "明天有考试。", py: "Míngtiān yǒu kǎoshì.", ko: "내일 시험이 있어." },
+  "可能": { zh: "他可能不来了。", py: "Tā kěnéng bù lái le.", ko: "그는 아마 안 올 거야." },
+  "可以": { zh: "我可以进来吗？", py: "Wǒ kěyǐ jìnlái ma?", ko: "들어가도 될까요?" },
+  "课": { zh: "我今天有三节课。", py: "Wǒ jīntiān yǒu sān jié kè.", ko: "나는 오늘 수업이 세 개 있어." },
+  "快": { zh: "你走得太快了。", py: "Nǐ zǒu de tài kuài le.", ko: "너 너무 빨리 걸어." },
+  "快乐": { zh: "祝你生日快乐！", py: "Zhù nǐ shēngrì kuàilè!", ko: "생일 축하해!" },
+  "累": { zh: "我今天很累。", py: "Wǒ jīntiān hěn lèi.", ko: "나 오늘 피곤해." },
+  "离": { zh: "学校离这儿不远。", py: "Xuéxiào lí zhèr bù yuǎn.", ko: "학교는 여기서 멀지 않아." },
+  "两": { zh: "我要两杯咖啡。", py: "Wǒ yào liǎng bēi kāfēi.", ko: "커피 두 잔 주세요." },
+  "零": { zh: "现在零下五度。", py: "Xiànzài líng xià wǔ dù.", ko: "지금 영하 5도야." },
+  "路": { zh: "这条路很宽。", py: "Zhè tiáo lù hěn kuān.", ko: "이 길은 넓어." },
+  "旅游": { zh: "我喜欢去旅游。", py: "Wǒ xǐhuan qù lǚyóu.", ko: "나는 여행 가는 걸 좋아해." },
+  "卖": { zh: "这里卖水果。", py: "Zhèlǐ mài shuǐguǒ.", ko: "여기서 과일을 팔아." },
+  "慢": { zh: "请说慢一点。", py: "Qǐng shuō màn yìdiǎn.", ko: "조금 천천히 말해 주세요." },
+  "忙": { zh: "我今天很忙。", py: "Wǒ jīntiān hěn máng.", ko: "나 오늘 바빠." },
+  "每": { zh: "我每天学习汉语。", py: "Wǒ měi tiān xuéxí Hànyǔ.", ko: "나는 매일 중국어를 공부해." },
+  "妹妹": { zh: "我妹妹很可爱。", py: "Wǒ mèimei hěn kě'ài.", ko: "내 여동생은 귀여워." },
+  "门": { zh: "请关门。", py: "Qǐng guān mén.", ko: "문을 닫아 주세요." },
+  "面条": { zh: "我喜欢吃面条。", py: "Wǒ xǐhuan chī miàntiáo.", ko: "나는 국수를 좋아해." },
+  "男": { zh: "他是一个男孩。", py: "Tā shì yí ge nánhái.", ko: "그는 남자아이야." },
+  "您": { zh: "您好！", py: "Nín hǎo!", ko: "안녕하세요!" },
+  "牛奶": { zh: "我每天喝牛奶。", py: "Wǒ měi tiān hē niúnǎi.", ko: "나는 매일 우유를 마셔." },
+  "女": { zh: "她是一个女孩。", py: "Tā shì yí ge nǚhái.", ko: "그녀는 여자아이야." },
+  "旁边": { zh: "学校旁边有一家商店。", py: "Xuéxiào pángbiān yǒu yì jiā shāngdiàn.", ko: "학교 옆에 상점이 있어." },
+  "跑步": { zh: "我每天早上跑步。", py: "Wǒ měi tiān zǎoshang pǎobù.", ko: "나는 매일 아침 달리기를 해." },
+  "便宜": { zh: "这个很便宜。", py: "Zhège hěn piányi.", ko: "이건 싸." },
+  "票": { zh: "我买了两张电影票。", py: "Wǒ mǎi le liǎng zhāng diànyǐng piào.", ko: "나는 영화표 두 장을 샀어." },
+  "妻子": { zh: "这是我的妻子。", py: "Zhè shì wǒ de qīzi.", ko: "이쪽은 제 아내예요." },
+  "起床": { zh: "我每天七点起床。", py: "Wǒ měi tiān qī diǎn qǐchuáng.", ko: "나는 매일 7시에 일어나." },
+  "千": { zh: "这个手机三千块。", py: "Zhège shǒujī sānqiān kuài.", ko: "이 휴대폰은 3천 위안이야." },
+  "铅笔": { zh: "我有一支铅笔。", py: "Wǒ yǒu yì zhī qiānbǐ.", ko: "나는 연필 한 자루가 있어." },
+  "晴": { zh: "今天是晴天。", py: "Jīntiān shì qíngtiān.", ko: "오늘은 맑은 날이야." },
+  "去年": { zh: "我去年去了中国。", py: "Wǒ qùnián qù le Zhōngguó.", ko: "나는 작년에 중국에 갔어." },
+  "让": { zh: "妈妈让我早点回家。", py: "Māma ràng wǒ zǎo diǎn huí jiā.", ko: "엄마가 일찍 집에 오라고 하셨어." },
+  "日": { zh: "今天是几月几日？", py: "Jīntiān shì jǐ yuè jǐ rì?", ko: "오늘 몇 월 며칠이야?" },
+  "上班": { zh: "我八点上班。", py: "Wǒ bā diǎn shàngbān.", ko: "나는 8시에 출근해." },
+  "身体": { zh: "你身体好吗？", py: "Nǐ shēntǐ hǎo ma?", ko: "몸은 건강해?" },
+  "生病": { zh: "他生病了。", py: "Tā shēngbìng le.", ko: "그는 병이 났어." },
+  "生日": { zh: "今天是我的生日。", py: "Jīntiān shì wǒ de shēngrì.", ko: "오늘은 내 생일이야." },
+  "时间": { zh: "你有时间吗？", py: "Nǐ yǒu shíjiān ma?", ko: "시간 있어?" },
+  "事情": { zh: "我有很多事情要做。", py: "Wǒ yǒu hěn duō shìqing yào zuò.", ko: "나는 할 일이 많아." },
+  "手表": { zh: "这块手表很贵。", py: "Zhè kuài shǒubiǎo hěn guì.", ko: "이 손목시계는 비싸." },
+  "手机": { zh: "我的手机没电了。", py: "Wǒ de shǒujī méi diàn le.", ko: "내 휴대폰 배터리가 없어." },
+  "说话": { zh: "请大声说话。", py: "Qǐng dàshēng shuōhuà.", ko: "크게 말해 주세요." },
+  "送": { zh: "我送你回家。", py: "Wǒ sòng nǐ huí jiā.", ko: "내가 집에 데려다줄게." },
+  "虽然": { zh: "虽然很累，但是很开心。", py: "Suīrán hěn lèi, dànshì hěn kāixīn.", ko: "비록 피곤하지만 즐거워." },
+  "但是": { zh: "我想去，但是没有时间。", py: "Wǒ xiǎng qù, dànshì méiyǒu shíjiān.", ko: "가고 싶지만 시간이 없어." },
+  "它": { zh: "这只猫很可爱，我很喜欢它。", py: "Zhè zhī māo hěn kě'ài, wǒ hěn xǐhuan tā.", ko: "이 고양이 귀여워, 나 정말 좋아해." },
+  "踢足球": { zh: "他们在踢足球。", py: "Tāmen zài tī zúqiú.", ko: "그들은 축구를 하고 있어." },
+  "题": { zh: "这道题很难。", py: "Zhè dào tí hěn nán.", ko: "이 문제는 어려워." }
 };
 // AI 예문 생성 사용 여부. false 로 바꾸면 내장 사전에 없는 단어는 AI를 부르지 않아 소비가 0이 됩니다.
 const EX_AI_FALLBACK = true;
@@ -6087,6 +6219,61 @@ function exportExamples() {
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) { alert('내보내기에 실패했어요: ' + e.message); }
+}
+
+/* ===== 문법 노트 (고정, API 미사용) ===== */
+const GRAM_DATA = {
+  "比": { s:"A + 比 + B + 형용사 (+ 차이)", d:"A가 B보다 더 ~하다. (비교의 결과)", e:[["我比他高。","Wǒ bǐ tā gāo.","나는 그보다 키가 크다."],["今天比昨天冷。","Jīntiān bǐ zuótiān lěng.","오늘이 어제보다 춥다."],["他比我大三岁。","Tā bǐ wǒ dà sān suì.","그는 나보다 세 살 많다."]], t:"형용사 앞에 很·非常을 못 씀(✗我比他很高). 차이는 뒤에: 高一点儿 / 高得多 / 高多了. 부정은 「A 没有 B ~」." },
+  "没有": { s:"A + 没有 + B + (那么) + 형용사", d:"A는 B만큼 ~하지 않다. (比 비교문의 부정)", e:[["我没有他高。","Wǒ méiyǒu tā gāo.","나는 그만큼 크지 않다."],["今天没有昨天热。","Jīntiān méiyǒu zuótiān rè.","오늘은 어제만큼 덥지 않다."]], t:"「不比」와 다름: A 不比 B 高 = A가 B보다 더 크진 않다(비슷하거나 작음)." },
+  "更": { s:"(A 比 B) 更 + 형용사", d:"더욱, 한층. 이미 어떤 성질이 있는데 \"더\"를 강조.", e:[["他比我更高。","Tā bǐ wǒ gèng gāo.","그는 나보다 더 크다."],["今天更冷了。","Jīntiān gèng lěng le.","오늘은 더 추워졌다."]] },
+  "最": { s:"最 + 형용사/동사", d:"가장, 제일. (최상급)", e:[["他是我最好的朋友。","Tā shì wǒ zuì hǎo de péngyou.","그는 내 가장 친한 친구다."],["我最喜欢夏天。","Wǒ zuì xǐhuan xiàtiān.","나는 여름을 제일 좋아한다."]] },
+  "一样": { s:"A + 跟/和 + B + 一样 (+ 형용사)", d:"A는 B와 같다 / 똑같이 ~하다. (동등 비교)", e:[["我跟他一样高。","Wǒ gēn tā yíyàng gāo.","나는 그와 키가 같다."],["这个和那个一样。","Zhège hé nàge yíyàng.","이것은 저것과 같다."]], t:"부정: 「A 跟 B 不一样」 = A는 B와 다르다." },
+  "跟": { s:"A + 跟 + B + 一样 / A + 跟 + B + 동사", d:"~와/과. 비교(一样)나 동반(\"~와 함께\").", e:[["我跟你一样。","Wǒ gēn nǐ yíyàng.","나는 너와 같다."],["我跟朋友一起去。","Wǒ gēn péngyou yìqǐ qù.","나는 친구와 함께 간다."]] },
+  "像": { s:"A + 像 + B + (一样)", d:"~와 닮다 / ~같다. (비유·유사)", e:[["她像妈妈。","Tā xiàng māma.","그녀는 엄마를 닮았다."],["他像孩子一样。","Tā xiàng háizi yíyàng.","그는 아이 같다."]] },
+  "越": { s:"越 A 越 B / 越来越 + 형용사", d:"A할수록 더 B하다 / 점점 더 ~해지다.", e:[["天气越来越热。","Tiānqì yuèláiyuè rè.","날씨가 점점 더워진다."],["我越学越喜欢。","Wǒ yuè xué yuè xǐhuan.","배울수록 더 좋아진다."]] },
+  "从": { s:"从 + 장소/시간 (+ 到 …)", d:"~에서(부터). 출발점(장소·시간).", e:[["我从北京来。","Wǒ cóng Běijīng lái.","나는 베이징에서 왔다."],["从九点到五点。","Cóng jiǔ diǎn dào wǔ diǎn.","9시부터 5시까지."]] },
+  "离": { s:"A + 离 + B + 远/近", d:"A는 B에서 (거리가) 멀다/가깝다. (두 지점 사이 거리)", e:[["我家离学校很近。","Wǒ jiā lí xuéxiào hěn jìn.","우리 집은 학교에서 가깝다."],["这儿离火车站远吗？","Zhèr lí huǒchēzhàn yuǎn ma?","여기서 기차역이 머니?"]] },
+  "让": { s:"주어 + 让 + 사람 + 동사", d:"(사람)에게 ~하게 하다/시키다. (사역)", e:[["妈妈让我早点回家。","Māma ràng wǒ zǎo diǎn huí jiā.","엄마가 나에게 일찍 오라고 하셨다."],["老师让我们读课文。","Lǎoshī ràng wǒmen dú kèwén.","선생님이 우리에게 본문을 읽게 하셨다."]] },
+  "得": { s:"동사 + 得 + 정도보어(형용사)", d:"~하는 정도가 …하다. (동작의 정도·평가)", e:[["他说得很好。","Tā shuō de hěn hǎo.","그는 (말을) 잘한다."],["你来得太早了。","Nǐ lái de tài zǎo le.","너 너무 일찍 왔다."]], t:"得(děi)로 읽으면 \"~해야 한다\": 我得走了 (가야 해)." },
+  "会": { s:"会 + 동사", d:"(배워서) ~할 줄 알다 / (미래에) ~할 것이다.", e:[["我会游泳。","Wǒ huì yóuyǒng.","나는 수영할 줄 안다."],["明天会下雨。","Míngtiān huì xià yǔ.","내일 비가 올 것이다."]] },
+  "能": { s:"能 + 동사", d:"(능력·조건상) ~할 수 있다.", e:[["我能帮你。","Wǒ néng bāng nǐ.","내가 도와줄 수 있다."],["你能来吗？","Nǐ néng lái ma?","올 수 있어?"]] },
+  "可以": { s:"可以 + 동사", d:"~해도 된다(허가) / ~할 수 있다.", e:[["我可以进来吗？","Wǒ kěyǐ jìnlái ma?","들어가도 될까요?"],["这里可以拍照。","Zhèlǐ kěyǐ pāizhào.","여기서 사진 찍어도 된다."]] },
+  "要": { s:"要 + 동사 / 要 + 명사", d:"~하려고 하다(의지)·~할 것이다 / ~을 원하다.", e:[["我要学汉语。","Wǒ yào xué Hànyǔ.","나는 중국어를 배우려고 한다."],["我要一杯咖啡。","Wǒ yào yì bēi kāfēi.","커피 한 잔 주세요."]] },
+  "太": { s:"太 + 형용사 + 了", d:"너무 ~하다. (정도가 지나침·감탄)", e:[["太好了！","Tài hǎo le!","너무 좋다!"],["今天太冷了。","Jīntiān tài lěng le.","오늘 너무 춥다."]] },
+  "非常": { s:"非常 + 형용사/동사", d:"매우, 대단히. (정도 강조)", e:[["我非常高兴。","Wǒ fēicháng gāoxìng.","나는 매우 기쁘다."],["这个非常重要。","Zhège fēicháng zhòngyào.","이건 매우 중요하다."]] },
+  "就": { s:"주어 + 就 + 동사", d:"바로/곧/이미. (이르거나 즉시임을 강조)", e:[["我马上就来。","Wǒ mǎshàng jiù lái.","곧 갈게."],["他六点就起床了。","Tā liù diǎn jiù qǐchuáng le.","그는 6시에 벌써 일어났다."]] },
+  "还": { s:"还 + 동사/형용사", d:"아직·여전히 / 또·더. (지속·추가)", e:[["我还没吃饭。","Wǒ hái méi chī fàn.","나 아직 밥 안 먹었다."],["我还要一个。","Wǒ hái yào yí ge.","하나 더 주세요."]], t:"발음 주의: 여기선 hái. \"돌려주다\"는 huán (还书 책을 반납하다)." },
+  "别": { s:"别 + 동사", d:"~하지 마라. (금지 명령)", e:[["别走。","Bié zǒu.","가지 마."],["别说话。","Bié shuōhuà.","말하지 마."]] },
+  "虽然": { s:"虽然 A，但是 B", d:"비록 A지만 B하다. (양보)", e:[["虽然很累，但是很开心。","Suīrán hěn lèi, dànshì hěn kāixīn.","비록 피곤하지만 즐겁다."]] },
+  "但是": { s:"(虽然) A，但是 B", d:"그러나, 하지만. (역접)", e:[["我想去，但是没有时间。","Wǒ xiǎng qù, dànshì méiyǒu shíjiān.","가고 싶지만 시간이 없다."]] },
+  "因为": { s:"因为 A，所以 B", d:"A하기 때문에 B하다. (원인 → 결과)", e:[["因为下雨，所以我没去。","Yīnwèi xià yǔ, suǒyǐ wǒ méi qù.","비가 와서 안 갔다."]] },
+  "所以": { s:"因为 A，所以 B", d:"그래서, 그러므로. (결과)", e:[["我很累，所以早点睡了。","Wǒ hěn lèi, suǒyǐ zǎo diǎn shuì le.","피곤해서 일찍 잤다."]] },
+  "过": { s:"동사 + 过", d:"~한 적이 있다. (과거의 경험)", e:[["我去过中国。","Wǒ qùguo Zhōngguó.","중국에 가본 적 있다."],["你吃过北京烤鸭吗？","Nǐ chīguo Běijīng kǎoyā ma?","베이징 오리 먹어봤어?"]] },
+  "了": { s:"동사 + 了 / 문장 + 了", d:"동작의 완료 / 상황의 변화.", e:[["我吃饭了。","Wǒ chī fàn le.","밥을 먹었다."],["天冷了。","Tiān lěng le.","날이 추워졌다."]] },
+  "的": { s:"A + 的 + 명사", d:"~의 (소유·수식). 명사를 꾸밈.", e:[["这是我的书。","Zhè shì wǒ de shū.","이건 내 책이다."],["红色的衣服","hóngsè de yīfu","빨간색 옷"]] },
+  "给": { s:"给 + 사람 + 동사/사물", d:"~에게 (주다/해 주다).", e:[["我给你打电话。","Wǒ gěi nǐ dǎ diànhuà.","너한테 전화할게."],["他给我一本书。","Tā gěi wǒ yì běn shū.","그가 나에게 책을 줬다."]] },
+  "把": { s:"주어 + 把 + 목적어 + 동사 + 기타", d:"(목적어)를 ~하다. 목적어에 대한 처치·결과 강조.", e:[["请把门关上。","Qǐng bǎ mén guānshàng.","문을 닫아 주세요."],["我把作业做完了。","Wǒ bǎ zuòyè zuòwán le.","나는 숙제를 다 했다."]] },
+  "被": { s:"주어 + 被 + (행위자) + 동사", d:"~에게 …당하다. (피동)", e:[["我的手机被偷了。","Wǒ de shǒujī bèi tōu le.","내 휴대폰을 도둑맞았다."],["蛋糕被弟弟吃了。","Dàngāo bèi dìdi chī le.","케이크를 남동생이 먹어버렸다."]] },
+  "两": { s:"两 + 양사 + 명사", d:"둘(2). 수량으로 \"2개\"를 셀 때 二 대신 两을 씀.", e:[["两个人","liǎng ge rén","두 사람"],["我要两杯咖啡。","Wǒ yào liǎng bēi kāfēi.","커피 두 잔 주세요."]], t:"二는 순서·숫자 읽기(第二, 二月), 两은 수량(两个) 앞에." },
+  "二": { s:"二 (숫자) / 第二 (서수)", d:"2, 둘. 숫자 읽기·서수에 씀.", e:[["一、二、三","yī, èr, sān","1, 2, 3"],["二月","èr yuè","2월"]], t:"수량을 셀 땐 两: ✗二个人 → ○两个人." }
+};
+function renderGrammar(g){
+  const box=document.getElementById('fc-grammar'); if(!box) return;
+  let h='<div class="gr-struct">'+exEscape(g.s)+'</div>';
+  h+='<div class="gr-desc">'+exEscape(g.d)+'</div>';
+  (g.e||[]).forEach(function(a){
+    h+='<div class="gr-eg"><span class="gr-zh">'+exEscape(a[0])+'</span> <button class="speak-btn" onclick="speak(this.parentNode.querySelector(\'.gr-zh\').textContent, this)">🔊</button>'+
+      '<div class="gr-eg-py">'+exEscape(a[1])+'</div><div class="gr-eg-ko">'+exEscape(a[2])+'</div></div>';
+  });
+  if(g.t) h+='<div class="gr-tip">💡 '+exEscape(g.t)+'</div>';
+  box.innerHTML=h; box.style.display='';
+}
+function showWordGrammar(){
+  const c=currentCard(); if(!c) return;
+  const g=GRAM_DATA[c.zh]; if(!g) return;
+  const box=document.getElementById('fc-grammar'); if(!box) return;
+  if(box.style.display!=='none' && box.innerHTML){ box.style.display='none'; return; }
+  renderGrammar(g);
 }
 
 function exErrorMsg(err) {
@@ -6222,6 +6409,8 @@ function loadCard() {
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
     { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
+    { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
     return;
   }
   const c = cards[fcIndex];
@@ -6242,6 +6431,7 @@ function loadCard() {
   document.getElementById('btn-prev').disabled = srsMode || (fcIndex === 0);
   document.getElementById('btn-wordbook').style.display = '';
   { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display=''; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display = (typeof GRAM_DATA!=='undefined' && GRAM_DATA[c.zh]) ? '' : 'none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
   updateWbBtn();
 }
 
@@ -6274,6 +6464,8 @@ function nextCard(correct) {
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
     { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
+  { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
+    { const _gb=document.getElementById('btn-grammar'); if(_gb) _gb.style.display='none'; const _gx=document.getElementById('fc-grammar'); if(_gx){ _gx.style.display='none'; _gx.innerHTML=''; } }
     const btn = document.getElementById('btn-reveal');
     btn.textContent = '다시 시작';
     btn.style.display = '';
