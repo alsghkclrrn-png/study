@@ -7367,7 +7367,9 @@ const GEMINI_PROXY_URL = '/api/gemini';
 // ▼ [대체] 프록시 없이 키를 직접 넣는 방식. 공개 저장소에선 키가 노출되니 권장하지 않음.
 //   위 GEMINI_PROXY_URL 을 ''(빈 값)으로 바꾸면 이 방식/사용자별 키 입력으로 동작합니다.
 const GEMINI_API_KEY = '';
-const GEMINI_MODEL = 'gemini-2.0-flash-lite';
+// 사용할 Gemini 모델. 무료 한도는 '모델별'로 따로 걸리므로, 옆 사이트에서 잘 되는 모델과 같게 맞추면 가장 확실합니다.
+// 예: 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
 function usingProxy() { return !!(GEMINI_PROXY_URL && GEMINI_PROXY_URL.trim()); }
 

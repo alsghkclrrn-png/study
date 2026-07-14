@@ -58,8 +58,8 @@ function handleGemini(req, res) {
       return;
     }
     // 모델명은 안전한 문자만 허용 (경로 주입/SSRF 방지)
-    let model = (parsed && parsed.model) || 'gemini-2.0-flash-lite';
-    if (!/^[a-zA-Z0-9._-]+$/.test(model)) model = 'gemini-2.0-flash-lite';
+    let model = (parsed && parsed.model) || 'gemini-2.0-flash';
+    if (!/^[a-zA-Z0-9._-]+$/.test(model)) model = 'gemini-2.0-flash';
 
     const upstreamBody = JSON.stringify((parsed && parsed.body) || {});
     const options = {
