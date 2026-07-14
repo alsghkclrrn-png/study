@@ -1,8 +1,8 @@
 {
   "name": "sudal-chinese",
   "version": "1.0.0",
-  "description": "수달 중국어 — 정적 사이트 + Gemini 프록시 (Render.com)",
-  "main": "server.js",
+  "private": true,
+  "description": "수달중국어 - 정적 사이트 + Gemini 프록시 서버",
   "scripts": {
     "start": "node server.js"
   },
