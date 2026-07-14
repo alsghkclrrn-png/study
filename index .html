@@ -6071,7 +6071,127 @@ const EX_DATA = {
   '字': { zh:'这个字怎么写？', py:'Zhège zì zěnme xiě?', ko:'이 글자 어떻게 써?' },
   '昨天': { zh:'昨天我很忙。', py:'Zuótiān wǒ hěn máng.', ko:'어제 나는 바빴어.' },
   '坐': { zh:'我们坐公共汽车去吧。', py:'Wǒmen zuò gōnggòng qìchē qù ba.', ko:'우리 버스 타고 가자.' },
-  '做': { zh:'你在做什么？', py:'Nǐ zài zuò shénme?', ko:'너 뭐 하고 있어?' }
+  '做': { zh:'你在做什么？', py:'Nǐ zài zuò shénme?', ko:'너 뭐 하고 있어?' },
+  "后面": { zh: "学校在银行后面。", py: "Xuéxiào zài yínháng hòumian.", ko: "학교는 은행 뒤에 있어." },
+  "回": { zh: "我要回家了。", py: "Wǒ yào huí jiā le.", ko: "나 이제 집에 가려고 해." },
+  "会": { zh: "我会说汉语。", py: "Wǒ huì shuō Hànyǔ.", ko: "나는 중국어를 할 줄 알아." },
+  "看见": { zh: "我看见他了。", py: "Wǒ kànjiàn tā le.", ko: "나는 그를 봤어." },
+  "了": { zh: "我吃饭了。", py: "Wǒ chī fàn le.", ko: "나 밥 먹었어." },
+  "里": { zh: "钱在包里。", py: "Qián zài bāo lǐ.", ko: "돈은 가방 안에 있어." },
+  "六": { zh: "现在六点。", py: "Xiànzài liù diǎn.", ko: "지금 6시야." },
+  "哪": { zh: "你是哪国人？", py: "Nǐ shì nǎ guó rén?", ko: "어느 나라 사람이야?" },
+  "前面": { zh: "前面有一家商店。", py: "Qiánmiàn yǒu yì jiā shāngdiàn.", ko: "앞에 상점이 하나 있어." },
+  "上": { zh: "请上车。", py: "Qǐng shàng chē.", ko: "차에 타세요." },
+  "少": { zh: "今天人很少。", py: "Jīntiān rén hěn shǎo.", ko: "오늘 사람이 적어." },
+  "时候": { zh: "小时候我住在北京。", py: "Xiǎo shíhou wǒ zhù zài Běijīng.", ko: "어릴 때 나는 베이징에 살았어." },
+  "说": { zh: "请再说一遍。", py: "Qǐng zài shuō yí biàn.", ko: "다시 한 번 말해 주세요." },
+  "下": { zh: "请下车。", py: "Qǐng xià chē.", ko: "차에서 내리세요." },
+  "小姐": { zh: "那位小姐是老师。", py: "Nà wèi xiǎojie shì lǎoshī.", ko: "저 아가씨는 선생님이야." },
+  "些": { zh: "我买了一些水果。", py: "Wǒ mǎi le yìxiē shuǐguǒ.", ko: "나는 과일을 좀 샀어." },
+  "一点儿": { zh: "请慢一点儿。", py: "Qǐng màn yìdiǎnr.", ko: "조금 천천히 해 주세요." },
+  "吧": { zh: "我们走吧。", py: "Wǒmen zǒu ba.", ko: "우리 가자." },
+  "白": { zh: "她穿了一件白衣服。", py: "Tā chuān le yí jiàn bái yīfu.", ko: "그녀는 흰옷을 입었어." },
+  "百": { zh: "这本书一百块。", py: "Zhè běn shū yìbǎi kuài.", ko: "이 책은 100위안이야." },
+  "帮助": { zh: "谢谢你的帮助。", py: "Xièxie nǐ de bāngzhù.", ko: "도와줘서 고마워." },
+  "报纸": { zh: "爸爸在看报纸。", py: "Bàba zài kàn bàozhǐ.", ko: "아빠가 신문을 보고 계셔." },
+  "比": { zh: "我比他高。", py: "Wǒ bǐ tā gāo.", ko: "나는 그보다 키가 커." },
+  "别": { zh: "别走。", py: "Bié zǒu.", ko: "가지 마." },
+  "宾馆": { zh: "我们住在宾馆。", py: "Wǒmen zhù zài bīnguǎn.", ko: "우리는 호텔에 묵어." },
+  "长": { zh: "这条路很长。", py: "Zhè tiáo lù hěn cháng.", ko: "이 길은 길어." },
+  "唱歌": { zh: "她唱歌很好听。", py: "Tā chànggē hěn hǎotīng.", ko: "그녀는 노래를 잘 불러." },
+  "出": { zh: "他出去了。", py: "Tā chūqù le.", ko: "그는 나갔어." },
+  "穿": { zh: "今天冷，多穿点。", py: "Jīntiān lěng, duō chuān diǎn.", ko: "오늘 추우니 따뜻하게 입어." },
+  "次": { zh: "我去过一次北京。", py: "Wǒ qùguo yí cì Běijīng.", ko: "나는 베이징에 한 번 가봤어." },
+  "从": { zh: "我从韩国来。", py: "Wǒ cóng Hánguó lái.", ko: "나는 한국에서 왔어." },
+  "错": { zh: "对不起，是我错了。", py: "Duìbuqǐ, shì wǒ cuò le.", ko: "미안해, 내가 틀렸어." },
+  "打篮球": { zh: "我们一起打篮球吧。", py: "Wǒmen yìqǐ dǎ lánqiú ba.", ko: "우리 같이 농구하자." },
+  "大家": { zh: "大家好！", py: "Dàjiā hǎo!", ko: "여러분 안녕하세요!" },
+  "到": { zh: "我到家了。", py: "Wǒ dào jiā le.", ko: "나 집에 도착했어." },
+  "得": { zh: "你得多休息。", py: "Nǐ děi duō xiūxi.", ko: "너는 푹 쉬어야 해." },
+  "等": { zh: "请等我一下。", py: "Qǐng děng wǒ yíxià.", ko: "잠깐만 기다려 줘." },
+  "弟弟": { zh: "我有一个弟弟。", py: "Wǒ yǒu yí ge dìdi.", ko: "나는 남동생이 하나 있어." },
+  "第一": { zh: "他是第一名。", py: "Tā shì dì-yī míng.", ko: "그가 1등이야." },
+  "懂": { zh: "我听懂了。", py: "Wǒ tīng dǒng le.", ko: "나는 알아들었어." },
+  "对": { zh: "你说得对。", py: "Nǐ shuō de duì.", ko: "네 말이 맞아." },
+  "房间": { zh: "我的房间很干净。", py: "Wǒ de fángjiān hěn gānjìng.", ko: "내 방은 깨끗해." },
+  "非常": { zh: "今天非常热。", py: "Jīntiān fēicháng rè.", ko: "오늘 무척 더워." },
+  "服务员": { zh: "服务员，买单！", py: "Fúwùyuán, mǎidān!", ko: "저기요, 계산해 주세요!" },
+  "高": { zh: "他个子很高。", py: "Tā gèzi hěn gāo.", ko: "그는 키가 커." },
+  "告诉": { zh: "请告诉我你的名字。", py: "Qǐng gàosu wǒ nǐ de míngzi.", ko: "이름을 알려 주세요." },
+  "哥哥": { zh: "我哥哥是医生。", py: "Wǒ gēge shì yīshēng.", ko: "우리 형은 의사야." },
+  "给": { zh: "我给你打电话。", py: "Wǒ gěi nǐ dǎ diànhuà.", ko: "내가 너한테 전화할게." },
+  "公共汽车": { zh: "我坐公共汽车上班。", py: "Wǒ zuò gōnggòng qìchē shàngbān.", ko: "나는 버스로 출근해." },
+  "公司": { zh: "我在一家公司工作。", py: "Wǒ zài yì jiā gōngsī gōngzuò.", ko: "나는 한 회사에서 일해." },
+  "贵": { zh: "这个太贵了。", py: "Zhège tài guì le.", ko: "이건 너무 비싸." },
+  "过": { zh: "我去过中国。", py: "Wǒ qùguo Zhōngguó.", ko: "나는 중국에 가본 적이 있어." },
+  "还": { zh: "我还没吃饭。", py: "Wǒ hái méi chī fàn.", ko: "나 아직 밥 안 먹었어." },
+  "孩子": { zh: "他有两个孩子。", py: "Tā yǒu liǎng ge háizi.", ko: "그는 아이가 둘 있어." },
+  "好吃": { zh: "妈妈做的饭很好吃。", py: "Māma zuò de fàn hěn hǎochī.", ko: "엄마가 만든 밥은 맛있어." },
+  "黑": { zh: "天黑了。", py: "Tiān hēi le.", ko: "날이 어두워졌어." },
+  "红": { zh: "她喜欢红色。", py: "Tā xǐhuan hóngsè.", ko: "그녀는 빨간색을 좋아해." },
+  "火车站": { zh: "火车站离这儿很远。", py: "Huǒchēzhàn lí zhèr hěn yuǎn.", ko: "기차역은 여기서 멀어." },
+  "机场": { zh: "我去机场接朋友。", py: "Wǒ qù jīchǎng jiē péngyou.", ko: "나는 공항에 친구 마중 가." },
+  "鸡蛋": { zh: "我早上吃了两个鸡蛋。", py: "Wǒ zǎoshang chī le liǎng ge jīdàn.", ko: "나는 아침에 계란 두 개를 먹었어." },
+  "件": { zh: "我买了一件衣服。", py: "Wǒ mǎi le yí jiàn yīfu.", ko: "나는 옷 한 벌을 샀어." },
+  "教室": { zh: "教室里有很多学生。", py: "Jiàoshì lǐ yǒu hěn duō xuésheng.", ko: "교실에 학생이 많아." },
+  "姐姐": { zh: "我姐姐很漂亮。", py: "Wǒ jiějie hěn piàoliang.", ko: "우리 언니는 예뻐." },
+  "介绍": { zh: "我来介绍一下。", py: "Wǒ lái jièshào yíxià.", ko: "제가 소개할게요." },
+  "进": { zh: "请进。", py: "Qǐng jìn.", ko: "들어오세요." },
+  "近": { zh: "我家离学校很近。", py: "Wǒ jiā lí xuéxiào hěn jìn.", ko: "우리 집은 학교에서 가까워." },
+  "就": { zh: "我马上就来。", py: "Wǒ mǎshàng jiù lái.", ko: "나 곧 갈게." },
+  "觉得": { zh: "我觉得很好。", py: "Wǒ juéde hěn hǎo.", ko: "나는 좋다고 생각해." },
+  "咖啡": { zh: "我想喝咖啡。", py: "Wǒ xiǎng hē kāfēi.", ko: "나는 커피를 마시고 싶어." },
+  "开始": { zh: "我们开始上课吧。", py: "Wǒmen kāishǐ shàngkè ba.", ko: "수업 시작하자." },
+  "考试": { zh: "明天有考试。", py: "Míngtiān yǒu kǎoshì.", ko: "내일 시험이 있어." },
+  "可能": { zh: "他可能不来了。", py: "Tā kěnéng bù lái le.", ko: "그는 아마 안 올 거야." },
+  "可以": { zh: "我可以进来吗？", py: "Wǒ kěyǐ jìnlái ma?", ko: "들어가도 될까요?" },
+  "课": { zh: "我今天有三节课。", py: "Wǒ jīntiān yǒu sān jié kè.", ko: "나는 오늘 수업이 세 개 있어." },
+  "快": { zh: "你走得太快了。", py: "Nǐ zǒu de tài kuài le.", ko: "너 너무 빨리 걸어." },
+  "快乐": { zh: "祝你生日快乐！", py: "Zhù nǐ shēngrì kuàilè!", ko: "생일 축하해!" },
+  "累": { zh: "我今天很累。", py: "Wǒ jīntiān hěn lèi.", ko: "나 오늘 피곤해." },
+  "离": { zh: "学校离这儿不远。", py: "Xuéxiào lí zhèr bù yuǎn.", ko: "학교는 여기서 멀지 않아." },
+  "两": { zh: "我要两杯咖啡。", py: "Wǒ yào liǎng bēi kāfēi.", ko: "커피 두 잔 주세요." },
+  "零": { zh: "现在零下五度。", py: "Xiànzài líng xià wǔ dù.", ko: "지금 영하 5도야." },
+  "路": { zh: "这条路很宽。", py: "Zhè tiáo lù hěn kuān.", ko: "이 길은 넓어." },
+  "旅游": { zh: "我喜欢去旅游。", py: "Wǒ xǐhuan qù lǚyóu.", ko: "나는 여행 가는 걸 좋아해." },
+  "卖": { zh: "这里卖水果。", py: "Zhèlǐ mài shuǐguǒ.", ko: "여기서 과일을 팔아." },
+  "慢": { zh: "请说慢一点。", py: "Qǐng shuō màn yìdiǎn.", ko: "조금 천천히 말해 주세요." },
+  "忙": { zh: "我今天很忙。", py: "Wǒ jīntiān hěn máng.", ko: "나 오늘 바빠." },
+  "每": { zh: "我每天学习汉语。", py: "Wǒ měi tiān xuéxí Hànyǔ.", ko: "나는 매일 중국어를 공부해." },
+  "妹妹": { zh: "我妹妹很可爱。", py: "Wǒ mèimei hěn kě'ài.", ko: "내 여동생은 귀여워." },
+  "门": { zh: "请关门。", py: "Qǐng guān mén.", ko: "문을 닫아 주세요." },
+  "面条": { zh: "我喜欢吃面条。", py: "Wǒ xǐhuan chī miàntiáo.", ko: "나는 국수를 좋아해." },
+  "男": { zh: "他是一个男孩。", py: "Tā shì yí ge nánhái.", ko: "그는 남자아이야." },
+  "您": { zh: "您好！", py: "Nín hǎo!", ko: "안녕하세요!" },
+  "牛奶": { zh: "我每天喝牛奶。", py: "Wǒ měi tiān hē niúnǎi.", ko: "나는 매일 우유를 마셔." },
+  "女": { zh: "她是一个女孩。", py: "Tā shì yí ge nǚhái.", ko: "그녀는 여자아이야." },
+  "旁边": { zh: "学校旁边有一家商店。", py: "Xuéxiào pángbiān yǒu yì jiā shāngdiàn.", ko: "학교 옆에 상점이 있어." },
+  "跑步": { zh: "我每天早上跑步。", py: "Wǒ měi tiān zǎoshang pǎobù.", ko: "나는 매일 아침 달리기를 해." },
+  "便宜": { zh: "这个很便宜。", py: "Zhège hěn piányi.", ko: "이건 싸." },
+  "票": { zh: "我买了两张电影票。", py: "Wǒ mǎi le liǎng zhāng diànyǐng piào.", ko: "나는 영화표 두 장을 샀어." },
+  "妻子": { zh: "这是我的妻子。", py: "Zhè shì wǒ de qīzi.", ko: "이쪽은 제 아내예요." },
+  "起床": { zh: "我每天七点起床。", py: "Wǒ měi tiān qī diǎn qǐchuáng.", ko: "나는 매일 7시에 일어나." },
+  "千": { zh: "这个手机三千块。", py: "Zhège shǒujī sānqiān kuài.", ko: "이 휴대폰은 3천 위안이야." },
+  "铅笔": { zh: "我有一支铅笔。", py: "Wǒ yǒu yì zhī qiānbǐ.", ko: "나는 연필 한 자루가 있어." },
+  "晴": { zh: "今天是晴天。", py: "Jīntiān shì qíngtiān.", ko: "오늘은 맑은 날이야." },
+  "去年": { zh: "我去年去了中国。", py: "Wǒ qùnián qù le Zhōngguó.", ko: "나는 작년에 중국에 갔어." },
+  "让": { zh: "妈妈让我早点回家。", py: "Māma ràng wǒ zǎo diǎn huí jiā.", ko: "엄마가 일찍 집에 오라고 하셨어." },
+  "日": { zh: "今天是几月几日？", py: "Jīntiān shì jǐ yuè jǐ rì?", ko: "오늘 몇 월 며칠이야?" },
+  "上班": { zh: "我八点上班。", py: "Wǒ bā diǎn shàngbān.", ko: "나는 8시에 출근해." },
+  "身体": { zh: "你身体好吗？", py: "Nǐ shēntǐ hǎo ma?", ko: "몸은 건강해?" },
+  "生病": { zh: "他生病了。", py: "Tā shēngbìng le.", ko: "그는 병이 났어." },
+  "生日": { zh: "今天是我的生日。", py: "Jīntiān shì wǒ de shēngrì.", ko: "오늘은 내 생일이야." },
+  "时间": { zh: "你有时间吗？", py: "Nǐ yǒu shíjiān ma?", ko: "시간 있어?" },
+  "事情": { zh: "我有很多事情要做。", py: "Wǒ yǒu hěn duō shìqing yào zuò.", ko: "나는 할 일이 많아." },
+  "手表": { zh: "这块手表很贵。", py: "Zhè kuài shǒubiǎo hěn guì.", ko: "이 손목시계는 비싸." },
+  "手机": { zh: "我的手机没电了。", py: "Wǒ de shǒujī méi diàn le.", ko: "내 휴대폰 배터리가 없어." },
+  "说话": { zh: "请大声说话。", py: "Qǐng dàshēng shuōhuà.", ko: "크게 말해 주세요." },
+  "送": { zh: "我送你回家。", py: "Wǒ sòng nǐ huí jiā.", ko: "내가 집에 데려다줄게." },
+  "虽然": { zh: "虽然很累，但是很开心。", py: "Suīrán hěn lèi, dànshì hěn kāixīn.", ko: "비록 피곤하지만 즐거워." },
+  "但是": { zh: "我想去，但是没有时间。", py: "Wǒ xiǎng qù, dànshì méiyǒu shíjiān.", ko: "가고 싶지만 시간이 없어." },
+  "它": { zh: "这只猫很可爱，我很喜欢它。", py: "Zhè zhī māo hěn kě'ài, wǒ hěn xǐhuan tā.", ko: "이 고양이 귀여워, 나 정말 좋아해." },
+  "踢足球": { zh: "他们在踢足球。", py: "Tāmen zài tī zúqiú.", ko: "그들은 축구를 하고 있어." },
+  "题": { zh: "这道题很难。", py: "Zhè dào tí hěn nán.", ko: "이 문제는 어려워." }
 };
 // AI 예문 생성 사용 여부. false 로 바꾸면 내장 사전에 없는 단어는 AI를 부르지 않아 소비가 0이 됩니다.
 const EX_AI_FALLBACK = true;
@@ -6092,7 +6212,9 @@ function exportExamples() {
 function exErrorMsg(err) {
   const m = (err && err.message) || '';
   let msg;
-  if (m === 'no-key' || m === 'bad-key') msg = '예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)';
+  if (m === 'no-key' || m === 'bad-key') msg = (typeof usingProxy === 'function' && usingProxy())
+    ? 'AI 서버의 키에 문제가 있어요. Render 환경변수 GEMINI_API_KEY(오타·공백·만료·API 제한)를 확인하고 재배포했는지 봐 주세요.'
+    : '예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)';
   else if (m === 'rate-limit') msg = '요청이 많아요. 잠시 후 다시 눌러 주세요.';
   else if (m === 'network' || m === 'waking') msg = '네트워크 오류예요. 인터넷 연결을 확인해 주세요.';
   else if (m === 'empty') msg = 'AI가 예문을 만들지 못했어요. 다시 시도해 주세요.';
@@ -7365,7 +7487,9 @@ const GEMINI_PROXY_URL = '/api/gemini';
 // ▼ [대체] 프록시 없이 키를 직접 넣는 방식. 공개 저장소에선 키가 노출되니 권장하지 않음.
 //   위 GEMINI_PROXY_URL 을 ''(빈 값)으로 바꾸면 이 방식/사용자별 키 입력으로 동작합니다.
 const GEMINI_API_KEY = '';
-const GEMINI_MODEL = 'gemini-2.0-flash-lite';
+// 사용할 Gemini 모델. 무료 한도는 '모델별'로 따로 걸리므로, 옆 사이트에서 잘 되는 모델과 같게 맞추면 가장 확실합니다.
+// 예: 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
 function usingProxy() { return !!(GEMINI_PROXY_URL && GEMINI_PROXY_URL.trim()); }
 
@@ -7605,7 +7729,11 @@ async function sendChat() {
     const code = e && e.message;
     let msg;
     if (code === 'no-key' || code === 'bad-key') {
-      msg = 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+      if (usingProxy()) {
+        msg = 'AI 서버의 키에 문제가 있어요. 🦦<br>Render 환경변수 <b>GEMINI_API_KEY</b>가 올바른지(오타·앞뒤 공백·만료·API 제한) 확인하고 <b>재배포</b>했는지 봐 주세요.';
+      } else {
+        msg = 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+      }
     } else if (code === 'rate-limit') {
       msg = '오늘 AI 사용량을 다 썼어요. 🦦<br>구글 무료 이용 한도에 도달했어요. <b>잠시 후(또는 내일) 다시</b> 말 걸어 주세요.';
     } else if (code === 'waking') {
