@@ -1447,6 +1447,10 @@
           <button class="btn" id="btn-install" onclick="installApp()" style="display:none;border-color:var(--green);background:var(--green-bg);color:var(--green);">📲 앱 설치</button>
           <input type="file" id="import-file" accept="application/json,.json" style="display:none" onchange="importData(this)">
         </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);">
+          <p style="font-size:0.78rem;color:var(--text3);margin-bottom:8px;">🛠 관리자용 · 예문 사전: AI로 만들어진 예문을 내려받아 코드의 <code>EX_DATA</code>에 붙여넣으면 모든 방문자에게 무료·고정으로 제공돼요.</p>
+          <button class="btn" onclick="exportExamples()">📝 예문 사전 내보내기 (관리자)</button>
+        </div>
         <div id="data-status" style="font-size:0.82rem;color:var(--text2);margin-top:10px;"></div>
       </div>
     </div>
@@ -5931,6 +5935,160 @@ let exMem = {};
 function exLoad() { try { const s = localStorage.getItem(EX_KEY); return s ? JSON.parse(s) : {}; } catch (e) { return exMem; } }
 function exSave(o) { exMem = o; try { localStorage.setItem(EX_KEY, JSON.stringify(o)); } catch (e) {} }
 function exEscape(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+/* ===== 내장 예문 사전 (고정) — 여기 있는 단어는 API를 전혀 쓰지 않음 =====
+   형식:  '단어': { zh:'중국어 예문', py:'병음', ko:'한국어 번역' }
+   AI로 생성한 예문을 아래 '예문 사전 내보내기'로 받아 이 안에 붙여넣으면 영구 고정됩니다. */
+const EX_DATA = {
+  '爱': { zh:'我爱你。', py:'Wǒ ài nǐ.', ko:'나는 너를 사랑해.' },
+  '八': { zh:'现在八点。', py:'Xiànzài bā diǎn.', ko:'지금 8시야.' },
+  '爸爸': { zh:'我爸爸很高。', py:'Wǒ bàba hěn gāo.', ko:'우리 아빠는 키가 커.' },
+  '杯子': { zh:'这个杯子是我的。', py:'Zhège bēizi shì wǒ de.', ko:'이 컵은 내 거야.' },
+  '北京': { zh:'我住在北京。', py:'Wǒ zhù zài Běijīng.', ko:'나는 베이징에 살아.' },
+  '本': { zh:'我有一本书。', py:'Wǒ yǒu yì běn shū.', ko:'나는 책 한 권이 있어.' },
+  '不客气': { zh:'不客气！', py:'Bú kèqi!', ko:'천만에요!' },
+  '不': { zh:'我不喝茶。', py:'Wǒ bù hē chá.', ko:'나는 차를 안 마셔.' },
+  '菜': { zh:'这个菜很好吃。', py:'Zhège cài hěn hǎochī.', ko:'이 요리 정말 맛있어.' },
+  '茶': { zh:'我想喝茶。', py:'Wǒ xiǎng hē chá.', ko:'나는 차를 마시고 싶어.' },
+  '吃': { zh:'我们一起吃饭吧。', py:'Wǒmen yìqǐ chī fàn ba.', ko:'우리 같이 밥 먹자.' },
+  '出租车': { zh:'我坐出租车去。', py:'Wǒ zuò chūzūchē qù.', ko:'나는 택시를 타고 가.' },
+  '打电话': { zh:'我给妈妈打电话。', py:'Wǒ gěi māma dǎ diànhuà.', ko:'나는 엄마에게 전화해.' },
+  '大': { zh:'这个房间很大。', py:'Zhège fángjiān hěn dà.', ko:'이 방은 커.' },
+  '的': { zh:'这是我的书。', py:'Zhè shì wǒ de shū.', ko:'이건 내 책이야.' },
+  '点': { zh:'我们下午三点见。', py:'Wǒmen xiàwǔ sān diǎn jiàn.', ko:'우리 오후 3시에 만나.' },
+  '电脑': { zh:'我的电脑坏了。', py:'Wǒ de diànnǎo huài le.', ko:'내 컴퓨터가 고장 났어.' },
+  '电视': { zh:'我在看电视。', py:'Wǒ zài kàn diànshì.', ko:'나는 텔레비전을 보고 있어.' },
+  '电影': { zh:'我们去看电影吧。', py:'Wǒmen qù kàn diànyǐng ba.', ko:'우리 영화 보러 가자.' },
+  '东西': { zh:'我要买东西。', py:'Wǒ yào mǎi dōngxi.', ko:'나는 물건을 사려고 해.' },
+  '都': { zh:'我们都是学生。', py:'Wǒmen dōu shì xuésheng.', ko:'우리는 모두 학생이야.' },
+  '读': { zh:'我喜欢读书。', py:'Wǒ xǐhuan dú shū.', ko:'나는 책 읽는 걸 좋아해.' },
+  '对不起': { zh:'对不起，我来晚了。', py:'Duìbuqǐ, wǒ lái wǎn le.', ko:'미안해, 늦었어.' },
+  '多': { zh:'这里人很多。', py:'Zhèlǐ rén hěn duō.', ko:'여기 사람이 많아.' },
+  '多少': { zh:'这个多少钱？', py:'Zhège duōshao qián?', ko:'이거 얼마예요?' },
+  '儿子': { zh:'他有一个儿子。', py:'Tā yǒu yí ge érzi.', ko:'그는 아들이 하나 있어.' },
+  '二': { zh:'二加二等于四。', py:'Èr jiā èr děngyú sì.', ko:'2 더하기 2는 4야.' },
+  '饭店': { zh:'我们在饭店吃饭。', py:'Wǒmen zài fàndiàn chī fàn.', ko:'우리는 식당에서 밥을 먹어.' },
+  '飞机': { zh:'我坐飞机去北京。', py:'Wǒ zuò fēijī qù Běijīng.', ko:'나는 비행기를 타고 베이징에 가.' },
+  '分钟': { zh:'请等我五分钟。', py:'Qǐng děng wǒ wǔ fēnzhōng.', ko:'5분만 기다려 주세요.' },
+  '高兴': { zh:'我很高兴见到你。', py:'Wǒ hěn gāoxìng jiàndào nǐ.', ko:'만나서 정말 반가워.' },
+  '个': { zh:'我有一个问题。', py:'Wǒ yǒu yí ge wèntí.', ko:'나는 질문이 하나 있어.' },
+  '工作': { zh:'我在北京工作。', py:'Wǒ zài Běijīng gōngzuò.', ko:'나는 베이징에서 일해.' },
+  '狗': { zh:'我家有一只狗。', py:'Wǒ jiā yǒu yì zhī gǒu.', ko:'우리 집에 개가 한 마리 있어.' },
+  '汉语': { zh:'我在学汉语。', py:'Wǒ zài xué Hànyǔ.', ko:'나는 중국어를 배우고 있어.' },
+  '好': { zh:'你好吗？', py:'Nǐ hǎo ma?', ko:'잘 지내니?' },
+  '号': { zh:'今天几号？', py:'Jīntiān jǐ hào?', ko:'오늘 며칠이야?' },
+  '喝': { zh:'你想喝什么？', py:'Nǐ xiǎng hē shénme?', ko:'뭐 마실래?' },
+  '和': { zh:'我和你一起去。', py:'Wǒ hé nǐ yìqǐ qù.', ko:'나는 너와 함께 가.' },
+  '很': { zh:'今天很热。', py:'Jīntiān hěn rè.', ko:'오늘 정말 더워.' },
+  '几': { zh:'你要几个？', py:'Nǐ yào jǐ ge?', ko:'몇 개 필요해?' },
+  '家': { zh:'我在家。', py:'Wǒ zài jiā.', ko:'나는 집에 있어.' },
+  '叫': { zh:'我叫小明。', py:'Wǒ jiào Xiǎomíng.', ko:'내 이름은 샤오밍이야.' },
+  '今天': { zh:'今天天气很好。', py:'Jīntiān tiānqì hěn hǎo.', ko:'오늘 날씨가 좋아.' },
+  '九': { zh:'我九点上班。', py:'Wǒ jiǔ diǎn shàngbān.', ko:'나는 9시에 출근해.' },
+  '开': { zh:'请开门。', py:'Qǐng kāi mén.', ko:'문 좀 열어 주세요.' },
+  '看': { zh:'我想看书。', py:'Wǒ xiǎng kàn shū.', ko:'나는 책을 보고 싶어.' },
+  '块': { zh:'这个五块钱。', py:'Zhège wǔ kuài qián.', ko:'이건 5위안이야.' },
+  '来': { zh:'你什么时候来？', py:'Nǐ shénme shíhou lái?', ko:'언제 와?' },
+  '老师': { zh:'他是我的老师。', py:'Tā shì wǒ de lǎoshī.', ko:'그는 내 선생님이야.' },
+  '冷': { zh:'今天很冷。', py:'Jīntiān hěn lěng.', ko:'오늘 추워.' },
+  '妈妈': { zh:'我爱我妈妈。', py:'Wǒ ài wǒ māma.', ko:'나는 우리 엄마를 사랑해.' },
+  '吗': { zh:'你是学生吗？', py:'Nǐ shì xuésheng ma?', ko:'너는 학생이니?' },
+  '买': { zh:'我想买一本书。', py:'Wǒ xiǎng mǎi yì běn shū.', ko:'나는 책 한 권을 사고 싶어.' },
+  '猫': { zh:'我喜欢猫。', py:'Wǒ xǐhuan māo.', ko:'나는 고양이를 좋아해.' },
+  '没关系': { zh:'没关系。', py:'Méi guānxi.', ko:'괜찮아요.' },
+  '没有': { zh:'我没有钱。', py:'Wǒ méiyǒu qián.', ko:'나는 돈이 없어.' },
+  '米饭': { zh:'我要一碗米饭。', py:'Wǒ yào yì wǎn mǐfàn.', ko:'밥 한 그릇 주세요.' },
+  '名字': { zh:'你叫什么名字？', py:'Nǐ jiào shénme míngzi?', ko:'이름이 뭐예요?' },
+  '明天': { zh:'明天见！', py:'Míngtiān jiàn!', ko:'내일 봐!' },
+  '哪儿': { zh:'你去哪儿？', py:'Nǐ qù nǎr?', ko:'어디 가?' },
+  '那': { zh:'那是什么？', py:'Nà shì shénme?', ko:'저건 뭐야?' },
+  '呢': { zh:'我很好，你呢？', py:'Wǒ hěn hǎo, nǐ ne?', ko:'나는 잘 지내, 너는?' },
+  '能': { zh:'我能帮你。', py:'Wǒ néng bāng nǐ.', ko:'나는 너를 도와줄 수 있어.' },
+  '你': { zh:'你好！', py:'Nǐ hǎo!', ko:'안녕!' },
+  '年': { zh:'我学了一年汉语。', py:'Wǒ xué le yì nián Hànyǔ.', ko:'나는 중국어를 1년 배웠어.' },
+  '女儿': { zh:'她有一个女儿。', py:"Tā yǒu yí ge nǚ'ér.", ko:'그녀는 딸이 하나 있어.' },
+  '朋友': { zh:'他是我的朋友。', py:'Tā shì wǒ de péngyou.', ko:'그는 내 친구야.' },
+  '漂亮': { zh:'她很漂亮。', py:'Tā hěn piàoliang.', ko:'그녀는 예뻐.' },
+  '苹果': { zh:'我喜欢吃苹果。', py:'Wǒ xǐhuan chī píngguǒ.', ko:'나는 사과 먹는 걸 좋아해.' },
+  '七': { zh:'现在七点。', py:'Xiànzài qī diǎn.', ko:'지금 7시야.' },
+  '钱': { zh:'这个多少钱？', py:'Zhège duōshao qián?', ko:'이거 얼마예요?' },
+  '请': { zh:'请坐。', py:'Qǐng zuò.', ko:'앉으세요.' },
+  '去': { zh:'我要去学校。', py:'Wǒ yào qù xuéxiào.', ko:'나는 학교에 가려고 해.' },
+  '热': { zh:'今天天气很热。', py:'Jīntiān tiānqì hěn rè.', ko:'오늘 날씨가 더워.' },
+  '人': { zh:'他是好人。', py:'Tā shì hǎo rén.', ko:'그는 좋은 사람이야.' },
+  '认识': { zh:'认识你很高兴。', py:'Rènshi nǐ hěn gāoxìng.', ko:'만나서 반가워.' },
+  '三': { zh:'我有三个孩子。', py:'Wǒ yǒu sān ge háizi.', ko:'나는 아이가 셋 있어.' },
+  '商店': { zh:'我去商店买东西。', py:'Wǒ qù shāngdiàn mǎi dōngxi.', ko:'나는 상점에 물건 사러 가.' },
+  '上午': { zh:'上午我有课。', py:'Shàngwǔ wǒ yǒu kè.', ko:'오전에 나는 수업이 있어.' },
+  '谁': { zh:'他是谁？', py:'Tā shì shéi?', ko:'그는 누구야?' },
+  '什么': { zh:'这是什么？', py:'Zhè shì shénme?', ko:'이건 뭐야?' },
+  '十': { zh:'我十点睡觉。', py:'Wǒ shí diǎn shuìjiào.', ko:'나는 10시에 자.' },
+  '是': { zh:'我是韩国人。', py:'Wǒ shì Hánguó rén.', ko:'나는 한국인이야.' },
+  '书': { zh:'这本书很好。', py:'Zhè běn shū hěn hǎo.', ko:'이 책은 좋아.' },
+  '水': { zh:'我想喝水。', py:'Wǒ xiǎng hē shuǐ.', ko:'나는 물을 마시고 싶어.' },
+  '水果': { zh:'我喜欢吃水果。', py:'Wǒ xǐhuan chī shuǐguǒ.', ko:'나는 과일 먹는 걸 좋아해.' },
+  '睡觉': { zh:'我要睡觉了。', py:'Wǒ yào shuìjiào le.', ko:'나 이제 자려고 해.' },
+  '四': { zh:'我家有四个人。', py:'Wǒ jiā yǒu sì ge rén.', ko:'우리 집은 네 식구야.' },
+  '岁': { zh:'我二十岁。', py:'Wǒ èrshí suì.', ko:'나는 스무 살이야.' },
+  '他': { zh:'他是我哥哥。', py:'Tā shì wǒ gēge.', ko:'그는 우리 형이야.' },
+  '她': { zh:'她是我姐姐。', py:'Tā shì wǒ jiějie.', ko:'그녀는 우리 누나야.' },
+  '太': { zh:'太好了！', py:'Tài hǎo le!', ko:'정말 좋다!' },
+  '天气': { zh:'今天天气怎么样？', py:'Jīntiān tiānqì zěnmeyàng?', ko:'오늘 날씨 어때?' },
+  '听': { zh:'我在听音乐。', py:'Wǒ zài tīng yīnyuè.', ko:'나는 음악을 듣고 있어.' },
+  '同学': { zh:'他是我的同学。', py:'Tā shì wǒ de tóngxué.', ko:'그는 내 반 친구야.' },
+  '喂': { zh:'喂，你好！', py:'Wéi, nǐ hǎo!', ko:'여보세요!' },
+  '我': { zh:'我是学生。', py:'Wǒ shì xuésheng.', ko:'나는 학생이야.' },
+  '我们': { zh:'我们是朋友。', py:'Wǒmen shì péngyou.', ko:'우리는 친구야.' },
+  '五': { zh:'现在五点。', py:'Xiànzài wǔ diǎn.', ko:'지금 5시야.' },
+  '喜欢': { zh:'我喜欢你。', py:'Wǒ xǐhuan nǐ.', ko:'나는 너를 좋아해.' },
+  '下午': { zh:'下午我们去看电影。', py:'Xiàwǔ wǒmen qù kàn diànyǐng.', ko:'오후에 우리 영화 보러 가.' },
+  '下雨': { zh:'今天下雨了。', py:'Jīntiān xià yǔ le.', ko:'오늘 비가 왔어.' },
+  '先生': { zh:'王先生是老师。', py:'Wáng xiānsheng shì lǎoshī.', ko:'왕 선생님은 교사예요.' },
+  '现在': { zh:'现在几点？', py:'Xiànzài jǐ diǎn?', ko:'지금 몇 시야?' },
+  '想': { zh:'我想回家。', py:'Wǒ xiǎng huí jiā.', ko:'나는 집에 가고 싶어.' },
+  '小': { zh:'这个很小。', py:'Zhège hěn xiǎo.', ko:'이건 작아.' },
+  '写': { zh:'请写你的名字。', py:'Qǐng xiě nǐ de míngzi.', ko:'이름을 써 주세요.' },
+  '谢谢': { zh:'谢谢你！', py:'Xièxie nǐ!', ko:'고마워!' },
+  '星期': { zh:'一个星期有七天。', py:'Yí ge xīngqī yǒu qī tiān.', ko:'일주일은 7일이야.' },
+  '学生': { zh:'我是大学生。', py:'Wǒ shì dàxuéshēng.', ko:'나는 대학생이야.' },
+  '学习': { zh:'我喜欢学习汉语。', py:'Wǒ xǐhuan xuéxí Hànyǔ.', ko:'나는 중국어 공부를 좋아해.' },
+  '学校': { zh:'我们的学校很大。', py:'Wǒmen de xuéxiào hěn dà.', ko:'우리 학교는 커.' },
+  '一': { zh:'我有一个哥哥。', py:'Wǒ yǒu yí ge gēge.', ko:'나는 형이 하나 있어.' },
+  '衣服': { zh:'这件衣服很漂亮。', py:'Zhè jiàn yīfu hěn piàoliang.', ko:'이 옷 예뻐.' },
+  '医生': { zh:'他是医生。', py:'Tā shì yīshēng.', ko:'그는 의사야.' },
+  '医院': { zh:'我去医院看病。', py:'Wǒ qù yīyuàn kàn bìng.', ko:'나는 병원에 진료받으러 가.' },
+  '椅子': { zh:'这把椅子很舒服。', py:'Zhè bǎ yǐzi hěn shūfu.', ko:'이 의자는 편해.' },
+  '有': { zh:'我有很多书。', py:'Wǒ yǒu hěn duō shū.', ko:'나는 책이 많아.' },
+  '月': { zh:'我一个月看一本书。', py:'Wǒ yí ge yuè kàn yì běn shū.', ko:'나는 한 달에 책 한 권을 읽어.' },
+  '再见': { zh:'再见！', py:'Zàijiàn!', ko:'안녕히 가세요!' },
+  '在': { zh:'书在桌子上。', py:'Shū zài zhuōzi shàng.', ko:'책은 책상 위에 있어.' },
+  '怎么': { zh:'这个字怎么读？', py:'Zhège zì zěnme dú?', ko:'이 글자 어떻게 읽어?' },
+  '怎么样': { zh:'最近怎么样？', py:'Zuìjìn zěnmeyàng?', ko:'요즘 어때?' },
+  '这': { zh:'这是我朋友。', py:'Zhè shì wǒ péngyou.', ko:'이쪽은 내 친구야.' },
+  '中国': { zh:'我想去中国。', py:'Wǒ xiǎng qù Zhōngguó.', ko:'나는 중국에 가고 싶어.' },
+  '中午': { zh:'中午我们一起吃饭。', py:'Zhōngwǔ wǒmen yìqǐ chī fàn.', ko:'점심에 우리 같이 밥 먹어.' },
+  '住': { zh:'你住在哪儿？', py:'Nǐ zhù zài nǎr?', ko:'어디 살아?' },
+  '桌子': { zh:'桌子上有一本书。', py:'Zhuōzi shàng yǒu yì běn shū.', ko:'책상 위에 책이 한 권 있어.' },
+  '字': { zh:'这个字怎么写？', py:'Zhège zì zěnme xiě?', ko:'이 글자 어떻게 써?' },
+  '昨天': { zh:'昨天我很忙。', py:'Zuótiān wǒ hěn máng.', ko:'어제 나는 바빴어.' },
+  '坐': { zh:'我们坐公共汽车去吧。', py:'Wǒmen zuò gōnggòng qìchē qù ba.', ko:'우리 버스 타고 가자.' },
+  '做': { zh:'你在做什么？', py:'Nǐ zài zuò shénme?', ko:'너 뭐 하고 있어?' }
+};
+// AI 예문 생성 사용 여부. false 로 바꾸면 내장 사전에 없는 단어는 AI를 부르지 않아 소비가 0이 됩니다.
+const EX_AI_FALLBACK = true;
+
+// (관리자용) 내장 사전 + 이 브라우저에 캐시된 예문을 합쳐 JSON으로 내려받음 → EX_DATA 에 붙여넣어 영구 고정
+function exportExamples() {
+  try {
+    const merged = Object.assign({}, EX_DATA, exLoad());
+    const blob = new Blob([JSON.stringify(merged, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'sudal-examples-' + dstr(new Date()) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) { alert('내보내기에 실패했어요: ' + e.message); }
+}
+
 function exErrorMsg(err) {
   const m = (err && err.message) || '';
   let msg;
@@ -5957,8 +6115,17 @@ async function showExample(retry) {
   if (!c) return;
   const box = document.getElementById('fc-example');
   if (!box) return;
+  // ① 내장 예문 사전(고정) — API 소비 없음
+  if (EX_DATA[c.zh]) { renderExample(EX_DATA[c.zh]); return; }
+  // ② 이 브라우저에 저장된 예문 캐시
   const cache = exLoad();
   if (cache[c.zh]) { renderExample(cache[c.zh]); return; }
+  // ③ 없을 때만 AI 생성 (EX_AI_FALLBACK=false 로 끄면 소비 0)
+  if (!EX_AI_FALLBACK) {
+    box.style.display = '';
+    box.innerHTML = '<span class="ex-err">이 단어는 아직 예문이 준비되지 않았어요.</span>';
+    return;
+  }
   box.style.display = '';
   box.innerHTML = '<span class="ex-loading">' + (retry ? '다시 시도 중…' : '예문 생성 중…') + ' ✨</span>';
   try {
@@ -7193,7 +7360,7 @@ function searchDict() {
 //   키는 Render의 Environment(GEMINI_API_KEY)에만 있고 브라우저엔 내려오지 않습니다.
 //   (이 값이 채워져 있으면 아래 GEMINI_API_KEY 는 무시됩니다. 서버 코드는 server.js 참고)
 //   ※ index.html 과 서버를 Render 한 곳에 함께 올려서 배포합니다(같은 주소라 CORS 불필요).
-const GEMINI_PROXY_URL = '';
+const GEMINI_PROXY_URL = '/api/gemini';
 
 // ▼ [대체] 프록시 없이 키를 직접 넣는 방식. 공개 저장소에선 키가 노출되니 권장하지 않음.
 //   위 GEMINI_PROXY_URL 을 ''(빈 값)으로 바꾸면 이 방식/사용자별 키 입력으로 동작합니다.
