@@ -1,63 +1,61 @@
-/* 수달 중국어 서비스워커 — 오프라인 지원 */
-const CACHE = 'sudal-core-v1';
-const RUNTIME = 'sudal-runtime-v1';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
-
-// 캐시하지 않고 항상 네트워크로 통과시킬 도메인(광고 / AI API / 분석)
-function isNoCache(url) {
-  return /googlesyndication|doubleclick|adservice|google-analytics|googletagmanager|generativelanguage\.googleapis|aistudio\.google/.test(url);
-}
+/* 수달중국어 서비스워커
+   v2: /api/ 프록시·비-GET(POST)·교차출처 요청은 절대 가로채지 않음 (AI 채팅/예문 정상화)
+       + 캐시 버전 상향으로 옛 캐시 강제 정리 */
+const CACHE = 'sudal-core-v2';
+const CORE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png'
+];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE)
-      .then((c) => c.addAll(CORE))
-      .then(() => self.skipWaiting())
-      .catch(() => {})
+    caches.open(CACHE).then((c) => c.addAll(CORE)).catch(() => {})
   );
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== RUNTIME).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET') return;
-  const url = req.url;
-  if (isNoCache(url)) return;                 // 광고·AI 요청은 그대로 통과
+  let url;
+  try { url = new URL(req.url); } catch (_) { return; }
 
-  // HTML 페이지 이동: 네트워크 우선(최신 반영) + 오프라인 시 캐시
+  // 1) 서비스워커가 절대 손대지 않아야 하는 요청 → 그대로 네트워크로 통과
+  if (req.method !== 'GET') return;                       // POST 등 (AI 프록시 호출)
+  if (url.origin !== self.location.origin) return;        // 구글 API·애드센스 등 교차출처
+  if (url.pathname.startsWith('/api/')) return;           // 서버 프록시 경로
+
+  // 2) 페이지 이동: 네트워크 우선, 실패하면 캐시된 index.html
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+      fetch(req).then((r) => {
+        const copy = r.clone();
+        caches.open(CACHE).then((c) => c.put('./index.html', copy)).catch(() => {});
+        return r;
+      }).catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // 그 외(폰트·CDN·필순 데이터·이미지 등): 캐시 우선 + 백그라운드 갱신
+  // 3) 그 외 정적 자원: 캐시 우선 + 백그라운드 갱신
   e.respondWith(
     caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && (res.ok || res.type === 'opaque')) {
-            const copy = res.clone();
-            caches.open(RUNTIME).then((c) => c.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
+      const net = fetch(req).then((r) => {
+        const copy = r.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        return r;
+      }).catch(() => cached);
+      return cached || net;
     })
   );
 });
