@@ -285,6 +285,17 @@
   }
   .fc-opt:hover { filter: brightness(1.08); }
   .fc-opt.active { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); }
+  .fc-ex-btn { display: block; margin: 0.6rem auto 0; border: 1.5px solid var(--blue); background: var(--blue-bg); color: var(--blue); }
+  .fc-example {
+    max-width: 460px; margin: 0.9rem auto 0; padding: 14px 16px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 14px; text-align: left;
+  }
+  .fc-example .ex-row { display: flex; align-items: center; gap: 8px; }
+  .fc-example .ex-zh { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .fc-example .ex-py { font-size: 0.86rem; color: var(--text2); margin-top: 4px; }
+  .fc-example .ex-ko { font-size: 0.92rem; color: var(--orange); margin-top: 4px; }
+  .fc-example .ex-loading { font-size: 0.9rem; color: var(--text3); }
+  .fc-example .ex-err { font-size: 0.88rem; color: var(--text2); }
   .flashcard {
     width: 100%; max-width: 420px;
     min-height: 220px;
@@ -1008,7 +1019,7 @@
             <div class="fc-tone-bar" id="fc-tone-bar"></div>
             <div style="display:flex;align-items:center;gap:10px;">
               <div class="fc-char" id="fc-char">你好</div>
-              <button class="speak-btn big" id="fc-speak" onclick="event.stopPropagation();speak(document.getElementById('fc-char').textContent, this)" title="발음 듣기">🔊</button>
+              <button class="speak-btn big" id="fc-speak" onclick="event.stopPropagation();speakFcChar(this)" title="발음 듣기">🔊</button>
             </div>
             <div class="fc-pinyin" id="fc-pinyin">nǐ hǎo</div>
             <div class="fc-meaning" id="fc-meaning">안녕하세요</div>
@@ -1022,6 +1033,8 @@
             <button class="btn" onclick="showStrokeOrder()" id="btn-stroke">✍️ 필순</button>
           </div>
           <button class="btn fc-wb-add" id="btn-wordbook" onclick="toggleWordbook()">📒 단어장에 추가</button>
+          <button class="btn fc-ex-btn" id="btn-example" onclick="showExample()">✨ 예문 보기</button>
+          <div class="fc-example" id="fc-example" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -5417,6 +5430,38 @@ if ('speechSynthesis' in window) {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
 
+/* ===== 다음자(多音字) 발음 보정 =====
+   같은 글자가 여러 발음을 가질 때 TTS가 기본 발음으로만 읽는 문제를 보정.
+   화면 표시는 원래 글자 그대로 두고, TTS로 보낼 때만 같은 발음의 동음자로 치환.
+   키: '글자|성조뺀병음(소문자)'  →  값: TTS용 동음자 */
+const TTS_HOMOPHONE = {
+  '还|hai': '孩',   // 还(hái, 여전히/또)  ← 엔진 기본값 huán("환") 방지
+  '重|zhong': '中', // 重(zhòng, 무겁다)   ← 기본값 chóng 방지
+  '长|zhang': '掌', // 长(zhǎng, 자라다/우두머리) ← 기본값 cháng 방지
+  '行|hang': '航',  // 行(háng, 줄/업종)   ← 기본값 xíng 방지
+  '乐|le': '勒',    // 乐(lè, 즐겁다)      ← 기본값 yuè 방지
+  '为|wei': '喂'    // 为(wèi, ~을 위하여)  ← 기본값 wéi 방지
+};
+function pyNoTone(py) {
+  if (!py) return '';
+  return py.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z]/g, '').toLowerCase();
+}
+// 표시용 글자(text)와 그 병음(py)을 받아 TTS에 실제로 보낼 문자열을 돌려줌
+function zhForTTS(text, py) {
+  if (!text) return text;
+  if ([...text].length === 1) {
+    const key = text + '|' + pyNoTone(py);
+    if (TTS_HOMOPHONE[key]) return TTS_HOMOPHONE[key];
+  }
+  return text;
+}
+// 플래시카드 발음 버튼용: 현재 카드의 병음을 반영해 정확히 읽어줌
+function speakFcChar(btn) {
+  const c = currentCard();
+  if (!c) return;
+  speak(zhForTTS(c.zh, c.py), btn);
+}
+
 function speak(text, btnEl) {
   if (!('speechSynthesis' in window)) {
     alert('이 브라우저는 발음 듣기를 지원하지 않습니다. Chrome이나 Safari를 사용해 보세요.');
@@ -5724,6 +5769,7 @@ function showSrsDone() {
   document.getElementById('fc-speak').style.display = 'none';
   document.getElementById('btn-prev').disabled = true;
   document.getElementById('btn-wordbook').style.display = 'none';
+  { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
   const btn = document.getElementById('btn-reveal');
   btn.textContent = '확인';
   btn.style.display = '';
@@ -5877,6 +5923,58 @@ function mergeStats(imported) {
   statsSave(cur);
 }
 
+
+/* ===== 단어 예문 (Gemini 생성 + 캐시) ===== */
+const EX_KEY = 'zh_ex_v1';
+let exMem = {};
+function exLoad() { try { const s = localStorage.getItem(EX_KEY); return s ? JSON.parse(s) : {}; } catch (e) { return exMem; } }
+function exSave(o) { exMem = o; try { localStorage.setItem(EX_KEY, JSON.stringify(o)); } catch (e) {} }
+function exEscape(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function exErrorMsg(err) {
+  const m = (err && err.message) || '';
+  if (m === 'no-key' || m === 'bad-key') return '<span class="ex-err">예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)</span>';
+  if (m === 'rate-limit') return '<span class="ex-err">요청이 많아요. 잠시 후 다시 눌러 주세요.</span>';
+  if (m === 'network' || m === 'waking') return '<span class="ex-err">네트워크 오류예요. 인터넷 연결을 확인해 주세요.</span>';
+  return '<span class="ex-err">예문 생성에 실패했어요. 다시 시도해 주세요.</span>';
+}
+function renderExample(o) {
+  const box = document.getElementById('fc-example');
+  if (!box) return;
+  box.style.display = '';
+  box.innerHTML =
+    '<div class="ex-row"><span class="ex-zh" id="ex-zh-text">' + exEscape(o.zh) + '</span>' +
+    '<button class="speak-btn" onclick="speak(document.getElementById(\'ex-zh-text\').textContent, this)" title="예문 듣기">🔊</button></div>' +
+    (o.py ? '<div class="ex-py">' + exEscape(o.py) + '</div>' : '') +
+    (o.ko ? '<div class="ex-ko">' + exEscape(o.ko) + '</div>' : '');
+}
+async function showExample() {
+  const c = currentCard();
+  if (!c) return;
+  const box = document.getElementById('fc-example');
+  if (!box) return;
+  const cache = exLoad();
+  if (cache[c.zh]) { renderExample(cache[c.zh]); return; }
+  box.style.display = '';
+  box.innerHTML = '<span class="ex-loading">예문 생성 중… ✨</span>';
+  try {
+    const sys = '당신은 친절한 중국어 교사입니다. 주어진 단어를 사용해 초급 학습자도 이해할 아주 쉽고 짧은 예문 1개를 만드세요. 반드시 아래 JSON 형식으로만 답하고 다른 말이나 코드블록은 쓰지 마세요: {"zh":"중국어 예문","py":"병음(성조기호 포함)","ko":"한국어 번역"}';
+    const user = '단어: ' + c.zh + '（' + (c.py || '') + '） 뜻: ' + (c.ko || '');
+    let txt = await callGemini(sys, user);
+    txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
+    let obj;
+    try { obj = JSON.parse(txt); }
+    catch (e) {
+      const mm = txt.match(/\{[\s\S]*\}/);
+      try { obj = JSON.parse(mm ? mm[0] : txt); } catch (e2) { obj = { zh: txt, py: '', ko: '' }; }
+    }
+    if (!obj || !obj.zh) obj = { zh: txt, py: '', ko: '' };
+    cache[c.zh] = obj; exSave(cache);
+    renderExample(obj);
+  } catch (err) {
+    box.innerHTML = exErrorMsg(err);
+  }
+}
+
 function initVocab() {
   fcIndex = 0; fcScore = 0; currentThemeIdx = 0; wbMode = false; srsMode = false;
   const d = DATA[currentLevel];
@@ -5943,6 +6041,7 @@ function loadCard() {
     document.getElementById('fc-speak').style.display = 'none';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
+    { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
     return;
   }
   const c = cards[fcIndex];
@@ -5962,6 +6061,7 @@ function loadCard() {
   document.getElementById('fc-speak').style.display = '';
   document.getElementById('btn-prev').disabled = srsMode || (fcIndex === 0);
   document.getElementById('btn-wordbook').style.display = '';
+  { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display=''; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
   updateWbBtn();
 }
 
@@ -5993,6 +6093,7 @@ function nextCard(correct) {
     document.getElementById('fc-tone-bar').innerHTML = '';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-wordbook').style.display = 'none';
+    { const _eb=document.getElementById('btn-example'); if(_eb) _eb.style.display='none'; const _ex=document.getElementById('fc-example'); if(_ex){ _ex.style.display='none'; _ex.innerHTML=''; } }
     const btn = document.getElementById('btn-reveal');
     btn.textContent = '다시 시작';
     btn.style.display = '';
@@ -6085,7 +6186,7 @@ function playAllStep() {
   speechSynthesis.cancel();
   // 옵션에 따라 읽어줄 항목 순서대로 구성
   const seq = [];
-  seq.push({ text: c.zh, lang: 'zh-CN', rate: fcSpeed, voice: zhVoice });      // 1) 중국어 발음
+  seq.push({ text: zhForTTS(c.zh, c.py), lang: 'zh-CN', rate: fcSpeed, voice: zhVoice });      // 1) 중국어 발음
   if (fcReadMeaning) {
     const meaning = (c.ko || '').split(' (')[0].trim() || c.ko || '';
     if (meaning) seq.push({ text: meaning, lang: 'ko-KR', rate: Math.min(fcSpeed * 1.1, 1.4) }); // 2) 한국어 뜻
