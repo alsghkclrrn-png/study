@@ -5952,7 +5952,7 @@ function renderExample(o) {
     (o.py ? '<div class="ex-py">' + exEscape(o.py) + '</div>' : '') +
     (o.ko ? '<div class="ex-ko">' + exEscape(o.ko) + '</div>' : '');
 }
-async function showExample() {
+async function showExample(retry) {
   const c = currentCard();
   if (!c) return;
   const box = document.getElementById('fc-example');
@@ -5960,7 +5960,7 @@ async function showExample() {
   const cache = exLoad();
   if (cache[c.zh]) { renderExample(cache[c.zh]); return; }
   box.style.display = '';
-  box.innerHTML = '<span class="ex-loading">예문 생성 중… ✨</span>';
+  box.innerHTML = '<span class="ex-loading">' + (retry ? '다시 시도 중…' : '예문 생성 중…') + ' ✨</span>';
   try {
     const prompt = '아래 중국어 단어를 사용해 초급 학습자도 이해할 아주 쉽고 짧은 예문 1개를 만들어 주세요.\n'
       + '반드시 이 JSON 형식으로만, 다른 말이나 코드블록 없이 답하세요: {"zh":"중국어 예문","py":"병음(성조기호 포함)","ko":"한국어 번역"}\n'
@@ -5977,6 +5977,11 @@ async function showExample() {
     cache[c.zh] = obj; exSave(cache);
     renderExample(obj);
   } catch (err) {
+    const m = (err && err.message) || '';
+    if (!retry && (m === 'empty' || m === 'waking' || m === 'network' || /^gemini-http-(502|503)$/.test(m))) {
+      await new Promise(r => setTimeout(r, 1200));
+      return showExample(true);
+    }
     box.innerHTML = exErrorMsg(err);
   }
 }
@@ -7188,7 +7193,7 @@ function searchDict() {
 //   키는 Render의 Environment(GEMINI_API_KEY)에만 있고 브라우저엔 내려오지 않습니다.
 //   (이 값이 채워져 있으면 아래 GEMINI_API_KEY 는 무시됩니다. 서버 코드는 server.js 참고)
 //   ※ index.html 과 서버를 Render 한 곳에 함께 올려서 배포합니다(같은 주소라 CORS 불필요).
-const GEMINI_PROXY_URL = '/api/gemini';
+const GEMINI_PROXY_URL = '';
 
 // ▼ [대체] 프록시 없이 키를 직접 넣는 방식. 공개 저장소에선 키가 노출되니 권장하지 않음.
 //   위 GEMINI_PROXY_URL 을 ''(빈 값)으로 바꾸면 이 방식/사용자별 키 입력으로 동작합니다.
@@ -7264,7 +7269,14 @@ async function callGemini(systemText, userText, history) {
     if (res.status === 503) throw new Error('waking');
     throw new Error('gemini-http-' + res.status);
   }
-  const data = await res.json();
+  let data;
+  try {
+    const raw = await res.text();
+    data = raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    throw new Error('empty'); // 본문이 비었거나 잘림
+  }
+  if (!data) throw new Error('empty');
   const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
   const text = parts ? parts.map(p => p.text || '').join('') : '';
   if (!text) throw new Error('empty');
