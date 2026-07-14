@@ -6092,7 +6092,9 @@ function exportExamples() {
 function exErrorMsg(err) {
   const m = (err && err.message) || '';
   let msg;
-  if (m === 'no-key' || m === 'bad-key') msg = '예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)';
+  if (m === 'no-key' || m === 'bad-key') msg = (typeof usingProxy === 'function' && usingProxy())
+    ? 'AI 서버의 키에 문제가 있어요. Render 환경변수 GEMINI_API_KEY(오타·공백·만료·API 제한)를 확인하고 재배포했는지 봐 주세요.'
+    : '예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)';
   else if (m === 'rate-limit') msg = '요청이 많아요. 잠시 후 다시 눌러 주세요.';
   else if (m === 'network' || m === 'waking') msg = '네트워크 오류예요. 인터넷 연결을 확인해 주세요.';
   else if (m === 'empty') msg = 'AI가 예문을 만들지 못했어요. 다시 시도해 주세요.';
@@ -7605,13 +7607,23 @@ async function sendChat() {
     const code = e && e.message;
     let msg;
     if (code === 'no-key' || code === 'bad-key') {
-      msg = 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+      if (usingProxy()) {
+        msg = 'AI 서버의 키에 문제가 있어요. 🦦<br>Render 환경변수 <b>GEMINI_API_KEY</b>가 올바른지(오타·앞뒤 공백·만료·API 제한) 확인하고 <b>재배포</b>했는지 봐 주세요.';
+      } else {
+        msg = 'AI 채팅을 사용하려면 Gemini API 키가 필요해요. 🦦<br>위쪽 <b>🔑 API 키 설정</b> 버튼을 눌러 키를 입력해 주세요.<br>무료 발급: aistudio.google.com/apikey';
+      }
     } else if (code === 'rate-limit') {
       msg = '오늘 AI 사용량을 다 썼어요. 🦦<br>구글 무료 이용 한도에 도달했어요. <b>잠시 후(또는 내일) 다시</b> 말 걸어 주세요.';
     } else if (code === 'waking') {
       msg = 'AI 서버가 절전 모드에서 깨어나는 중이에요. 😴<br><b>30초~1분 뒤에 다시</b> 보내 주세요.';
+    } else if (code === 'empty') {
+      msg = 'AI 서버에서 빈 응답이 왔어요. 🦦<br>서버 프록시(<b>/api/gemini</b>)가 실행 중이 아닌 것 같아요. Render를 <b>Web Service</b>로 배포하고 <b>server.js</b>가 실행되는지 확인해 주세요.';
+    } else if (code === 'gemini-http-500') {
+      msg = 'AI 서버에 키가 없어요. 🦦<br>Render 환경변수 <b>GEMINI_API_KEY</b>가 설정됐는지 확인해 주세요.';
+    } else if (code === 'network') {
+      msg = '네트워크 오류예요. 🦦<br>인터넷 연결을 확인하고 다시 시도해 주세요.';
     } else {
-      msg = 'AI 선생님에 연결하지 못했어요. 🦦<br>잠시 후 다시 시도하거나, API 키를 확인해 주세요.';
+      msg = 'AI 선생님에 연결하지 못했어요. 🦦<br>(오류: ' + (code || 'unknown') + ') 잠시 후 다시 시도해 주세요.';
     }
     addAiMsg(`<div class="msg-ko" style="color:var(--red);line-height:1.7">${msg}</div>`);
   }
