@@ -296,6 +296,7 @@
   .fc-example .ex-ko { font-size: 0.92rem; color: var(--orange); margin-top: 4px; }
   .fc-example .ex-loading { font-size: 0.9rem; color: var(--text3); }
   .fc-example .ex-err { font-size: 0.88rem; color: var(--text2); }
+  .fc-example .ex-retry { margin-left: 6px; padding: 3px 10px; font-size: 0.82rem; border: 1px solid var(--blue); background: var(--blue-bg); color: var(--blue); border-radius: 8px; cursor: pointer; }
   .flashcard {
     width: 100%; max-width: 420px;
     min-height: 220px;
@@ -5932,10 +5933,14 @@ function exSave(o) { exMem = o; try { localStorage.setItem(EX_KEY, JSON.stringif
 function exEscape(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function exErrorMsg(err) {
   const m = (err && err.message) || '';
-  if (m === 'no-key' || m === 'bad-key') return '<span class="ex-err">예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)</span>';
-  if (m === 'rate-limit') return '<span class="ex-err">요청이 많아요. 잠시 후 다시 눌러 주세요.</span>';
-  if (m === 'network' || m === 'waking') return '<span class="ex-err">네트워크 오류예요. 인터넷 연결을 확인해 주세요.</span>';
-  return '<span class="ex-err">예문 생성에 실패했어요. 다시 시도해 주세요.</span>';
+  let msg;
+  if (m === 'no-key' || m === 'bad-key') msg = '예문을 만들려면 먼저 AI 채팅 메뉴에서 Gemini API 키를 설정해 주세요. (무료 발급 가능)';
+  else if (m === 'rate-limit') msg = '요청이 많아요. 잠시 후 다시 눌러 주세요.';
+  else if (m === 'network' || m === 'waking') msg = '네트워크 오류예요. 인터넷 연결을 확인해 주세요.';
+  else if (m === 'empty') msg = 'AI가 예문을 만들지 못했어요. 다시 시도해 주세요.';
+  else if (/^gemini-http-/.test(m)) msg = '예문 생성 실패 (서버 오류 ' + m.replace('gemini-http-', '') + '). 잠시 후 다시 시도해 주세요.';
+  else msg = '예문 생성에 실패했어요' + (m ? ' (' + m + ')' : '') + '. 다시 시도해 주세요.';
+  return '<span class="ex-err">' + exEscape(msg) + '</span> <button class="ex-retry" onclick="showExample()">다시 시도</button>';
 }
 function renderExample(o) {
   const box = document.getElementById('fc-example');
@@ -5957,9 +5962,10 @@ async function showExample() {
   box.style.display = '';
   box.innerHTML = '<span class="ex-loading">예문 생성 중… ✨</span>';
   try {
-    const sys = '당신은 친절한 중국어 교사입니다. 주어진 단어를 사용해 초급 학습자도 이해할 아주 쉽고 짧은 예문 1개를 만드세요. 반드시 아래 JSON 형식으로만 답하고 다른 말이나 코드블록은 쓰지 마세요: {"zh":"중국어 예문","py":"병음(성조기호 포함)","ko":"한국어 번역"}';
-    const user = '단어: ' + c.zh + '（' + (c.py || '') + '） 뜻: ' + (c.ko || '');
-    let txt = await callGemini(sys, user);
+    const prompt = '아래 중국어 단어를 사용해 초급 학습자도 이해할 아주 쉽고 짧은 예문 1개를 만들어 주세요.\n'
+      + '반드시 이 JSON 형식으로만, 다른 말이나 코드블록 없이 답하세요: {"zh":"중국어 예문","py":"병음(성조기호 포함)","ko":"한국어 번역"}\n'
+      + '단어: ' + c.zh + '（' + (c.py || '') + '） 뜻: ' + (c.ko || '');
+    let txt = await callGemini('', prompt);
     txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
     let obj;
     try { obj = JSON.parse(txt); }
