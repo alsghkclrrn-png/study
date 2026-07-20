@@ -335,6 +335,25 @@
   .tq-feedback.ok { color: var(--green); }
   .tq-feedback.fail { color: var(--red); }
   .tq-feedback b { font-weight: 700; }
+  .tq-dict-icon { font-size: 2.2rem; line-height: 1; margin-bottom: 4px; }
+  .tq-dict-play { margin: 0 auto; width: 48px; height: 48px; font-size: 1.2rem; }
+  .tq-dict-replay { font-size: 0.85rem; color: var(--text2); margin-top: 10px; }
+  .tq-input {
+    width: 100%; box-sizing: border-box; margin-top: 1rem;
+    padding: 14px 16px; font-size: 1.15rem; font-family: var(--font-body);
+    text-align: center; letter-spacing: 0.04em;
+    background: var(--card); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 14px;
+    outline: none; transition: all 0.15s ease;
+  }
+  .tq-input:focus { border-color: var(--blue); background: var(--blue-bg); }
+  .tq-input.correct { border-color: var(--green); background: var(--green-bg); color: var(--green); font-weight: 700; }
+  .tq-input.wrong { border-color: var(--red); background: var(--red-bg); color: var(--red); }
+  .tq-input:disabled { cursor: default; }
+  .tq-write-prompt { text-align: center; padding: 1.2rem 1rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 0.4rem; }
+  .tq-write-py { font-family: var(--font-display); font-size: 1.6rem; color: var(--blue); }
+  .tq-write-ko { font-size: 1.05rem; color: var(--text); margin-top: 4px; }
+  .tq-write-chars { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 1rem 0; }
   .tq-result { text-align: center; padding: 1.5rem 1rem; }
   .tq-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
   .tq-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
@@ -1587,6 +1606,8 @@
           <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
             <button class="btn" onclick="initTheme()">← 주제 목록으로</button>
             <button class="btn btn-quiz" onclick="startThemeQuiz(currentThemeName)">🎯 미니 퀴즈</button>
+            <button class="btn btn-quiz" onclick="startThemeDictation(currentThemeName)">✍️ 받아쓰기</button>
+            <button class="btn btn-quiz" onclick="startThemeWrite(currentThemeName)">🖌️ 그려쓰기</button>
           </div>
           <div id="theme-words" class="theme-words"></div>
         </div>
@@ -6372,6 +6393,212 @@ function finishThemeQuiz() {
       <div class="tq-result-score">${total}문제 중 <b>${quizScore}</b>개 정답 (${pct}%)</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
         <button class="btn btn-quiz" onclick="startThemeQuiz(currentThemeName)">🔁 다시 풀기</button>
+        <button class="btn" onclick="showThemeWords(currentThemeName)">📖 단어 목록</button>
+        <button class="btn" onclick="initTheme()">🗂️ 주제 목록</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('theme-crumb').textContent = '· ' + currentThemeName;
+}
+
+/* ---- THEME 받아쓰기 (병음 듣고 맞히기) ---- */
+function startThemeDictation(name) {
+  const words = THEMES[name];
+  if (!words || words.length < 1) return;
+  currentThemeName = name;
+  quizWords = shuffleArr(words).slice(0, Math.min(10, words.length));
+  quizIdx = 0; quizScore = 0; quizAnswered = false;
+  document.getElementById('theme-list').style.display = 'none';
+  document.getElementById('theme-quiz').style.display = '';
+  document.getElementById('theme-crumb').textContent = '· ' + name + ' 받아쓰기';
+  renderDictation();
+}
+
+function renderDictation() {
+  const box = document.getElementById('theme-quiz');
+  const q = quizWords[quizIdx];
+  quizAnswered = false;
+  const total = quizWords.length;
+  box.innerHTML = `
+    <div class="tq-head">
+      <div class="tq-progress-txt">문제 ${quizIdx + 1} / ${total}</div>
+      <div class="tq-score-txt">점수 ${quizScore}</div>
+    </div>
+    <div class="tq-progress-bar"><div class="tq-progress-fill" style="width:${(quizIdx / total) * 100}%"></div></div>
+    <div class="tq-q">
+      <div class="tq-dict-icon">🎧</div>
+      <button class="theme-speak tq-dict-play" onclick="speak(zhForTTS('${q.zh}','${q.py}'), this)" aria-label="다시 듣기">🔊</button>
+      <div class="tq-dict-replay">소리를 듣고 병음을 입력하세요</div>
+    </div>
+    <div class="tq-hint">성조 부호 없이 알파벳만 입력해도 돼요 (예: xihuan)</div>
+    <input type="text" id="tq-dict-input" class="tq-input" placeholder="병음 입력..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkDictation()">
+    <div id="tq-next-wrap" style="margin-top:1rem;min-height:44px;">
+      <button class="btn btn-quiz" onclick="checkDictation()">확인</button>
+    </div>
+  `;
+  setTimeout(() => {
+    const inp = document.getElementById('tq-dict-input');
+    if (inp) inp.focus();
+    speak(zhForTTS(q.zh, q.py), document.querySelector('.tq-dict-play'));
+  }, 350);
+}
+
+function checkDictation() {
+  if (quizAnswered) return;
+  const inp = document.getElementById('tq-dict-input');
+  if (!inp) return;
+  const q = quizWords[quizIdx];
+  const user = pyNoTone(inp.value);
+  if (!user) { inp.focus(); return; }
+  quizAnswered = true;
+  inp.disabled = true;
+  const correct = user === pyNoTone(q.py);
+  if (correct) { quizScore++; inp.classList.add('correct'); }
+  else { inp.classList.add('wrong'); }
+  const isLast = quizIdx === quizWords.length - 1;
+  const feedback = correct
+    ? `<div class="tq-feedback ok">✓ 정답! <b>${q.zh}</b> (${q.py}) · ${q.ko}</div>`
+    : `<div class="tq-feedback fail">✗ 정답: <b>${q.zh}</b> (${q.py}) · ${q.ko}</div>`;
+  document.getElementById('tq-next-wrap').innerHTML = feedback +
+    `<button class="btn btn-quiz" onclick="${isLast ? 'finishThemeDictation()' : 'nextDictation()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
+}
+
+function nextDictation() {
+  quizIdx++;
+  renderDictation();
+}
+
+function finishThemeDictation() {
+  const box = document.getElementById('theme-quiz');
+  const total = quizWords.length;
+  const pct = Math.round((quizScore / total) * 100);
+  let msg, face;
+  if (pct === 100) { msg = '완벽해요! 🏆'; face = 'happy'; }
+  else if (pct >= 70) { msg = '잘했어요! 👏'; face = 'happy'; }
+  else if (pct >= 40) { msg = '조금만 더 연습해요! 💪'; face = 'normal'; }
+  else { msg = '다시 도전해 볼까요? 🌱'; face = 'normal'; }
+  box.innerHTML = `
+    <div class="tq-result">
+      <div class="tq-result-otter">${otterSVG(80, face)}</div>
+      <div class="tq-result-msg">${msg}</div>
+      <div class="tq-result-score">${total}문제 중 <b>${quizScore}</b>개 정답 (${pct}%)</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
+        <button class="btn btn-quiz" onclick="startThemeDictation(currentThemeName)">🔁 다시 풀기</button>
+        <button class="btn" onclick="showThemeWords(currentThemeName)">📖 단어 목록</button>
+        <button class="btn" onclick="initTheme()">🗂️ 주제 목록</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('theme-crumb').textContent = '· ' + currentThemeName;
+}
+
+/* ---- THEME 그려쓰기 (획순 따라 쓰기) ---- */
+let twWriters = [], twDoneChars = 0, twTotalChars = 0;
+function startThemeWrite(name) {
+  const words = THEMES[name];
+  if (!words || words.length < 1) return;
+  currentThemeName = name;
+  // 한자가 있는 단어만 대상으로
+  quizWords = shuffleArr(words.filter(w => [...w.zh].some(isCJK))).slice(0, Math.min(10, words.length));
+  quizIdx = 0; quizScore = 0;
+  document.getElementById('theme-list').style.display = 'none';
+  document.getElementById('theme-quiz').style.display = '';
+  document.getElementById('theme-crumb').textContent = '· ' + name + ' 그려쓰기';
+  renderWrite();
+}
+
+function renderWrite() {
+  const box = document.getElementById('theme-quiz');
+  const q = quizWords[quizIdx];
+  const total = quizWords.length;
+  twWriters = [];
+  const chars = [...q.zh].filter(isCJK);
+  twTotalChars = chars.length; twDoneChars = 0;
+  box.innerHTML = `
+    <div class="tq-head">
+      <div class="tq-progress-txt">문제 ${quizIdx + 1} / ${total}</div>
+      <div class="tq-score-txt">완성 ${quizScore}</div>
+    </div>
+    <div class="tq-progress-bar"><div class="tq-progress-fill" style="width:${(quizIdx / total) * 100}%"></div></div>
+    <div class="tq-write-prompt">
+      <div class="tq-write-py">${q.py}</div>
+      <div class="tq-write-ko">${q.ko}</div>
+      <button class="theme-speak" style="margin:8px auto 0;" onclick="speak(zhForTTS('${q.zh}','${q.py}'), this)" aria-label="발음 듣기">🔊</button>
+    </div>
+    <div class="tq-hint">아래 칸에 획순대로 따라 써 보세요 ✏️</div>
+    <div id="tw-chars" class="tq-write-chars"></div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:0.4rem;">
+      <button class="btn" onclick="twShowHint()">✏️ 획순 보기</button>
+      <button class="btn" onclick="twReset()">🔄 다시 쓰기</button>
+    </div>
+    <div id="tq-next-wrap" style="margin-top:1rem;min-height:44px;">
+      <button class="btn btn-quiz" onclick="${quizIdx === total - 1 ? 'finishThemeWrite()' : 'nextWrite()'}">${quizIdx === total - 1 ? '결과 보기 🎉' : '다음 →'}</button>
+    </div>
+  `;
+  if (typeof HanziWriter === 'undefined') {
+    document.getElementById('tw-chars').innerHTML = '<p style="color:var(--text2);font-size:0.9rem;">필순 데이터를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</p>';
+    return;
+  }
+  const strokeColor = cssVar('--text') || '#333';
+  const radicalColor = cssVar('--blue') || '#4a90d9';
+  const outlineColor = cssVar('--border') || '#ddd';
+  const target = document.getElementById('tw-chars');
+  chars.forEach((ch, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'stroke-tile';
+    const b = document.createElement('div');
+    b.className = 'stroke-box'; b.id = 'tw-' + i;
+    tile.appendChild(b);
+    target.appendChild(tile);
+    try {
+      const w = HanziWriter.create(b, ch, {
+        width: 120, height: 120, padding: 8,
+        strokeColor: strokeColor, radicalColor: radicalColor, outlineColor: outlineColor,
+        showOutline: true, showHintAfterMisses: 2, highlightOnComplete: true
+      });
+      w.quiz({
+        onComplete: function () {
+          twDoneChars++;
+          if (twDoneChars >= twTotalChars) twWordDone();
+        }
+      });
+      twWriters.push(w);
+    } catch (e) { /* 개별 글자 로드 실패 무시 */ }
+  });
+}
+
+function twWordDone() {
+  quizScore++;
+  const wrap = document.getElementById('tq-next-wrap');
+  const isLast = quizIdx === quizWords.length - 1;
+  wrap.innerHTML =
+    `<div class="tq-feedback ok">✓ 잘했어요!</div>` +
+    `<button class="btn btn-quiz" onclick="${isLast ? 'finishThemeWrite()' : 'nextWrite()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
+  const sc = document.querySelector('.tq-score-txt');
+  if (sc) sc.textContent = '완성 ' + quizScore;
+}
+
+function twShowHint() {
+  twWriters.forEach((w, i) => { setTimeout(() => { try { w.animateCharacter(); } catch (e) {} }, i * 450); });
+}
+function twReset() {
+  twDoneChars = 0;
+  twWriters.forEach(w => { try { w.quiz({ onComplete: function () { twDoneChars++; if (twDoneChars >= twTotalChars) twWordDone(); } }); } catch (e) {} });
+}
+function nextWrite() {
+  quizIdx++;
+  renderWrite();
+}
+function finishThemeWrite() {
+  const box = document.getElementById('theme-quiz');
+  const total = quizWords.length;
+  box.innerHTML = `
+    <div class="tq-result">
+      <div class="tq-result-otter">${otterSVG(80, 'happy')}</div>
+      <div class="tq-result-msg">그려쓰기 연습 완료! 🖌️</div>
+      <div class="tq-result-score">${total}개 중 <b>${quizScore}</b>개 완성했어요</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
+        <button class="btn btn-quiz" onclick="startThemeWrite(currentThemeName)">🔁 다시 하기</button>
         <button class="btn" onclick="showThemeWords(currentThemeName)">📖 단어 목록</button>
         <button class="btn" onclick="initTheme()">🗂️ 주제 목록</button>
       </div>
