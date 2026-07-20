@@ -309,6 +309,35 @@
   .theme-speak:hover { background: var(--blue); color: var(--on-accent); }
   .theme-speak.speaking { animation: pulse 0.6s ease infinite; }
 
+  /* THEME 미니 퀴즈 */
+  .btn-quiz { background: var(--blue); color: var(--on-accent); border-color: var(--blue); }
+  .btn-quiz:hover { filter: brightness(1.06); transform: translateY(-2px); }
+  .quiz-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text2); margin-bottom: 8px; }
+  .quiz-score-txt { font-family: var(--font-display); color: var(--blue); }
+  .quiz-progress-bar { height: 8px; background: var(--card2); border-radius: 99px; overflow: hidden; margin-bottom: 1.4rem; border: 1px solid var(--border); }
+  .quiz-progress-fill { height: 100%; background: var(--blue); border-radius: 99px; transition: width 0.35s ease; }
+  .quiz-q { text-align: center; padding: 1.6rem 1rem 1.2rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 0.4rem; }
+  .quiz-q-zh { font-family: var(--font-display); font-size: 2.6rem; color: var(--text); line-height: 1.1; }
+  .quiz-q-py { font-size: 1rem; color: var(--blue); margin-top: 6px; }
+  .quiz-hint { text-align: center; font-size: 0.82rem; color: var(--text3); margin: 1rem 0 0.8rem; }
+  .quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .quiz-opt {
+    padding: 14px 12px; font-size: 1rem; font-family: var(--font-body);
+    background: var(--card); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 14px;
+    cursor: pointer; transition: all 0.15s ease; text-align: center;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); transform: translateY(-2px); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
+  .quiz-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .quiz-result { text-align: center; padding: 1.5rem 1rem; }
+  .quiz-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
+  .quiz-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
+  .quiz-result-score { font-size: 1rem; color: var(--text2); }
+  .quiz-result-score b { color: var(--blue); font-size: 1.3rem; }
+  @media (max-width: 380px) { .quiz-options { grid-template-columns: 1fr; } }
+
   /* FLASHCARD */
   .flashcard-wrap {
     display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
@@ -1551,9 +1580,13 @@
         </p>
         <div id="theme-grid" class="theme-grid"></div>
         <div id="theme-list" style="display:none;">
-          <button class="btn" style="margin-bottom:1rem;" onclick="initTheme()">← 주제 목록으로</button>
+          <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+            <button class="btn" onclick="initTheme()">← 주제 목록으로</button>
+            <button class="btn btn-quiz" onclick="startThemeQuiz(currentThemeName)">🎯 미니 퀴즈</button>
+          </div>
           <div id="theme-words" class="theme-words"></div>
         </div>
+        <div id="theme-quiz" style="display:none;"></div>
       </div>
     </div>
 
@@ -1665,7 +1698,15 @@ const THEMES = {
     { zh:"菠萝", py:"bōluó", ko:"파인애플", tones:[1,2] },
     { zh:"椰子", py:"yēzi", ko:"코코넛", tones:[1,0] },
     { zh:"猕猴桃", py:"míhóutáo", ko:"키위", tones:[2,2,2] },
-    { zh:"西红柿", py:"xīhóngshì", ko:"토마토", tones:[1,2,4] }
+    { zh:"西红柿", py:"xīhóngshì", ko:"토마토", tones:[1,2,4] },
+    { zh:"李子", py:"lǐzi", ko:"자두", tones:[3,0] },
+    { zh:"杏", py:"xìng", ko:"살구", tones:[4] },
+    { zh:"石榴", py:"shíliu", ko:"석류", tones:[2,0] },
+    { zh:"柚子", py:"yòuzi", ko:"유자/자몽", tones:[4,0] },
+    { zh:"哈密瓜", py:"hāmìguā", ko:"하미과(멜론)", tones:[1,4,1] },
+    { zh:"火龙果", py:"huǒlóngguǒ", ko:"용과", tones:[3,2,3] },
+    { zh:"榴莲", py:"liúlián", ko:"두리안", tones:[2,2] },
+    { zh:"无花果", py:"wúhuāguǒ", ko:"무화과", tones:[2,1,3] }
   ],
   "🔢 숫자": [
     { zh:"零", py:"líng", ko:"0/영", tones:[2] },
@@ -1705,7 +1746,13 @@ const THEMES = {
     { zh:"惊讶", py:"jīngyà", ko:"놀라다", tones:[1,4] },
     { zh:"骄傲", py:"jiāo'ào", ko:"자랑스럽다", tones:[1,4] },
     { zh:"委屈", py:"wěiqu", ko:"억울하다", tones:[3,0] },
-    { zh:"嫉妒", py:"jídù", ko:"질투하다", tones:[2,4] }
+    { zh:"嫉妒", py:"jídù", ko:"질투하다", tones:[2,4] },
+    { zh:"兴奋", py:"xīngfèn", ko:"흥분되다", tones:[1,4] },
+    { zh:"满意", py:"mǎnyì", ko:"만족하다", tones:[3,4] },
+    { zh:"羡慕", py:"xiànmù", ko:"부러워하다", tones:[4,4] },
+    { zh:"后悔", py:"hòuhuǐ", ko:"후회하다", tones:[4,3] },
+    { zh:"尴尬", py:"gāngà", ko:"난처하다", tones:[1,4] },
+    { zh:"舒服", py:"shūfu", ko:"편안하다", tones:[1,0] }
   ],
   "🐶 동물": [
     { zh:"狗", py:"gǒu", ko:"개", tones:[3] },
@@ -1729,7 +1776,17 @@ const THEMES = {
     { zh:"龙", py:"lóng", ko:"용", tones:[2] },
     { zh:"狼", py:"láng", ko:"늑대", tones:[2] },
     { zh:"青蛙", py:"qīngwā", ko:"개구리", tones:[1,1] },
-    { zh:"乌龟", py:"wūguī", ko:"거북이", tones:[1,1] }
+    { zh:"乌龟", py:"wūguī", ko:"거북이", tones:[1,1] },
+    { zh:"斑马", py:"bānmǎ", ko:"얼룩말", tones:[1,3] },
+    { zh:"长颈鹿", py:"chángjǐnglù", ko:"기린", tones:[2,3,4] },
+    { zh:"袋鼠", py:"dàishǔ", ko:"캥거루", tones:[4,3] },
+    { zh:"企鹅", py:"qǐ'é", ko:"펭귄", tones:[3,2] },
+    { zh:"海豚", py:"hǎitún", ko:"돌고래", tones:[3,2] },
+    { zh:"鲨鱼", py:"shāyú", ko:"상어", tones:[1,2] },
+    { zh:"蝴蝶", py:"húdié", ko:"나비", tones:[2,2] },
+    { zh:"蜜蜂", py:"mìfēng", ko:"꿀벌", tones:[4,1] },
+    { zh:"蚂蚁", py:"mǎyǐ", ko:"개미", tones:[3,3] },
+    { zh:"松鼠", py:"sōngshǔ", ko:"다람쥐", tones:[1,3] }
   ],
   "🌏 나라": [
     { zh:"韩国", py:"Hánguó", ko:"한국", tones:[2,2] },
@@ -1763,7 +1820,13 @@ const THEMES = {
     { zh:"灰色", py:"huīsè", ko:"회색", tones:[1,4] },
     { zh:"棕色", py:"zōngsè", ko:"갈색", tones:[1,4] },
     { zh:"金色", py:"jīnsè", ko:"금색", tones:[1,4] },
-    { zh:"银色", py:"yínsè", ko:"은색", tones:[2,4] }
+    { zh:"银色", py:"yínsè", ko:"은색", tones:[2,4] },
+    { zh:"深色", py:"shēnsè", ko:"진한 색", tones:[1,4] },
+    { zh:"浅色", py:"qiǎnsè", ko:"연한 색", tones:[3,4] },
+    { zh:"天蓝色", py:"tiānlánsè", ko:"하늘색", tones:[1,2,4] },
+    { zh:"米色", py:"mǐsè", ko:"베이지색", tones:[3,4] },
+    { zh:"彩色", py:"cǎisè", ko:"컬러/여러 색", tones:[3,4] },
+    { zh:"透明", py:"tòumíng", ko:"투명하다", tones:[4,2] }
   ],
   "👨‍👩‍👧 가족": [
     { zh:"家人", py:"jiārén", ko:"가족", tones:[1,2] },
@@ -1783,6 +1846,369 @@ const THEMES = {
     { zh:"丈夫", py:"zhàngfu", ko:"남편", tones:[4,0] },
     { zh:"妻子", py:"qīzi", ko:"아내", tones:[1,0] },
     { zh:"孩子", py:"háizi", ko:"아이", tones:[2,0] }
+  ],
+  "🍚 음식": [
+    { zh:"米饭", py:"mǐfàn", ko:"쌀밥", tones:[3,4] },
+    { zh:"面条", py:"miàntiáo", ko:"국수", tones:[4,2] },
+    { zh:"包子", py:"bāozi", ko:"(소가 든) 찐빵", tones:[1,0] },
+    { zh:"饺子", py:"jiǎozi", ko:"만두", tones:[3,0] },
+    { zh:"面包", py:"miànbāo", ko:"빵", tones:[4,1] },
+    { zh:"鸡蛋", py:"jīdàn", ko:"계란", tones:[1,4] },
+    { zh:"肉", py:"ròu", ko:"고기", tones:[4] },
+    { zh:"鸡肉", py:"jīròu", ko:"닭고기", tones:[1,4] },
+    { zh:"牛肉", py:"niúròu", ko:"소고기", tones:[2,4] },
+    { zh:"猪肉", py:"zhūròu", ko:"돼지고기", tones:[1,4] },
+    { zh:"鱼", py:"yú", ko:"생선", tones:[2] },
+    { zh:"蔬菜", py:"shūcài", ko:"채소", tones:[1,4] },
+    { zh:"汤", py:"tāng", ko:"국/탕", tones:[1] },
+    { zh:"火锅", py:"huǒguō", ko:"훠궈(중국식 샤부샤부)", tones:[3,1] },
+    { zh:"炒饭", py:"chǎofàn", ko:"볶음밥", tones:[3,4] },
+    { zh:"三明治", py:"sānmíngzhì", ko:"샌드위치", tones:[1,2,4] },
+    { zh:"披萨", py:"pīsà", ko:"피자", tones:[1,4] },
+    { zh:"蛋糕", py:"dàngāo", ko:"케이크", tones:[4,1] },
+    { zh:"巧克力", py:"qiǎokèlì", ko:"초콜릿", tones:[3,4,4] },
+    { zh:"冰淇淋", py:"bīngqílín", ko:"아이스크림", tones:[1,2,2] },
+    { zh:"粥", py:"zhōu", ko:"죽", tones:[1] },
+    { zh:"馒头", py:"mántou", ko:"(소 없는) 찐빵", tones:[2,0] },
+    { zh:"春卷", py:"chūnjuǎn", ko:"춘권", tones:[1,3] },
+    { zh:"烤肉", py:"kǎoròu", ko:"고기구이", tones:[3,4] },
+    { zh:"寿司", py:"shòusī", ko:"초밥", tones:[4,1] },
+    { zh:"沙拉", py:"shālā", ko:"샐러드", tones:[1,1] },
+    { zh:"薯条", py:"shǔtiáo", ko:"감자튀김", tones:[3,2] },
+    { zh:"饼干", py:"bǐnggān", ko:"비스킷/과자", tones:[3,1] }
+  ],
+  "☕ 음료": [
+    { zh:"水", py:"shuǐ", ko:"물", tones:[3] },
+    { zh:"茶", py:"chá", ko:"차", tones:[2] },
+    { zh:"咖啡", py:"kāfēi", ko:"커피", tones:[1,1] },
+    { zh:"牛奶", py:"niúnǎi", ko:"우유", tones:[2,3] },
+    { zh:"果汁", py:"guǒzhī", ko:"주스", tones:[3,1] },
+    { zh:"可乐", py:"kělè", ko:"콜라", tones:[3,4] },
+    { zh:"啤酒", py:"píjiǔ", ko:"맥주", tones:[2,3] },
+    { zh:"红酒", py:"hóngjiǔ", ko:"와인", tones:[2,3] },
+    { zh:"奶茶", py:"nǎichá", ko:"밀크티", tones:[3,2] },
+    { zh:"矿泉水", py:"kuàngquánshuǐ", ko:"생수", tones:[4,2,3] },
+    { zh:"豆浆", py:"dòujiāng", ko:"두유", tones:[4,1] },
+    { zh:"酸奶", py:"suānnǎi", ko:"요거트", tones:[1,3] },
+    { zh:"热水", py:"rèshuǐ", ko:"뜨거운 물", tones:[4,3] },
+    { zh:"冰水", py:"bīngshuǐ", ko:"얼음물", tones:[1,3] },
+    { zh:"雪碧", py:"xuěbì", ko:"사이다(스프라이트)", tones:[3,4] },
+    { zh:"汽水", py:"qìshuǐ", ko:"탄산음료", tones:[4,3] },
+    { zh:"柠檬水", py:"níngméngshuǐ", ko:"레모네이드", tones:[2,2,3] },
+    { zh:"椰汁", py:"yēzhī", ko:"코코넛 주스", tones:[1,1] },
+    { zh:"绿茶", py:"lǜchá", ko:"녹차", tones:[4,2] },
+    { zh:"红茶", py:"hóngchá", ko:"홍차", tones:[2,2] },
+    { zh:"白开水", py:"báikāishuǐ", ko:"맹물/끓인 물", tones:[2,1,3] },
+    { zh:"珍珠奶茶", py:"zhēnzhūnǎichá", ko:"버블티", tones:[1,1,3,2] }
+  ],
+  "👕 옷": [
+    { zh:"衣服", py:"yīfu", ko:"옷", tones:[1,0] },
+    { zh:"裤子", py:"kùzi", ko:"바지", tones:[4,0] },
+    { zh:"裙子", py:"qúnzi", ko:"치마", tones:[2,0] },
+    { zh:"衬衫", py:"chènshān", ko:"셔츠", tones:[4,1] },
+    { zh:"T恤", py:"T xù", ko:"티셔츠", tones:[4] },
+    { zh:"外套", py:"wàitào", ko:"외투/코트", tones:[4,4] },
+    { zh:"毛衣", py:"máoyī", ko:"스웨터", tones:[2,1] },
+    { zh:"鞋", py:"xié", ko:"신발", tones:[2] },
+    { zh:"袜子", py:"wàzi", ko:"양말", tones:[4,0] },
+    { zh:"帽子", py:"màozi", ko:"모자", tones:[4,0] },
+    { zh:"围巾", py:"wéijīn", ko:"목도리", tones:[2,1] },
+    { zh:"手套", py:"shǒutào", ko:"장갑", tones:[3,4] },
+    { zh:"眼镜", py:"yǎnjìng", ko:"안경", tones:[3,4] },
+    { zh:"包", py:"bāo", ko:"가방", tones:[1] },
+    { zh:"西装", py:"xīzhuāng", ko:"정장", tones:[1,1] },
+    { zh:"大衣", py:"dàyī", ko:"외투", tones:[4,1] },
+    { zh:"羽绒服", py:"yǔróngfú", ko:"패딩", tones:[3,2,2] },
+    { zh:"牛仔裤", py:"niúzǎikù", ko:"청바지", tones:[2,3,4] },
+    { zh:"短裤", py:"duǎnkù", ko:"반바지", tones:[3,4] },
+    { zh:"睡衣", py:"shuìyī", ko:"잠옷", tones:[4,1] },
+    { zh:"内衣", py:"nèiyī", ko:"속옷", tones:[4,1] },
+    { zh:"皮带", py:"pídài", ko:"벨트", tones:[2,4] },
+    { zh:"项链", py:"xiàngliàn", ko:"목걸이", tones:[4,4] },
+    { zh:"戒指", py:"jièzhi", ko:"반지", tones:[4,0] },
+    { zh:"手表", py:"shǒubiǎo", ko:"손목시계", tones:[3,3] }
+  ],
+  "🚗 교통": [
+    { zh:"车", py:"chē", ko:"차", tones:[1] },
+    { zh:"汽车", py:"qìchē", ko:"자동차", tones:[4,1] },
+    { zh:"公交车", py:"gōngjiāochē", ko:"버스", tones:[1,1,1] },
+    { zh:"地铁", py:"dìtiě", ko:"지하철", tones:[4,3] },
+    { zh:"火车", py:"huǒchē", ko:"기차", tones:[3,1] },
+    { zh:"飞机", py:"fēijī", ko:"비행기", tones:[1,1] },
+    { zh:"出租车", py:"chūzūchē", ko:"택시", tones:[1,1,1] },
+    { zh:"自行车", py:"zìxíngchē", ko:"자전거", tones:[4,2,1] },
+    { zh:"摩托车", py:"mótuōchē", ko:"오토바이", tones:[2,1,1] },
+    { zh:"船", py:"chuán", ko:"배", tones:[2] },
+    { zh:"高铁", py:"gāotiě", ko:"고속철도", tones:[1,3] },
+    { zh:"机场", py:"jīchǎng", ko:"공항", tones:[1,3] },
+    { zh:"车站", py:"chēzhàn", ko:"정류장/역", tones:[1,4] },
+    { zh:"红绿灯", py:"hónglǜdēng", ko:"신호등", tones:[2,4,1] },
+    { zh:"马路", py:"mǎlù", ko:"큰길", tones:[3,4] }
+  ],
+  "☀️ 날씨": [
+    { zh:"天气", py:"tiānqì", ko:"날씨", tones:[1,4] },
+    { zh:"晴天", py:"qíngtiān", ko:"맑은 날", tones:[2,1] },
+    { zh:"阴天", py:"yīntiān", ko:"흐린 날", tones:[1,1] },
+    { zh:"下雨", py:"xiàyǔ", ko:"비가 오다", tones:[4,3] },
+    { zh:"下雪", py:"xiàxuě", ko:"눈이 오다", tones:[4,3] },
+    { zh:"刮风", py:"guāfēng", ko:"바람이 불다", tones:[1,1] },
+    { zh:"云", py:"yún", ko:"구름", tones:[2] },
+    { zh:"太阳", py:"tàiyáng", ko:"해/태양", tones:[4,2] },
+    { zh:"月亮", py:"yuèliang", ko:"달", tones:[4,0] },
+    { zh:"热", py:"rè", ko:"덥다", tones:[4] },
+    { zh:"冷", py:"lěng", ko:"춥다", tones:[3] },
+    { zh:"暖和", py:"nuǎnhuo", ko:"따뜻하다", tones:[3,0] },
+    { zh:"凉快", py:"liángkuai", ko:"시원하다", tones:[2,0] },
+    { zh:"彩虹", py:"cǎihóng", ko:"무지개", tones:[3,2] },
+    { zh:"雾", py:"wù", ko:"안개", tones:[4] },
+    { zh:"台风", py:"táifēng", ko:"태풍", tones:[2,1] }
+  ],
+  "💼 직업": [
+    { zh:"老师", py:"lǎoshī", ko:"선생님", tones:[3,1] },
+    { zh:"学生", py:"xuésheng", ko:"학생", tones:[2,0] },
+    { zh:"医生", py:"yīshēng", ko:"의사", tones:[1,1] },
+    { zh:"护士", py:"hùshi", ko:"간호사", tones:[4,0] },
+    { zh:"警察", py:"jǐngchá", ko:"경찰", tones:[3,2] },
+    { zh:"司机", py:"sījī", ko:"기사/운전사", tones:[1,1] },
+    { zh:"厨师", py:"chúshī", ko:"요리사", tones:[2,1] },
+    { zh:"律师", py:"lǜshī", ko:"변호사", tones:[4,1] },
+    { zh:"工人", py:"gōngrén", ko:"노동자", tones:[1,2] },
+    { zh:"农民", py:"nóngmín", ko:"농민", tones:[2,2] },
+    { zh:"演员", py:"yǎnyuán", ko:"배우", tones:[3,2] },
+    { zh:"歌手", py:"gēshǒu", ko:"가수", tones:[1,3] },
+    { zh:"画家", py:"huàjiā", ko:"화가", tones:[4,1] },
+    { zh:"作家", py:"zuòjiā", ko:"작가", tones:[4,1] },
+    { zh:"记者", py:"jìzhě", ko:"기자", tones:[4,3] },
+    { zh:"老板", py:"lǎobǎn", ko:"사장", tones:[3,3] },
+    { zh:"服务员", py:"fúwùyuán", ko:"종업원", tones:[2,4,2] }
+  ],
+  "⏰ 시간·요일": [
+    { zh:"今天", py:"jīntiān", ko:"오늘", tones:[1,1] },
+    { zh:"昨天", py:"zuótiān", ko:"어제", tones:[2,1] },
+    { zh:"明天", py:"míngtiān", ko:"내일", tones:[2,1] },
+    { zh:"早上", py:"zǎoshang", ko:"아침", tones:[3,0] },
+    { zh:"中午", py:"zhōngwǔ", ko:"점심때/정오", tones:[1,3] },
+    { zh:"晚上", py:"wǎnshang", ko:"저녁", tones:[3,0] },
+    { zh:"星期一", py:"xīngqīyī", ko:"월요일", tones:[1,1,1] },
+    { zh:"星期二", py:"xīngqī'èr", ko:"화요일", tones:[1,1,4] },
+    { zh:"星期三", py:"xīngqīsān", ko:"수요일", tones:[1,1,1] },
+    { zh:"星期四", py:"xīngqīsì", ko:"목요일", tones:[1,1,4] },
+    { zh:"星期五", py:"xīngqīwǔ", ko:"금요일", tones:[1,1,3] },
+    { zh:"星期六", py:"xīngqīliù", ko:"토요일", tones:[1,1,4] },
+    { zh:"星期天", py:"xīngqītiān", ko:"일요일", tones:[1,1,1] },
+    { zh:"小时", py:"xiǎoshí", ko:"시간", tones:[3,2] },
+    { zh:"分钟", py:"fēnzhōng", ko:"분", tones:[1,1] },
+    { zh:"现在", py:"xiànzài", ko:"지금", tones:[4,4] },
+    { zh:"年", py:"nián", ko:"년/해", tones:[2] },
+    { zh:"月", py:"yuè", ko:"월/달", tones:[4] }
+  ],
+  "🏠 집·장소": [
+    { zh:"家", py:"jiā", ko:"집", tones:[1] },
+    { zh:"房间", py:"fángjiān", ko:"방", tones:[2,1] },
+    { zh:"客厅", py:"kètīng", ko:"거실", tones:[4,1] },
+    { zh:"卧室", py:"wòshì", ko:"침실", tones:[4,4] },
+    { zh:"厨房", py:"chúfáng", ko:"주방", tones:[2,2] },
+    { zh:"卫生间", py:"wèishēngjiān", ko:"화장실", tones:[4,1,1] },
+    { zh:"学校", py:"xuéxiào", ko:"학교", tones:[2,4] },
+    { zh:"公司", py:"gōngsī", ko:"회사", tones:[1,1] },
+    { zh:"医院", py:"yīyuàn", ko:"병원", tones:[1,4] },
+    { zh:"银行", py:"yínháng", ko:"은행", tones:[2,2] },
+    { zh:"商店", py:"shāngdiàn", ko:"상점", tones:[1,4] },
+    { zh:"超市", py:"chāoshì", ko:"마트", tones:[1,4] },
+    { zh:"餐厅", py:"cāntīng", ko:"식당", tones:[1,1] },
+    { zh:"公园", py:"gōngyuán", ko:"공원", tones:[1,2] },
+    { zh:"图书馆", py:"túshūguǎn", ko:"도서관", tones:[2,1,3] },
+    { zh:"机场", py:"jīchǎng", ko:"공항", tones:[1,3] },
+    { zh:"酒店", py:"jiǔdiàn", ko:"호텔", tones:[3,4] }
+  ],
+  "📚 학교·문구": [
+    { zh:"书", py:"shū", ko:"책", tones:[1] },
+    { zh:"笔", py:"bǐ", ko:"펜", tones:[3] },
+    { zh:"铅笔", py:"qiānbǐ", ko:"연필", tones:[1,3] },
+    { zh:"橡皮", py:"xiàngpí", ko:"지우개", tones:[4,2] },
+    { zh:"本子", py:"běnzi", ko:"공책", tones:[3,0] },
+    { zh:"书包", py:"shūbāo", ko:"책가방", tones:[1,1] },
+    { zh:"桌子", py:"zhuōzi", ko:"책상", tones:[1,0] },
+    { zh:"椅子", py:"yǐzi", ko:"의자", tones:[3,0] },
+    { zh:"黑板", py:"hēibǎn", ko:"칠판", tones:[1,3] },
+    { zh:"电脑", py:"diànnǎo", ko:"컴퓨터", tones:[4,3] },
+    { zh:"尺子", py:"chǐzi", ko:"자", tones:[3,0] },
+    { zh:"剪刀", py:"jiǎndāo", ko:"가위", tones:[3,1] },
+    { zh:"课本", py:"kèběn", ko:"교과서", tones:[4,3] },
+    { zh:"作业", py:"zuòyè", ko:"숙제", tones:[4,4] },
+    { zh:"考试", py:"kǎoshì", ko:"시험", tones:[3,4] },
+    { zh:"同学", py:"tóngxué", ko:"반 친구", tones:[2,2] }
+  ],
+  "⚽ 취미·운동": [
+    { zh:"运动", py:"yùndòng", ko:"운동", tones:[4,4] },
+    { zh:"足球", py:"zúqiú", ko:"축구", tones:[2,2] },
+    { zh:"篮球", py:"lánqiú", ko:"농구", tones:[2,2] },
+    { zh:"乒乓球", py:"pīngpāngqiú", ko:"탁구", tones:[1,1,2] },
+    { zh:"网球", py:"wǎngqiú", ko:"테니스", tones:[3,2] },
+    { zh:"游泳", py:"yóuyǒng", ko:"수영", tones:[2,3] },
+    { zh:"跑步", py:"pǎobù", ko:"달리기", tones:[3,4] },
+    { zh:"爬山", py:"páshān", ko:"등산", tones:[2,1] },
+    { zh:"瑜伽", py:"yújiā", ko:"요가", tones:[2,1] },
+    { zh:"唱歌", py:"chànggē", ko:"노래하다", tones:[4,1] },
+    { zh:"跳舞", py:"tiàowǔ", ko:"춤추다", tones:[4,3] },
+    { zh:"画画", py:"huàhuà", ko:"그림 그리다", tones:[4,4] },
+    { zh:"看书", py:"kànshū", ko:"독서하다", tones:[4,1] },
+    { zh:"看电影", py:"kàndiànyǐng", ko:"영화 보다", tones:[4,4,3] },
+    { zh:"听音乐", py:"tīngyīnyuè", ko:"음악 듣다", tones:[1,1,4] },
+    { zh:"拍照", py:"pāizhào", ko:"사진 찍다", tones:[1,4] },
+    { zh:"旅游", py:"lǚyóu", ko:"여행하다", tones:[3,2] },
+    { zh:"钓鱼", py:"diàoyú", ko:"낚시하다", tones:[4,2] }
+  ],
+  "🥬 채소": [
+    { zh:"蔬菜", py:"shūcài", ko:"채소", tones:[1,4] },
+    { zh:"白菜", py:"báicài", ko:"배추", tones:[2,4] },
+    { zh:"土豆", py:"tǔdòu", ko:"감자", tones:[3,4] },
+    { zh:"西红柿", py:"xīhóngshì", ko:"토마토", tones:[1,2,4] },
+    { zh:"黄瓜", py:"huángguā", ko:"오이", tones:[2,1] },
+    { zh:"茄子", py:"qiézi", ko:"가지", tones:[2,0] },
+    { zh:"胡萝卜", py:"húluóbo", ko:"당근", tones:[2,2,0] },
+    { zh:"洋葱", py:"yángcōng", ko:"양파", tones:[2,1] },
+    { zh:"大蒜", py:"dàsuàn", ko:"마늘", tones:[4,4] },
+    { zh:"辣椒", py:"làjiāo", ko:"고추", tones:[4,1] },
+    { zh:"蘑菇", py:"mógu", ko:"버섯", tones:[2,0] },
+    { zh:"豆腐", py:"dòufu", ko:"두부", tones:[4,0] },
+    { zh:"菠菜", py:"bōcài", ko:"시금치", tones:[1,4] },
+    { zh:"南瓜", py:"nánguā", ko:"호박", tones:[2,1] },
+    { zh:"玉米", py:"yùmǐ", ko:"옥수수", tones:[4,3] },
+    { zh:"生姜", py:"shēngjiāng", ko:"생강", tones:[1,1] },
+    { zh:"青菜", py:"qīngcài", ko:"푸성귀/청경채", tones:[1,4] }
+  ],
+  "🏢 건물·시설": [
+    { zh:"大楼", py:"dàlóu", ko:"빌딩", tones:[4,2] },
+    { zh:"房子", py:"fángzi", ko:"집/건물", tones:[2,0] },
+    { zh:"电梯", py:"diàntī", ko:"엘리베이터", tones:[4,1] },
+    { zh:"楼梯", py:"lóutī", ko:"계단", tones:[2,1] },
+    { zh:"门", py:"mén", ko:"문", tones:[2] },
+    { zh:"窗户", py:"chuānghu", ko:"창문", tones:[1,0] },
+    { zh:"厕所", py:"cèsuǒ", ko:"화장실", tones:[4,3] },
+    { zh:"停车场", py:"tíngchēchǎng", ko:"주차장", tones:[2,1,3] },
+    { zh:"加油站", py:"jiāyóuzhàn", ko:"주유소", tones:[1,2,4] },
+    { zh:"邮局", py:"yóujú", ko:"우체국", tones:[2,2] },
+    { zh:"博物馆", py:"bówùguǎn", ko:"박물관", tones:[2,4,3] },
+    { zh:"电影院", py:"diànyǐngyuàn", ko:"영화관", tones:[4,3,4] },
+    { zh:"体育馆", py:"tǐyùguǎn", ko:"체육관", tones:[3,4,3] },
+    { zh:"火车站", py:"huǒchēzhàn", ko:"기차역", tones:[3,1,4] },
+    { zh:"办公室", py:"bàngōngshì", ko:"사무실", tones:[4,1,4] },
+    { zh:"教室", py:"jiàoshì", ko:"교실", tones:[4,4] },
+    { zh:"市场", py:"shìchǎng", ko:"시장", tones:[4,3] }
+  ],
+  "🌳 자연": [
+    { zh:"山", py:"shān", ko:"산", tones:[1] },
+    { zh:"河", py:"hé", ko:"강", tones:[2] },
+    { zh:"海", py:"hǎi", ko:"바다", tones:[3] },
+    { zh:"湖", py:"hú", ko:"호수", tones:[2] },
+    { zh:"树", py:"shù", ko:"나무", tones:[4] },
+    { zh:"花", py:"huā", ko:"꽃", tones:[1] },
+    { zh:"草", py:"cǎo", ko:"풀", tones:[3] },
+    { zh:"石头", py:"shítou", ko:"돌", tones:[2,0] },
+    { zh:"沙子", py:"shāzi", ko:"모래", tones:[1,0] },
+    { zh:"天空", py:"tiānkōng", ko:"하늘", tones:[1,1] },
+    { zh:"星星", py:"xīngxing", ko:"별", tones:[1,0] },
+    { zh:"森林", py:"sēnlín", ko:"숲", tones:[1,2] },
+    { zh:"岛", py:"dǎo", ko:"섬", tones:[3] },
+    { zh:"瀑布", py:"pùbù", ko:"폭포", tones:[4,4] },
+    { zh:"火山", py:"huǒshān", ko:"화산", tones:[3,1] },
+    { zh:"沙漠", py:"shāmò", ko:"사막", tones:[1,4] },
+    { zh:"草原", py:"cǎoyuán", ko:"초원", tones:[3,2] },
+    { zh:"田", py:"tián", ko:"밭/논", tones:[2] }
+  ],
+  "🎵 악기·예술": [
+    { zh:"音乐", py:"yīnyuè", ko:"음악", tones:[1,4] },
+    { zh:"钢琴", py:"gāngqín", ko:"피아노", tones:[1,2] },
+    { zh:"吉他", py:"jítā", ko:"기타", tones:[2,1] },
+    { zh:"小提琴", py:"xiǎotíqín", ko:"바이올린", tones:[3,2,2] },
+    { zh:"鼓", py:"gǔ", ko:"북", tones:[3] },
+    { zh:"笛子", py:"dízi", ko:"피리", tones:[2,0] },
+    { zh:"歌", py:"gē", ko:"노래", tones:[1] },
+    { zh:"舞蹈", py:"wǔdǎo", ko:"춤", tones:[3,3] },
+    { zh:"画", py:"huà", ko:"그림", tones:[4] },
+    { zh:"油画", py:"yóuhuà", ko:"유화", tones:[2,4] },
+    { zh:"书法", py:"shūfǎ", ko:"서예", tones:[1,3] },
+    { zh:"电影", py:"diànyǐng", ko:"영화", tones:[4,3] },
+    { zh:"戏剧", py:"xìjù", ko:"연극", tones:[4,4] },
+    { zh:"照片", py:"zhàopiàn", ko:"사진", tones:[4,4] },
+    { zh:"雕塑", py:"diāosù", ko:"조각", tones:[1,4] },
+    { zh:"乐队", py:"yuèduì", ko:"밴드", tones:[4,4] }
+  ],
+  "📱 전자제품": [
+    { zh:"手机", py:"shǒujī", ko:"휴대폰", tones:[3,1] },
+    { zh:"电脑", py:"diànnǎo", ko:"컴퓨터", tones:[4,3] },
+    { zh:"电视", py:"diànshì", ko:"텔레비전", tones:[4,4] },
+    { zh:"相机", py:"xiàngjī", ko:"카메라", tones:[4,1] },
+    { zh:"耳机", py:"ěrjī", ko:"이어폰", tones:[3,1] },
+    { zh:"音箱", py:"yīnxiāng", ko:"스피커", tones:[1,1] },
+    { zh:"充电器", py:"chōngdiànqì", ko:"충전기", tones:[1,4,4] },
+    { zh:"电池", py:"diànchí", ko:"배터리", tones:[4,2] },
+    { zh:"冰箱", py:"bīngxiāng", ko:"냉장고", tones:[1,1] },
+    { zh:"洗衣机", py:"xǐyījī", ko:"세탁기", tones:[3,1,1] },
+    { zh:"空调", py:"kōngtiáo", ko:"에어컨", tones:[1,2] },
+    { zh:"电风扇", py:"diànfēngshàn", ko:"선풍기", tones:[4,1,4] },
+    { zh:"微波炉", py:"wēibōlú", ko:"전자레인지", tones:[1,1,2] },
+    { zh:"打印机", py:"dǎyìnjī", ko:"프린터", tones:[3,4,1] },
+    { zh:"鼠标", py:"shǔbiāo", ko:"마우스", tones:[3,1] },
+    { zh:"键盘", py:"jiànpán", ko:"키보드", tones:[4,2] }
+  ],
+  "🏃 동작(동사)": [
+    { zh:"走", py:"zǒu", ko:"걷다", tones:[3] },
+    { zh:"跑", py:"pǎo", ko:"뛰다", tones:[3] },
+    { zh:"跳", py:"tiào", ko:"뛰어오르다", tones:[4] },
+    { zh:"坐", py:"zuò", ko:"앉다", tones:[4] },
+    { zh:"站", py:"zhàn", ko:"서다", tones:[4] },
+    { zh:"躺", py:"tǎng", ko:"눕다", tones:[3] },
+    { zh:"吃", py:"chī", ko:"먹다", tones:[1] },
+    { zh:"喝", py:"hē", ko:"마시다", tones:[1] },
+    { zh:"看", py:"kàn", ko:"보다", tones:[4] },
+    { zh:"听", py:"tīng", ko:"듣다", tones:[1] },
+    { zh:"说", py:"shuō", ko:"말하다", tones:[1] },
+    { zh:"笑", py:"xiào", ko:"웃다", tones:[4] },
+    { zh:"哭", py:"kū", ko:"울다", tones:[1] },
+    { zh:"睡", py:"shuì", ko:"자다", tones:[4] },
+    { zh:"买", py:"mǎi", ko:"사다", tones:[3] },
+    { zh:"卖", py:"mài", ko:"팔다", tones:[4] },
+    { zh:"拿", py:"ná", ko:"들다/쥐다", tones:[2] },
+    { zh:"给", py:"gěi", ko:"주다", tones:[3] }
+  ],
+  "💰 돈·쇼핑": [
+    { zh:"钱", py:"qián", ko:"돈", tones:[2] },
+    { zh:"块", py:"kuài", ko:"위안(구어)", tones:[4] },
+    { zh:"元", py:"yuán", ko:"위안", tones:[2] },
+    { zh:"价格", py:"jiàgé", ko:"가격", tones:[4,2] },
+    { zh:"便宜", py:"piányi", ko:"싸다", tones:[2,0] },
+    { zh:"贵", py:"guì", ko:"비싸다", tones:[4] },
+    { zh:"打折", py:"dǎzhé", ko:"할인하다", tones:[3,2] },
+    { zh:"购物", py:"gòuwù", ko:"쇼핑", tones:[4,4] },
+    { zh:"买单", py:"mǎidān", ko:"계산하다", tones:[3,1] },
+    { zh:"现金", py:"xiànjīn", ko:"현금", tones:[4,1] },
+    { zh:"信用卡", py:"xìnyòngkǎ", ko:"신용카드", tones:[4,4,3] },
+    { zh:"发票", py:"fāpiào", ko:"영수증", tones:[1,4] },
+    { zh:"超市", py:"chāoshì", ko:"마트", tones:[1,4] },
+    { zh:"商店", py:"shāngdiàn", ko:"상점", tones:[1,4] },
+    { zh:"顾客", py:"gùkè", ko:"손님", tones:[4,4] },
+    { zh:"零钱", py:"língqián", ko:"잔돈", tones:[2,2] }
+  ],
+  "🩺 몸상태·증상": [
+    { zh:"生病", py:"shēngbìng", ko:"병나다", tones:[1,4] },
+    { zh:"感冒", py:"gǎnmào", ko:"감기", tones:[3,4] },
+    { zh:"发烧", py:"fāshāo", ko:"열나다", tones:[1,1] },
+    { zh:"咳嗽", py:"késou", ko:"기침하다", tones:[2,0] },
+    { zh:"头疼", py:"tóuténg", ko:"머리 아프다", tones:[2,2] },
+    { zh:"肚子疼", py:"dùziténg", ko:"배 아프다", tones:[4,0,2] },
+    { zh:"累", py:"lèi", ko:"피곤하다", tones:[4] },
+    { zh:"困", py:"kùn", ko:"졸리다", tones:[4] },
+    { zh:"饿", py:"è", ko:"배고프다", tones:[4] },
+    { zh:"渴", py:"kě", ko:"목마르다", tones:[3] },
+    { zh:"疼", py:"téng", ko:"아프다", tones:[2] },
+    { zh:"痒", py:"yǎng", ko:"가렵다", tones:[3] },
+    { zh:"健康", py:"jiànkāng", ko:"건강하다", tones:[4,1] },
+    { zh:"受伤", py:"shòushāng", ko:"다치다", tones:[4,1] },
+    { zh:"吃药", py:"chīyào", ko:"약을 먹다", tones:[1,4] },
+    { zh:"打针", py:"dǎzhēn", ko:"주사 맞다", tones:[3,1] },
+    { zh:"休息", py:"xiūxi", ko:"쉬다", tones:[1,0] }
   ],
 };
 
@@ -5826,8 +6252,10 @@ function initTheme() {
 function showThemeWords(name) {
   const words = THEMES[name];
   if (!words) return;
+  currentThemeName = name;
   document.getElementById('theme-grid').style.display = 'none';
   document.getElementById('theme-intro').style.display = 'none';
+  document.getElementById('theme-quiz').style.display = 'none';
   document.getElementById('theme-list').style.display = '';
   document.getElementById('theme-crumb').textContent = '· ' + name;
   const box = document.getElementById('theme-words');
@@ -5840,6 +6268,109 @@ function showThemeWords(name) {
       </div>
       <button class="theme-speak" onclick="speak(zhForTTS('${w.zh}','${w.py}'), this)" aria-label="발음 듣기">🔊</button>
     </div>`).join('');
+}
+
+/* ---- THEME 미니 퀴즈 ---- */
+let currentThemeName = '';
+let quizWords = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
+
+function shuffleArr(a) {
+  const arr = a.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startThemeQuiz(name) {
+  const words = THEMES[name];
+  if (!words || words.length < 4) { alert('이 주제는 단어가 적어 퀴즈를 만들 수 없어요.'); return; }
+  currentThemeName = name;
+  quizWords = shuffleArr(words).slice(0, Math.min(10, words.length));
+  quizIdx = 0; quizScore = 0; quizAnswered = false;
+  document.getElementById('theme-list').style.display = 'none';
+  document.getElementById('theme-quiz').style.display = '';
+  document.getElementById('theme-crumb').textContent = '· ' + name + ' 퀴즈';
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const box = document.getElementById('theme-quiz');
+  const q = quizWords[quizIdx];
+  quizAnswered = false;
+  // 보기: 정답 + 같은 주제 오답 3개(부족하면 전체에서 보충)
+  const pool = THEMES[currentThemeName].filter(w => w.ko !== q.ko);
+  let distractors = shuffleArr(pool).slice(0, 3);
+  if (distractors.length < 3) {
+    const all = [];
+    Object.values(THEMES).forEach(arr => arr.forEach(w => { if (w.ko !== q.ko) all.push(w); }));
+    distractors = shuffleArr(all).slice(0, 3);
+  }
+  const options = shuffleArr([q, ...distractors]);
+  const total = quizWords.length;
+  box.innerHTML = `
+    <div class="quiz-head">
+      <div class="quiz-progress-txt">문제 ${quizIdx + 1} / ${total}</div>
+      <div class="quiz-score-txt">점수 ${quizScore}</div>
+    </div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${(quizIdx / total) * 100}%"></div></div>
+    <div class="quiz-q">
+      <div class="quiz-q-zh">${q.zh}</div>
+      <div class="quiz-q-py">${q.py}</div>
+      <button class="theme-speak" style="margin:8px auto 0;" onclick="speak(zhForTTS('${q.zh}','${q.py}'), this)" aria-label="발음 듣기">🔊</button>
+    </div>
+    <div class="quiz-hint">알맞은 뜻을 골라 보세요</div>
+    <div class="quiz-options" id="quiz-options">
+      ${options.map(o => `<button class="quiz-opt" onclick="answerQuiz(this, ${o.ko === q.ko ? 'true' : 'false'})">${o.ko}</button>`).join('')}
+    </div>
+    <div id="quiz-next-wrap" style="margin-top:1rem;min-height:44px;"></div>
+  `;
+}
+
+function answerQuiz(btn, correct) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const opts = document.getElementById('quiz-options');
+  const q = quizWords[quizIdx];
+  [...opts.children].forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.ko) b.classList.add('correct');
+  });
+  if (correct) { quizScore++; btn.classList.add('correct'); }
+  else { btn.classList.add('wrong'); }
+  const isLast = quizIdx === quizWords.length - 1;
+  document.getElementById('quiz-next-wrap').innerHTML =
+    `<button class="btn btn-quiz" onclick="${isLast ? 'finishThemeQuiz()' : 'nextQuizQuestion()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
+}
+
+function nextQuizQuestion() {
+  quizIdx++;
+  renderQuizQuestion();
+}
+
+function finishThemeQuiz() {
+  const box = document.getElementById('theme-quiz');
+  const total = quizWords.length;
+  const pct = Math.round((quizScore / total) * 100);
+  let msg, face;
+  if (pct === 100) { msg = '완벽해요! 🏆'; face = 'happy'; }
+  else if (pct >= 70) { msg = '잘했어요! 👏'; face = 'happy'; }
+  else if (pct >= 40) { msg = '조금만 더 연습해요! 💪'; face = 'normal'; }
+  else { msg = '다시 도전해 볼까요? 🌱'; face = 'normal'; }
+  box.innerHTML = `
+    <div class="quiz-result">
+      <div class="quiz-result-otter">${otterSVG(80, face)}</div>
+      <div class="quiz-result-msg">${msg}</div>
+      <div class="quiz-result-score">${total}문제 중 <b>${quizScore}</b>개 정답 (${pct}%)</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
+        <button class="btn btn-quiz" onclick="startThemeQuiz(currentThemeName)">🔁 다시 풀기</button>
+        <button class="btn" onclick="showThemeWords(currentThemeName)">📖 단어 목록</button>
+        <button class="btn" onclick="initTheme()">🗂️ 주제 목록</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('theme-crumb').textContent = '· ' + currentThemeName;
 }
 
 let currentThemeIdx = 0;
