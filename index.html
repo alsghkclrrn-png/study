@@ -354,6 +354,36 @@
   .tq-write-py { font-family: var(--font-display); font-size: 1.6rem; color: var(--blue); }
   .tq-write-ko { font-size: 1.05rem; color: var(--text); margin-top: 4px; }
   .tq-write-chars { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 1rem 0; }
+
+  /* 문장 만들기 */
+  .sent-prompt { text-align: center; padding: 1.3rem 1rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; }
+  .sent-prompt-ko { font-size: 1.2rem; color: var(--text); font-weight: 700; }
+  .sent-prompt-zh { font-family: var(--font-display); font-size: 1.9rem; color: var(--text); line-height: 1.3; }
+  .sent-prompt-py { font-size: 0.95rem; color: var(--blue); margin-top: 6px; }
+  .sent-hint { text-align: center; font-size: 0.82rem; color: var(--text3); margin-bottom: 0.8rem; }
+  .sent-answer { min-height: 56px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 10px; border: 1.5px dashed var(--border2); border-radius: 14px; margin-bottom: 1rem; background: var(--card); }
+  .sent-answer-ph { color: var(--text3); font-size: 0.85rem; }
+  .sent-poolrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .sent-chip {
+    font-family: var(--font-display); font-size: 1.4rem;
+    padding: 8px 14px; background: var(--card2); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  .sent-chip:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); transform: translateY(-2px); }
+  .sent-chip.placed { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); }
+  .sent-chip.used { opacity: 0.3; cursor: default; }
+  .sent-opts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .sent-opt {
+    padding: 14px 16px; font-size: 1rem; font-family: var(--font-body);
+    background: var(--card); color: var(--text); text-align: center;
+    border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sent-opt:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); transform: translateY(-2px); }
+  .sent-opt:disabled { cursor: default; }
+  .sent-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
+  .sent-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
   .tq-result { text-align: center; padding: 1.5rem 1rem; }
   .tq-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
   .tq-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
@@ -1446,6 +1476,11 @@
               <div class="game-name">스피드 퀴즈</div>
               <div class="game-desc">60초 안에 최대한 많이!</div>
             </div>
+            <div class="game-card" onclick="startGame('sentence')">
+              <div class="game-emoji">🧩</div>
+              <div class="game-name">문장 만들기</div>
+              <div class="game-desc">어순 배열 · 문장 해석</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1528,6 +1563,26 @@
           <div class="quiz-opts" id="speed-opts"></div>
           <div class="result-msg" id="speed-result"></div>
           <button class="btn" style="margin-top:1rem;" onclick="stopSpeed();showGamesMenu()">← 돌아가기</button>
+        </div>
+      </div>
+      <div id="game-sentence" style="display:none">
+        <div class="card">
+          <div class="card-title">🧩 문장 만들기</div>
+          <div id="sentence-setup">
+            <p style="color:var(--text2);font-size:0.9rem;margin-bottom:1rem;">연습 방향을 골라 주세요.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+              <button class="btn btn-primary" onclick="startSentence('ko2zh')">🇰🇷 → 🇨🇳 &nbsp; 한국어 보고 중국어 어순 배열하기</button>
+              <button class="btn btn-primary" onclick="startSentence('zh2ko')">🇨🇳 → 🇰🇷 &nbsp; 중국어 보고 뜻 고르기</button>
+            </div>
+            <button class="btn" style="margin-top:1.2rem;" onclick="showGamesMenu()">← 돌아가기</button>
+          </div>
+          <div id="sentence-play" style="display:none">
+            <div class="score-row"><span class="score-num" id="sentence-score">0</span> 점 &nbsp;|&nbsp; <span id="sentence-prog">1</span>/<span id="sentence-total">5</span> 문제</div>
+            <div id="sentence-body"></div>
+            <div class="result-msg" id="sentence-result"></div>
+            <div id="sentence-controls" style="display:flex;gap:10px;justify-content:center;margin-top:1rem;flex-wrap:wrap;"></div>
+            <button class="btn" style="margin-top:1rem;" onclick="showGamesMenu()">← 돌아가기</button>
+          </div>
         </div>
       </div>
     </div>
@@ -11027,13 +11082,13 @@ function showStoryLine(idx) {
 function showGamesMenu() {
   stopSpeed();
   document.getElementById('games-menu').style.display = '';
-  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed']
+  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed','game-sentence']
     .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 }
 
 function startGame(type) {
   document.getElementById('games-menu').style.display = 'none';
-  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed']
+  ['game-match','game-fill','game-quiz','game-listen','game-tone2','game-memory','game-speed','game-sentence']
     .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   if (type === 'match') initMatch();
   else if (type === 'fill') initFill();
@@ -11042,6 +11097,7 @@ function startGame(type) {
   else if (type === 'tonematch') initTone2();
   else if (type === 'memory') initMemory();
   else if (type === 'speed') initSpeed();
+  else if (type === 'sentence') initSentence();
 }
 
 function shortKo(ko) {
@@ -11179,6 +11235,165 @@ function showGameComplete(resultElId, curType, summary) {
     '<button class="btn btn-primary" onclick="startGame(\'' + curType + '\')">↻ 새 문제로 다시!</button>' +
     '<button class="btn" onclick="showGamesMenu()">놀이 메뉴</button>' +
     '</div>';
+}
+
+/* ---- 문장 만들기 (어순 배열 / 문장 해석) ---- */
+let sentenceState = {};
+function sentencePool() {
+  // 한자 3~7개짜리 예문만 사용
+  const pool = [];
+  for (const k in EX_DATA) {
+    const ex = EX_DATA[k];
+    const hz = (ex.zh.match(/[\u4e00-\u9fff]/g) || []).length;
+    if (hz >= 3 && hz <= 7) pool.push(ex);
+  }
+  return pool;
+}
+function sentChars(zh) {
+  // 문장부호·공백 제거 후 글자 단위 배열
+  return [...zh.replace(/[\s。，、！？：；·…—“”‘’（）()."'!?,]/g, '')];
+}
+function initSentence() {
+  document.getElementById('game-sentence').style.display = '';
+  document.getElementById('sentence-setup').style.display = '';
+  document.getElementById('sentence-play').style.display = 'none';
+}
+function startSentence(mode) {
+  const all = sentencePool();
+  if (all.length < 5) { alert('문장이 부족해요.'); return; }
+  sentenceState = { mode: mode, round: 0, total: 5, score: 0, items: gShuffle(all).slice(0, 5) };
+  document.getElementById('sentence-setup').style.display = 'none';
+  document.getElementById('sentence-play').style.display = '';
+  document.getElementById('sentence-total').textContent = sentenceState.total;
+  document.getElementById('sentence-score').textContent = 0;
+  loadSentence();
+}
+function loadSentence() {
+  const st = sentenceState;
+  const ex = st.items[st.round];
+  st.answered = false;
+  document.getElementById('sentence-prog').textContent = st.round + 1;
+  document.getElementById('sentence-result').textContent = '';
+  document.getElementById('sentence-result').className = 'result-msg';
+  const body = document.getElementById('sentence-body');
+  const ctrl = document.getElementById('sentence-controls');
+  if (st.mode === 'ko2zh') {
+    // 한국어 제시 → 중국어 어순 배열
+    const chars = sentChars(ex.zh);
+    st.target = chars.join('');
+    st.pool = gShuffle(chars.map((c, i) => ({ c: c, id: i })));
+    st.placed = [];
+    body.innerHTML = `
+      <div class="sent-prompt">
+        <div class="sent-prompt-ko">${escapeHtml(ex.ko)}</div>
+        <div class="sent-prompt-py">${escapeHtml(ex.py)}</div>
+      </div>
+      <div class="sent-hint">아래 글자를 눌러 순서대로 문장을 만들어 보세요</div>
+      <div class="sent-answer" id="sent-answer"></div>
+      <div class="sent-poolrow" id="sent-pool"></div>
+    `;
+    renderSentChips();
+    ctrl.innerHTML =
+      `<button class="btn btn-primary" onclick="checkSentence()">확인</button>` +
+      `<button class="btn" onclick="sentClear()">↺ 지우기</button>`;
+  } else {
+    // 중국어 제시 → 뜻 고르기 (4지선다)
+    st.answer = ex;
+    const others = gShuffle(sentencePool().filter(e => e.ko !== ex.ko)).slice(0, 3);
+    st.opts = gShuffle([ex, ...others]);
+    body.innerHTML = `
+      <div class="sent-prompt">
+        <div class="sent-prompt-zh">${escapeHtml(ex.zh)}</div>
+        <div class="sent-prompt-py">${escapeHtml(ex.py)}</div>
+        <button class="theme-speak" style="margin:10px auto 0;" onclick="speak(zhForTTS('${ex.zh.replace(/'/g,"\\'")}','${ex.py.replace(/'/g,"\\'")}'), this)" aria-label="발음 듣기">🔊</button>
+      </div>
+      <div class="sent-hint">알맞은 뜻을 골라 보세요</div>
+      <div class="sent-opts" id="sent-opts">
+        ${st.opts.map(o => `<button class="sent-opt" onclick="answerSentence(this, ${o.ko === ex.ko ? 'true' : 'false'})">${escapeHtml(o.ko)}</button>`).join('')}
+      </div>
+    `;
+    ctrl.innerHTML = '';
+  }
+}
+function renderSentChips() {
+  const st = sentenceState;
+  const ansEl = document.getElementById('sent-answer');
+  const poolEl = document.getElementById('sent-pool');
+  ansEl.innerHTML = st.placed.map((p, i) => `<button class="sent-chip placed" onclick="sentUnplace(${i})">${p.c}</button>`).join('') || '<span class="sent-answer-ph">여기에 문장이 만들어져요</span>';
+  const placedIds = st.placed.map(p => p.id);
+  poolEl.innerHTML = st.pool.map(p => placedIds.includes(p.id)
+    ? `<button class="sent-chip used" disabled>${p.c}</button>`
+    : `<button class="sent-chip" onclick="sentPlace(${p.id})">${p.c}</button>`).join('');
+}
+function sentPlace(id) {
+  const st = sentenceState;
+  if (st.answered) return;
+  const item = st.pool.find(p => p.id === id);
+  if (item && !st.placed.some(p => p.id === id)) { st.placed.push(item); renderSentChips(); }
+}
+function sentUnplace(idx) {
+  const st = sentenceState;
+  if (st.answered) return;
+  st.placed.splice(idx, 1); renderSentChips();
+}
+function sentClear() {
+  if (sentenceState.answered) return;
+  sentenceState.placed = []; renderSentChips();
+}
+function checkSentence() {
+  const st = sentenceState;
+  if (st.answered) return;
+  if (st.placed.length === 0) return;
+  st.answered = true;
+  const built = st.placed.map(p => p.c).join('');
+  const res = document.getElementById('sentence-result');
+  const correct = built === st.target;
+  if (correct) {
+    st.score += 10;
+    res.className = 'result-msg ok';
+    res.innerHTML = '✓ 정답! &nbsp; ' + escapeHtml(st.items[st.round].zh);
+  } else {
+    res.className = 'result-msg fail';
+    res.innerHTML = '✗ 아쉬워요. 정답: <b>' + escapeHtml(st.items[st.round].zh) + '</b>';
+  }
+  document.getElementById('sentence-score').textContent = st.score;
+  sentAdvanceBtn();
+}
+function answerSentence(btn, correct) {
+  const st = sentenceState;
+  if (st.answered) return;
+  st.answered = true;
+  document.querySelectorAll('#sent-opts .sent-opt').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === st.answer.ko) b.classList.add('correct');
+  });
+  const res = document.getElementById('sentence-result');
+  if (correct) {
+    st.score += 10; btn.classList.add('correct');
+    res.className = 'result-msg ok'; res.textContent = '✓ 정답!';
+  } else {
+    btn.classList.add('wrong');
+    res.className = 'result-msg fail'; res.innerHTML = '✗ 정답: <b>' + escapeHtml(st.answer.ko) + '</b>';
+  }
+  document.getElementById('sentence-score').textContent = st.score;
+  sentAdvanceBtn();
+}
+function sentAdvanceBtn() {
+  const st = sentenceState;
+  const isLast = st.round >= st.total - 1;
+  document.getElementById('sentence-controls').innerHTML =
+    `<button class="btn btn-primary" onclick="${isLast ? 'finishSentence()' : 'nextSentence()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
+}
+function nextSentence() {
+  sentenceState.round++;
+  loadSentence();
+}
+function finishSentence() {
+  const st = sentenceState;
+  document.getElementById('sentence-body').innerHTML = '';
+  document.getElementById('sentence-controls').innerHTML = '';
+  const max = st.total * 10;
+  showGameComplete('sentence-result', 'sentence', '🎉 문장 만들기 완료! ' + st.score + ' / ' + max + '점');
 }
 
 /* ---- 뜻 맞히기 (4지선다) ---- */
