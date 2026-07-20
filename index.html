@@ -309,34 +309,34 @@
   .theme-speak:hover { background: var(--blue); color: var(--on-accent); }
   .theme-speak.speaking { animation: pulse 0.6s ease infinite; }
 
-  /* THEME 미니 퀴즈 */
+  /* THEME 미니 퀴즈 (tq- 접두사로 게임 모듈과 분리) */
   .btn-quiz { background: var(--blue); color: var(--on-accent); border-color: var(--blue); }
   .btn-quiz:hover { filter: brightness(1.06); transform: translateY(-2px); }
-  .quiz-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text2); margin-bottom: 8px; }
-  .quiz-score-txt { font-family: var(--font-display); color: var(--blue); }
-  .quiz-progress-bar { height: 8px; background: var(--card2); border-radius: 99px; overflow: hidden; margin-bottom: 1.4rem; border: 1px solid var(--border); }
-  .quiz-progress-fill { height: 100%; background: var(--blue); border-radius: 99px; transition: width 0.35s ease; }
-  .quiz-q { text-align: center; padding: 1.6rem 1rem 1.2rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 0.4rem; }
-  .quiz-q-zh { font-family: var(--font-display); font-size: 2.6rem; color: var(--text); line-height: 1.1; }
-  .quiz-q-py { font-size: 1rem; color: var(--blue); margin-top: 6px; }
-  .quiz-hint { text-align: center; font-size: 0.82rem; color: var(--text3); margin: 1rem 0 0.8rem; }
-  .quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .quiz-opt {
+  .tq-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text2); margin-bottom: 8px; }
+  .tq-score-txt { font-family: var(--font-display); color: var(--blue); }
+  .tq-progress-bar { height: 8px; background: var(--card2); border-radius: 99px; overflow: hidden; margin-bottom: 1.4rem; border: 1px solid var(--border); }
+  .tq-progress-fill { height: 100%; background: var(--blue); border-radius: 99px; transition: width 0.35s ease; }
+  .tq-q { text-align: center; padding: 1.6rem 1rem 1.2rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 0.4rem; }
+  .tq-q-zh { font-family: var(--font-display); font-size: 2.6rem; color: var(--text); line-height: 1.1; }
+  .tq-q-py { font-size: 1rem; color: var(--blue); margin-top: 6px; }
+  .tq-hint { text-align: center; font-size: 0.82rem; color: var(--text3); margin: 1rem 0 0.8rem; }
+  .tq-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tq-opt {
     padding: 14px 12px; font-size: 1rem; font-family: var(--font-body);
     background: var(--card); color: var(--text);
     border: 1.5px solid var(--border); border-radius: 14px;
     cursor: pointer; transition: all 0.15s ease; text-align: center;
   }
-  .quiz-opt:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); transform: translateY(-2px); }
-  .quiz-opt:disabled { cursor: default; }
-  .quiz-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
-  .quiz-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-  .quiz-result { text-align: center; padding: 1.5rem 1rem; }
-  .quiz-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
-  .quiz-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
-  .quiz-result-score { font-size: 1rem; color: var(--text2); }
-  .quiz-result-score b { color: var(--blue); font-size: 1.3rem; }
-  @media (max-width: 380px) { .quiz-options { grid-template-columns: 1fr; } }
+  .tq-opt:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-bg); transform: translateY(-2px); }
+  .tq-opt:disabled { cursor: default; }
+  .tq-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
+  .tq-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .tq-result { text-align: center; padding: 1.5rem 1rem; }
+  .tq-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
+  .tq-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
+  .tq-result-score { font-size: 1rem; color: var(--text2); }
+  .tq-result-score b { color: var(--blue); font-size: 1.3rem; }
+  @media (max-width: 380px) { .tq-options { grid-template-columns: 1fr; } }
 
   /* FLASHCARD */
   .flashcard-wrap {
@@ -6310,28 +6310,28 @@ function renderQuizQuestion() {
   const options = shuffleArr([q, ...distractors]);
   const total = quizWords.length;
   box.innerHTML = `
-    <div class="quiz-head">
-      <div class="quiz-progress-txt">문제 ${quizIdx + 1} / ${total}</div>
-      <div class="quiz-score-txt">점수 ${quizScore}</div>
+    <div class="tq-head">
+      <div class="tq-progress-txt">문제 ${quizIdx + 1} / ${total}</div>
+      <div class="tq-score-txt">점수 ${quizScore}</div>
     </div>
-    <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${(quizIdx / total) * 100}%"></div></div>
-    <div class="quiz-q">
-      <div class="quiz-q-zh">${q.zh}</div>
-      <div class="quiz-q-py">${q.py}</div>
+    <div class="tq-progress-bar"><div class="tq-progress-fill" style="width:${(quizIdx / total) * 100}%"></div></div>
+    <div class="tq-q">
+      <div class="tq-q-zh">${q.zh}</div>
+      <div class="tq-q-py">${q.py}</div>
       <button class="theme-speak" style="margin:8px auto 0;" onclick="speak(zhForTTS('${q.zh}','${q.py}'), this)" aria-label="발음 듣기">🔊</button>
     </div>
-    <div class="quiz-hint">알맞은 뜻을 골라 보세요</div>
-    <div class="quiz-options" id="quiz-options">
-      ${options.map(o => `<button class="quiz-opt" onclick="answerQuiz(this, ${o.ko === q.ko ? 'true' : 'false'})">${o.ko}</button>`).join('')}
+    <div class="tq-hint">알맞은 뜻을 골라 보세요</div>
+    <div class="tq-options" id="tq-options">
+      ${options.map(o => `<button class="tq-opt" onclick="answerThemeQuiz(this, ${o.ko === q.ko ? 'true' : 'false'})">${o.ko}</button>`).join('')}
     </div>
-    <div id="quiz-next-wrap" style="margin-top:1rem;min-height:44px;"></div>
+    <div id="tq-next-wrap" style="margin-top:1rem;min-height:44px;"></div>
   `;
 }
 
-function answerQuiz(btn, correct) {
+function answerThemeQuiz(btn, correct) {
   if (quizAnswered) return;
   quizAnswered = true;
-  const opts = document.getElementById('quiz-options');
+  const opts = document.getElementById('tq-options');
   const q = quizWords[quizIdx];
   [...opts.children].forEach(b => {
     b.disabled = true;
@@ -6340,7 +6340,7 @@ function answerQuiz(btn, correct) {
   if (correct) { quizScore++; btn.classList.add('correct'); }
   else { btn.classList.add('wrong'); }
   const isLast = quizIdx === quizWords.length - 1;
-  document.getElementById('quiz-next-wrap').innerHTML =
+  document.getElementById('tq-next-wrap').innerHTML =
     `<button class="btn btn-quiz" onclick="${isLast ? 'finishThemeQuiz()' : 'nextQuizQuestion()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
 }
 
@@ -6359,10 +6359,10 @@ function finishThemeQuiz() {
   else if (pct >= 40) { msg = '조금만 더 연습해요! 💪'; face = 'normal'; }
   else { msg = '다시 도전해 볼까요? 🌱'; face = 'normal'; }
   box.innerHTML = `
-    <div class="quiz-result">
-      <div class="quiz-result-otter">${otterSVG(80, face)}</div>
-      <div class="quiz-result-msg">${msg}</div>
-      <div class="quiz-result-score">${total}문제 중 <b>${quizScore}</b>개 정답 (${pct}%)</div>
+    <div class="tq-result">
+      <div class="tq-result-otter">${otterSVG(80, face)}</div>
+      <div class="tq-result-msg">${msg}</div>
+      <div class="tq-result-score">${total}문제 중 <b>${quizScore}</b>개 정답 (${pct}%)</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
         <button class="btn btn-quiz" onclick="startThemeQuiz(currentThemeName)">🔁 다시 풀기</button>
         <button class="btn" onclick="showThemeWords(currentThemeName)">📖 단어 목록</button>
