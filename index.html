@@ -331,6 +331,10 @@
   .tq-opt:disabled { cursor: default; }
   .tq-opt.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
   .tq-opt.wrong { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .tq-feedback { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 10px; text-align: center; }
+  .tq-feedback.ok { color: var(--green); }
+  .tq-feedback.fail { color: var(--red); }
+  .tq-feedback b { font-weight: 700; }
   .tq-result { text-align: center; padding: 1.5rem 1rem; }
   .tq-result-otter { display: flex; justify-content: center; margin-bottom: 0.8rem; }
   .tq-result-msg { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 0.5rem; }
@@ -6340,7 +6344,10 @@ function answerThemeQuiz(btn, correct) {
   if (correct) { quizScore++; btn.classList.add('correct'); }
   else { btn.classList.add('wrong'); }
   const isLast = quizIdx === quizWords.length - 1;
-  document.getElementById('tq-next-wrap').innerHTML =
+  const feedback = correct
+    ? `<div class="tq-feedback ok">✓ 정답!</div>`
+    : `<div class="tq-feedback fail">✗ 정답은 <b>${q.ko}</b> 예요</div>`;
+  document.getElementById('tq-next-wrap').innerHTML = feedback +
     `<button class="btn btn-quiz" onclick="${isLast ? 'finishThemeQuiz()' : 'nextQuizQuestion()'}">${isLast ? '결과 보기 🎉' : '다음 →'}</button>`;
 }
 
