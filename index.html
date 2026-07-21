@@ -356,6 +356,21 @@
   .tq-write-chars { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 1rem 0; }
 
   /* 문장 만들기 */
+  .sent-setup-label { font-family: var(--font-display); font-size: 0.9rem; color: var(--text2); margin: 1rem 0 0.5rem; }
+  .sent-choicerow { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sent-choice {
+    flex: 1 1 auto; min-width: 90px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 12px 14px; font-family: var(--font-body); font-size: 0.95rem;
+    background: var(--card2); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sent-choice:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .sent-choice.active { border-color: var(--blue); background: var(--blue-bg); color: var(--blue); font-weight: 700; }
+  .sent-choice-sub { font-size: 0.68rem; color: var(--text3); font-weight: 400; }
+  .sent-choice.active .sent-choice-sub { color: var(--blue); }
+  .sent-reveal-ko { font-size: 1.15rem; color: var(--text); font-weight: 700; margin-top: 6px; }
   .sent-prompt { text-align: center; padding: 1.3rem 1rem; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; }
   .sent-prompt-ko { font-size: 1.2rem; color: var(--text); font-weight: 700; }
   .sent-prompt-zh { font-family: var(--font-display); font-size: 1.9rem; color: var(--text); line-height: 1.3; }
@@ -1569,12 +1584,28 @@
         <div class="card">
           <div class="card-title">🧩 문장 만들기</div>
           <div id="sentence-setup">
-            <p style="color:var(--text2);font-size:0.9rem;margin-bottom:1rem;">연습 방향을 골라 주세요.</p>
-            <div style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
-              <button class="btn btn-primary" onclick="startSentence('ko2zh')">🇰🇷 → 🇨🇳 &nbsp; 한국어 보고 중국어 어순 배열하기</button>
-              <button class="btn btn-primary" onclick="startSentence('zh2ko')">🇨🇳 → 🇰🇷 &nbsp; 중국어 보고 뜻 고르기</button>
+            <div class="sent-setup-label">연습 방향</div>
+            <div class="sent-choicerow" id="sent-dir">
+              <button class="sent-choice" onclick="sentPick('dir','ko2zh',this)">🇰🇷 → 🇨🇳 어순 배열</button>
+              <button class="sent-choice" onclick="sentPick('dir','zh2ko',this)">🇨🇳 → 🇰🇷 뜻 해석</button>
             </div>
-            <button class="btn" style="margin-top:1.2rem;" onclick="showGamesMenu()">← 돌아가기</button>
+            <div class="sent-setup-label">난이도</div>
+            <div class="sent-choicerow" id="sent-diff">
+              <button class="sent-choice" onclick="sentPick('diff','easy',this)">초급<span class="sent-choice-sub">짧은 문장</span></button>
+              <button class="sent-choice" onclick="sentPick('diff','mid',this)">중급<span class="sent-choice-sub">보통 문장</span></button>
+              <button class="sent-choice" onclick="sentPick('diff','hard',this)">고급<span class="sent-choice-sub">병음 숨김·서술형</span></button>
+            </div>
+            <div class="sent-setup-label">문제 수</div>
+            <div class="sent-choicerow" id="sent-count">
+              <button class="sent-choice" onclick="sentPick('count','5',this)">5문제</button>
+              <button class="sent-choice" onclick="sentPick('count','10',this)">10문제</button>
+              <button class="sent-choice" onclick="sentPick('count','15',this)">15문제</button>
+              <button class="sent-choice" onclick="sentPick('count','20',this)">20문제</button>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:1.4rem;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="startSentence()">시작하기 →</button>
+              <button class="btn" onclick="showGamesMenu()">← 돌아가기</button>
+            </div>
           </div>
           <div id="sentence-play" style="display:none">
             <div class="score-row"><span class="score-num" id="sentence-score">0</span> 점 &nbsp;|&nbsp; <span id="sentence-prog">1</span>/<span id="sentence-total">5</span> 문제</div>
@@ -11239,13 +11270,15 @@ function showGameComplete(resultElId, curType, summary) {
 
 /* ---- 문장 만들기 (어순 배열 / 문장 해석) ---- */
 let sentenceState = {};
-function sentencePool() {
-  // 한자 3~7개짜리 예문만 사용
+let sentSetup = { dir: 'ko2zh', diff: 'easy', count: '5' };
+const SENT_DIFF = { easy: [3, 5], mid: [5, 7], hard: [7, 12] };
+function sentencePool(diff) {
+  const range = SENT_DIFF[diff] || [3, 7];
   const pool = [];
   for (const k in EX_DATA) {
     const ex = EX_DATA[k];
     const hz = (ex.zh.match(/[\u4e00-\u9fff]/g) || []).length;
-    if (hz >= 3 && hz <= 7) pool.push(ex);
+    if (hz >= range[0] && hz <= range[1]) pool.push(ex);
   }
   return pool;
 }
@@ -11253,18 +11286,46 @@ function sentChars(zh) {
   // 문장부호·공백 제거 후 글자 단위 배열
   return [...zh.replace(/[\s。，、！？：；·…—“”‘’（）()."'!?,]/g, '')];
 }
+function sentPick(group, value, btn) {
+  sentSetup[group] = value;
+  const rowId = group === 'dir' ? 'sent-dir' : group === 'diff' ? 'sent-diff' : 'sent-count';
+  const row = document.getElementById(rowId);
+  if (row) [...row.children].forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+function sentSyncSetupUI() {
+  const map = { 'sent-dir': sentSetup.dir, 'sent-diff': sentSetup.diff, 'sent-count': sentSetup.count };
+  const vals = {
+    'sent-dir': ['ko2zh', 'zh2ko'],
+    'sent-diff': ['easy', 'mid', 'hard'],
+    'sent-count': ['5', '10', '15', '20']
+  };
+  for (const rowId in map) {
+    const row = document.getElementById(rowId);
+    if (!row) continue;
+    [...row.children].forEach((b, i) => {
+      b.classList.toggle('active', vals[rowId][i] === map[rowId]);
+    });
+  }
+}
 function initSentence() {
   document.getElementById('game-sentence').style.display = '';
   document.getElementById('sentence-setup').style.display = '';
   document.getElementById('sentence-play').style.display = 'none';
+  sentSyncSetupUI();
 }
-function startSentence(mode) {
-  const all = sentencePool();
-  if (all.length < 5) { alert('문장이 부족해요.'); return; }
-  sentenceState = { mode: mode, round: 0, total: 5, score: 0, items: gShuffle(all).slice(0, 5) };
+function startSentence() {
+  const diff = sentSetup.diff;
+  const count = parseInt(sentSetup.count, 10) || 5;
+  const all = sentencePool(diff);
+  if (all.length < count) { alert('해당 난이도의 문장이 부족해요.'); return; }
+  sentenceState = {
+    mode: sentSetup.dir, diff: diff, showPy: diff !== 'hard', openEnded: diff === 'hard',
+    round: 0, total: count, score: 0, items: gShuffle(all).slice(0, count)
+  };
   document.getElementById('sentence-setup').style.display = 'none';
   document.getElementById('sentence-play').style.display = '';
-  document.getElementById('sentence-total').textContent = sentenceState.total;
+  document.getElementById('sentence-total').textContent = count;
   document.getElementById('sentence-score').textContent = 0;
   loadSentence();
 }
@@ -11277,6 +11338,8 @@ function loadSentence() {
   document.getElementById('sentence-result').className = 'result-msg';
   const body = document.getElementById('sentence-body');
   const ctrl = document.getElementById('sentence-controls');
+  const pyLine = st.showPy ? `<div class="sent-prompt-py">${escapeHtml(ex.py)}</div>` : '';
+  const speakBtn = `<button class="theme-speak" style="margin:10px auto 0;" onclick="speak(zhForTTS('${ex.zh.replace(/'/g,"\\'")}','${ex.py.replace(/'/g,"\\'")}'), this)" aria-label="발음 듣기">🔊</button>`;
   if (st.mode === 'ko2zh') {
     // 한국어 제시 → 중국어 어순 배열
     const chars = sentChars(ex.zh);
@@ -11286,7 +11349,7 @@ function loadSentence() {
     body.innerHTML = `
       <div class="sent-prompt">
         <div class="sent-prompt-ko">${escapeHtml(ex.ko)}</div>
-        <div class="sent-prompt-py">${escapeHtml(ex.py)}</div>
+        ${pyLine}
       </div>
       <div class="sent-hint">아래 글자를 눌러 순서대로 문장을 만들어 보세요</div>
       <div class="sent-answer" id="sent-answer"></div>
@@ -11296,16 +11359,31 @@ function loadSentence() {
     ctrl.innerHTML =
       `<button class="btn btn-primary" onclick="checkSentence()">확인</button>` +
       `<button class="btn" onclick="sentClear()">↺ 지우기</button>`;
-  } else {
-    // 중국어 제시 → 뜻 고르기 (4지선다)
+  } else if (st.openEnded) {
+    // 고급: 중국어 제시 → 서술형(직접 떠올린 뒤 정답 확인, 병음은 확인할 때 공개)
     st.answer = ex;
-    const others = gShuffle(sentencePool().filter(e => e.ko !== ex.ko)).slice(0, 3);
+    body.innerHTML = `
+      <div class="sent-prompt">
+        <div class="sent-prompt-zh">${escapeHtml(ex.zh)}</div>
+        <div id="sent-reveal" style="display:none;">
+          <div class="sent-prompt-py">${escapeHtml(ex.py)}</div>
+          <div class="sent-reveal-ko">${escapeHtml(ex.ko)}</div>
+        </div>
+        ${speakBtn}
+      </div>
+      <div class="sent-hint" id="sent-hint">뜻을 머릿속으로 떠올린 뒤 <b>정답 확인</b>을 눌러 보세요</div>
+    `;
+    ctrl.innerHTML = `<button class="btn btn-primary" onclick="revealSentence()">정답 확인</button>`;
+  } else {
+    // 초·중급: 중국어 제시 → 뜻 고르기 (4지선다)
+    st.answer = ex;
+    const others = gShuffle(sentencePool(st.diff).filter(e => e.ko !== ex.ko)).slice(0, 3);
     st.opts = gShuffle([ex, ...others]);
     body.innerHTML = `
       <div class="sent-prompt">
         <div class="sent-prompt-zh">${escapeHtml(ex.zh)}</div>
-        <div class="sent-prompt-py">${escapeHtml(ex.py)}</div>
-        <button class="theme-speak" style="margin:10px auto 0;" onclick="speak(zhForTTS('${ex.zh.replace(/'/g,"\\'")}','${ex.py.replace(/'/g,"\\'")}'), this)" aria-label="발음 듣기">🔊</button>
+        ${pyLine}
+        ${speakBtn}
       </div>
       <div class="sent-hint">알맞은 뜻을 골라 보세요</div>
       <div class="sent-opts" id="sent-opts">
@@ -11314,6 +11392,30 @@ function loadSentence() {
     `;
     ctrl.innerHTML = '';
   }
+}
+function revealSentence() {
+  const st = sentenceState;
+  if (st.answered) return;
+  st.answered = true;
+  const rev = document.getElementById('sent-reveal');
+  if (rev) rev.style.display = '';
+  const hint = document.getElementById('sent-hint');
+  if (hint) hint.innerHTML = '떠올린 뜻과 맞았나요?';
+  document.getElementById('sentence-controls').innerHTML =
+    `<button class="btn btn-primary" onclick="selfRate(true)">✓ 맞았어요 (+10)</button>` +
+    `<button class="btn" onclick="selfRate(false)">✗ 틀렸어요</button>`;
+}
+function selfRate(correct) {
+  const st = sentenceState;
+  const res = document.getElementById('sentence-result');
+  if (correct) {
+    st.score += 10;
+    res.className = 'result-msg ok'; res.textContent = '✓ 잘했어요!';
+  } else {
+    res.className = 'result-msg fail'; res.textContent = '다음엔 맞힐 수 있어요! 💪';
+  }
+  document.getElementById('sentence-score').textContent = st.score;
+  sentAdvanceBtn();
 }
 function renderSentChips() {
   const st = sentenceState;
@@ -11348,13 +11450,16 @@ function checkSentence() {
   const built = st.placed.map(p => p.c).join('');
   const res = document.getElementById('sentence-result');
   const correct = built === st.target;
+  const ex = st.items[st.round];
+  // 고급 등 병음 숨김이었으면 정답 확인 시 병음도 함께 공개
+  const pyReveal = st.showPy ? '' : ' <span style="color:var(--blue);font-weight:400;">(' + escapeHtml(ex.py) + ')</span>';
   if (correct) {
     st.score += 10;
     res.className = 'result-msg ok';
-    res.innerHTML = '✓ 정답! &nbsp; ' + escapeHtml(st.items[st.round].zh);
+    res.innerHTML = '✓ 정답! &nbsp; ' + escapeHtml(ex.zh) + pyReveal;
   } else {
     res.className = 'result-msg fail';
-    res.innerHTML = '✗ 아쉬워요. 정답: <b>' + escapeHtml(st.items[st.round].zh) + '</b>';
+    res.innerHTML = '✗ 아쉬워요. 정답: <b>' + escapeHtml(ex.zh) + '</b>' + pyReveal;
   }
   document.getElementById('sentence-score').textContent = st.score;
   sentAdvanceBtn();
