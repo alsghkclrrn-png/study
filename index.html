@@ -1602,6 +1602,11 @@
               <button class="sent-choice" onclick="sentPick('count','15',this)">15문제</button>
               <button class="sent-choice" onclick="sentPick('count','20',this)">20문제</button>
             </div>
+            <div class="sent-setup-label">답 입력 방식</div>
+            <div class="sent-choicerow" id="sent-input">
+              <button class="sent-choice" onclick="sentPick('input','default',this)">기본<span class="sent-choice-sub">배열 · 객관식</span></button>
+              <button class="sent-choice" onclick="sentPick('input','type',this)">직접 타이핑<span class="sent-choice-sub">답을 적기</span></button>
+            </div>
             <div style="display:flex;gap:10px;margin-top:1.4rem;flex-wrap:wrap;">
               <button class="btn btn-primary" onclick="startSentence()">시작하기 →</button>
               <button class="btn" onclick="showGamesMenu()">← 돌아가기</button>
@@ -11270,7 +11275,7 @@ function showGameComplete(resultElId, curType, summary) {
 
 /* ---- 문장 만들기 (어순 배열 / 문장 해석) ---- */
 let sentenceState = {};
-let sentSetup = { dir: 'ko2zh', diff: 'easy', count: '5' };
+let sentSetup = { dir: 'ko2zh', diff: 'easy', count: '5', input: 'default' };
 const SENT_DIFF = { easy: [3, 5], mid: [5, 7], hard: [7, 12] };
 function sentencePool(diff) {
   const range = SENT_DIFF[diff] || [3, 7];
@@ -11286,19 +11291,23 @@ function sentChars(zh) {
   // 문장부호·공백 제거 후 글자 단위 배열
   return [...zh.replace(/[\s。，、！？：；·…—“”‘’（）()."'!?,]/g, '')];
 }
+function sentNorm(s) {
+  return (s || '').replace(/[\s。，、！？：；·…—“”‘’（）()."'!?,.]/g, '');
+}
 function sentPick(group, value, btn) {
   sentSetup[group] = value;
-  const rowId = group === 'dir' ? 'sent-dir' : group === 'diff' ? 'sent-diff' : 'sent-count';
-  const row = document.getElementById(rowId);
+  const rowMap = { dir: 'sent-dir', diff: 'sent-diff', count: 'sent-count', input: 'sent-input' };
+  const row = document.getElementById(rowMap[group]);
   if (row) [...row.children].forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 }
 function sentSyncSetupUI() {
-  const map = { 'sent-dir': sentSetup.dir, 'sent-diff': sentSetup.diff, 'sent-count': sentSetup.count };
+  const map = { 'sent-dir': sentSetup.dir, 'sent-diff': sentSetup.diff, 'sent-count': sentSetup.count, 'sent-input': sentSetup.input };
   const vals = {
     'sent-dir': ['ko2zh', 'zh2ko'],
     'sent-diff': ['easy', 'mid', 'hard'],
-    'sent-count': ['5', '10', '15', '20']
+    'sent-count': ['5', '10', '15', '20'],
+    'sent-input': ['default', 'type']
   };
   for (const rowId in map) {
     const row = document.getElementById(rowId);
@@ -11320,7 +11329,8 @@ function startSentence() {
   const all = sentencePool(diff);
   if (all.length < count) { alert('해당 난이도의 문장이 부족해요.'); return; }
   sentenceState = {
-    mode: sentSetup.dir, diff: diff, showPy: diff !== 'hard', openEnded: diff === 'hard',
+    mode: sentSetup.dir, diff: diff, input: sentSetup.input,
+    showPy: diff !== 'hard', openEnded: diff === 'hard',
     round: 0, total: count, score: 0, items: gShuffle(all).slice(0, count)
   };
   document.getElementById('sentence-setup').style.display = 'none';
@@ -11340,6 +11350,34 @@ function loadSentence() {
   const ctrl = document.getElementById('sentence-controls');
   const pyLine = st.showPy ? `<div class="sent-prompt-py">${escapeHtml(ex.py)}</div>` : '';
   const speakBtn = `<button class="theme-speak" style="margin:10px auto 0;" onclick="speak(zhForTTS('${ex.zh.replace(/'/g,"\\'")}','${ex.py.replace(/'/g,"\\'")}'), this)" aria-label="발음 듣기">🔊</button>`;
+  if (st.input === 'type') {
+    // 직접 타이핑 모드
+    if (st.mode === 'ko2zh') {
+      st.target = sentChars(ex.zh).join('');
+      body.innerHTML = `
+        <div class="sent-prompt">
+          <div class="sent-prompt-ko">${escapeHtml(ex.ko)}</div>
+          ${pyLine}
+        </div>
+        <div class="sent-hint">한국어 뜻을 보고 중국어 문장을 입력하세요 (한자 입력기 필요)</div>
+        <input type="text" id="sent-type-input" class="tq-input" placeholder="중국어로 입력..." autocomplete="off" onkeydown="if(event.key==='Enter')submitTypeAnswer()">
+      `;
+      ctrl.innerHTML = `<button class="btn btn-primary" onclick="submitTypeAnswer()">확인</button>`;
+    } else {
+      body.innerHTML = `
+        <div class="sent-prompt">
+          <div class="sent-prompt-zh">${escapeHtml(ex.zh)}</div>
+          ${pyLine}
+          ${speakBtn}
+        </div>
+        <div class="sent-hint">중국어 문장의 뜻을 한국어로 입력하세요</div>
+        <input type="text" id="sent-type-input" class="tq-input" placeholder="한국어 뜻 입력..." autocomplete="off" onkeydown="if(event.key==='Enter')submitTypeAnswer()">
+      `;
+      ctrl.innerHTML = `<button class="btn btn-primary" onclick="submitTypeAnswer()">정답 확인</button>`;
+    }
+    setTimeout(() => { const i = document.getElementById('sent-type-input'); if (i) i.focus(); }, 250);
+    return;
+  }
   if (st.mode === 'ko2zh') {
     // 한국어 제시 → 중국어 어순 배열
     const chars = sentChars(ex.zh);
@@ -11416,6 +11454,50 @@ function selfRate(correct) {
   }
   document.getElementById('sentence-score').textContent = st.score;
   sentAdvanceBtn();
+}
+function showSelfRate() {
+  document.getElementById('sentence-controls').innerHTML =
+    `<button class="btn btn-primary" onclick="selfRate(true)">✓ 맞았어요 (+10)</button>` +
+    `<button class="btn" onclick="selfRate(false)">✗ 틀렸어요</button>`;
+}
+function submitTypeAnswer() {
+  const st = sentenceState;
+  if (st.answered) return;
+  const inp = document.getElementById('sent-type-input');
+  if (!inp) return;
+  const val = (inp.value || '').trim();
+  if (!val) { inp.focus(); return; }
+  st.answered = true;
+  inp.disabled = true;
+  const ex = st.items[st.round];
+  const res = document.getElementById('sentence-result');
+  const pyTag = `<span style="color:var(--blue);font-weight:400;">(${escapeHtml(ex.py)})</span>`;
+  if (st.mode === 'ko2zh') {
+    // 중국어 타이핑 → 정확히 일치하면 자동 정답, 아니면 정답 공개 후 자기채점
+    const ok = sentNorm(val) === sentNorm(ex.zh);
+    if (ok) {
+      st.score += 10;
+      inp.classList.add('correct');
+      res.className = 'result-msg ok';
+      res.innerHTML = '✓ 정답! &nbsp; ' + escapeHtml(ex.zh) + ' ' + pyTag;
+      document.getElementById('sentence-score').textContent = st.score;
+      sentAdvanceBtn();
+    } else {
+      inp.classList.add('wrong');
+      res.className = 'result-msg fail';
+      res.innerHTML = '정답: <b>' + escapeHtml(ex.zh) + '</b> ' + pyTag +
+        '<br><span style="font-size:0.82rem;color:var(--text2);">내 답이 맞다고 생각하면 아래에서 표시하세요</span>';
+      showSelfRate();
+    }
+  } else {
+    // 한국어 뜻 타이핑 → 자동 채점 불가, 정답 공개 후 자기채점
+    inp.classList.add('correct');
+    res.className = 'result-msg';
+    res.innerHTML = '<div style="margin-bottom:6px;">모범 답: <b>' + escapeHtml(ex.ko) + '</b></div>' +
+      '<div style="color:var(--blue);font-size:0.9rem;">' + escapeHtml(ex.zh) + ' ' + pyTag + '</div>' +
+      '<div style="font-size:0.82rem;color:var(--text2);margin-top:6px;">내 답과 비교해 보고 채점하세요</div>';
+    showSelfRate();
+  }
 }
 function renderSentChips() {
   const st = sentenceState;
