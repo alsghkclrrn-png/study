@@ -101,13 +101,37 @@ function serveStatic(req, res) {
   if (filePath !== ROOT && !filePath.startsWith(ROOT + path.sep)) {
     res.writeHead(403); res.end('forbidden'); return;
   }
-  fs.stat(filePath, (err, st) => {
-    if (err || !st.isFile()) { res.writeHead(404); res.end('not found'); return; }
-    const ext = path.extname(filePath).toLowerCase();
+
+  function send(fp) {
+    const ext = path.extname(fp).toLowerCase();
     const type = MIME[ext] || 'application/octet-stream';
     res.writeHead(200, { 'Content-Type': type });
     if (req.method === 'HEAD') { res.end(); return; }
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(fp).pipe(res);
+  }
+
+  fs.stat(filePath, (err, st) => {
+    if (!err && st.isFile()) return send(filePath);
+
+    // 디렉터리면 그 안의 index.html 을 제공 ( /guide/ → /guide/index.html )
+    if (!err && st.isDirectory()) {
+      const idx = path.join(filePath, 'index.html');
+      return fs.stat(idx, (e2, s2) => {
+        if (!e2 && s2.isFile()) return send(idx);
+        res.writeHead(404); res.end('not found');
+      });
+    }
+
+    // 확장자 없는 경로면 .html 을 붙여 재시도 ( /guide/tones → /guide/tones.html )
+    if (!path.extname(filePath)) {
+      const alt = filePath + '.html';
+      return fs.stat(alt, (e3, s3) => {
+        if (!e3 && s3.isFile()) return send(alt);
+        res.writeHead(404); res.end('not found');
+      });
+    }
+
+    res.writeHead(404); res.end('not found');
   });
 }
 
