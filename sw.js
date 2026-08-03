@@ -1,7 +1,8 @@
 /* 수달중국어 서비스워커
    v2: /api/ 프록시·비-GET(POST)·교차출처 요청은 절대 가로채지 않음 (AI 채팅/예문 정상화)
-       + 캐시 버전 상향으로 옛 캐시 강제 정리 */
-const CACHE = 'sudal-core-v2';
+       + 캐시 버전 상향으로 옛 캐시 강제 정리
+   v3: 애드센스 심사 대응(동의 배너·이용약관) 반영을 위해 캐시 갱신 */
+const CACHE = 'sudal-core-v3';
 const CORE = [
   './',
   './index.html',

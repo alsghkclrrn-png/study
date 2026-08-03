@@ -1,4 +1,15 @@
+# 수달 중국어 - robots.txt
 User-agent: *
 Allow: /
 
-Sitemap: https://study-3ne.pages.dev/sitemap.xml
+# Google AdSense 심사/광고 크롤러
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+Sitemap: https://study1-jluy.onrender.com/sitemap.xml
